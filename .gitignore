@@ -1,0 +1,10 @@
+# Project
+.cache
+.yarn
+**/node_modules
+**/*.log
+
+# Other
+**/.idea
+**/.DS_Store
+*.iml

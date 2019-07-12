@@ -1,0 +1,12 @@
+{
+  "extends": "standard",
+  "overrides": [
+    {
+      "files": ["__tests__/*.js"],
+      "globals": {
+        "describe": true,
+        "test": true
+      }
+    }
+  ]
+}
