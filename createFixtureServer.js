@@ -162,72 +162,80 @@ function createFixtureServer () {
   app.use(cookieParser())
 
   app.post('/___fixtures', (fixtureReq, fixtureRes) => {
-    const { request, response } = fixtureReq.body
-    const route = configuration[request.route] || request.route
+    const fixtures = [].concat(fixtureReq.body)
+    const routeIds = []
 
-    if (
-      typeof route !== 'object' ||
-      typeof route.path !== 'string' ||
-      typeof route.method !== 'string'
-    ) {
-      return badRequest(fixtureRes, 'path or method are not provided')
-    }
+    for (const fixture of fixtures) {
+      const { request, response } = fixture
+      const route = configuration[request.route] || request.route
 
-    for (const property of REQUEST_PROPERTIES) {
-      request[property] = resolveProperty(
-        fixtureRes,
-        configuration,
-        request[property],
-        property
+      if (
+        typeof route !== 'object' ||
+        typeof route.path !== 'string' ||
+        typeof route.method !== 'string'
+      ) {
+        return badRequest(fixtureRes, 'path or method are not provided')
+      }
+
+      for (const property of REQUEST_PROPERTIES) {
+        request[property] = resolveProperty(
+          fixtureRes,
+          configuration,
+          request[property],
+          property
+        )
+
+        // error
+        if (!request[property]) {
+          return
+        }
+      }
+
+      const { path, method } = route
+      const routeId = generateRouteId(path, method)
+
+      // TODO: should we handle a conflict for route ?
+      // It can't work with parameterized url like /path/:id
+      // if (isRouteAlreadyRegistered(app, routeId)) {
+      //   return conflict(fixtureRes, `Route ${method.toUpperCase()} ${path} is already registered.`)
+      // }
+
+      app[method](
+        path,
+        setFnName((req, res) => {
+          for (const property of REQUEST_PROPERTIES) {
+            if (!doesPropertyMatch(req, request, property)) {
+              return notFound(res, 'Not mocked')
+            }
+          }
+
+          for (const property of RESPONSE_PROPERTIES) {
+            const values = resolveProperty(
+              res,
+              configuration,
+              response[property],
+              property
+            )
+
+            // error
+            if (!values) {
+              return
+            }
+
+            useResponseProperties[property](res, values)
+          }
+
+          res.status(response.status || 200)
+        }, routeId)
       )
 
-      // error
-      if (!request[property]) {
-        return
-      }
+      routeIds.push(routeId)
     }
 
-    const { path, method } = route
-    const routeName = generateRouteId(path, method)
+    const result =
+      routeIds.length > 1 ? routeIds.map(id => ({ id })) : { id: routeIds[0] }
 
-    // TODO: should we handle a conflict for route ?
-    // It can't work with parameterized url like /path/:id
-    // if (isRouteAlreadyRegistered(app, routeName)) {
-    //   return conflict(fixtureRes, `Route ${method.toUpperCase()} ${path} is already registered.`)
-    // }
-
-    app[method](
-      path,
-      setFnName((req, res) => {
-        for (const property of REQUEST_PROPERTIES) {
-          if (!doesPropertyMatch(req, request, property)) {
-            return notFound(res, 'Not mocked')
-          }
-        }
-
-        for (const property of RESPONSE_PROPERTIES) {
-          const values = resolveProperty(
-            res,
-            configuration,
-            response[property],
-            property
-          )
-
-          // error
-          if (!values) {
-            return
-          }
-
-          useResponseProperties[property](res, values)
-        }
-
-        res.status(response.status || 200)
-      }, routeName)
-    )
-
-    fixtureRes.status(201).send({
-      id: routeName
-    })
+    fixtureRes.status(201).send(result)
   })
 
   app.delete('/___fixtures/all', (req, res) => {
