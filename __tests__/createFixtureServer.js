@@ -176,6 +176,57 @@ describe('app.js', () => {
     })
   })
 
+  describe('multiple fixtures', () => {
+    const server = require('../createFixtureServer')()
+
+    test('add fixtures', async () => {
+      await request(server)
+        .post('/___fixtures')
+        .send([
+          {
+            request: {
+              route: {
+                path: '/products',
+                method: 'get'
+              }
+            },
+            response: {
+              body: []
+            }
+          },
+          {
+            request: {
+              route: {
+                path: '/categories',
+                method: 'get'
+              }
+            },
+            response: {
+              body: []
+            }
+          }
+        ])
+        .expect(201, [
+          { id: '_2f70726f64756374732c676574' },
+          { id: '_2f63617465676f726965732c676574' }
+        ])
+    })
+
+    test('remove fixtures', async () => {
+      await request(server)
+        .delete('/___fixtures/_2f70726f64756374732c676574')
+        .expect(204, {})
+
+      await request(server)
+        .delete('/___fixtures')
+        .send({
+          path: '/categories',
+          method: 'get'
+        })
+        .expect(204, {})
+    })
+  })
+
   describe('matching headers', () => {
     test.each([
       [null, {}, {}, true],
