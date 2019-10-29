@@ -2,27 +2,11 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const crypto = require('crypto')
-
-// function isObjectEmpty (obj) {
-//   for (const key in obj) {
-//     if (Object.hasOwnProperty.call(obj, key)) {
-//       return false
-//     }
-//   }
-//
-//   return true
-// }
-
-function doesPropertyMatch (request, match, property) {
-  const requestProperty = request[property] || {}
-  const matchProperty = match[property] || {}
-
-  return Object.keys(matchProperty).every(
-    key =>
-      String(matchProperty[key]).toLowerCase() ===
-      String(requestProperty[key]).toLowerCase()
-  )
-}
+const {
+  doesPropertyMatch,
+  resolveProperty,
+  useResponseProperties
+} = require('./properties')
 
 function setFnName (fn, name) {
   Object.defineProperty(fn, 'name', { value: name, configurable: true })
@@ -64,20 +48,7 @@ function removeRoutes (app) {
 function isRouteAlreadyRegistered (app, routeName) {
   const _routeName = '_' + routeName
 
-  // console.log('######## isRouteAlreadyRegistered', _routeName)
-  //
-  // app._router.stack.forEach(({ name, route }) => {
-  //   console.log('######## name', name)
-  //
-  //   if (route) {
-  //     route.stack.forEach(({ name }) => {
-  //       console.log('######## route.name', name)
-  //     })
-  //   }
-  //
-  // })
-
-  return app._router.stack.some(({ name, handle, route }) => {
+  return app._router.stack.some(({ name, route }) => {
     if (name === _routeName) {
       return true
     }
@@ -111,52 +82,6 @@ function createFixtureId (fixture) {
     .digest('hex')
 }
 
-function resolveProperty (res, configuration, matchProperties, property) {
-  const values = {}
-
-  if (matchProperties) {
-    if (property === 'body') {
-      return matchProperties
-    }
-
-    if (Array.isArray(matchProperties)) {
-      for (const matchProperty of matchProperties) {
-        if (typeof matchProperty === 'string') {
-          const fromConfig = configuration[property][matchProperty]
-
-          if (!fromConfig) {
-            badRequest(
-              res,
-              `${property} group named ${matchProperty} is not in the configuration`
-            )
-            return null
-          }
-
-          Object.assign(values, fromConfig)
-        } else if (
-          !Array.isArray(matchProperty) &&
-          typeof matchProperty === 'object'
-        ) {
-          Object.assign(values, matchProperty)
-        } else {
-          badRequest(
-            res,
-            `${property} "${matchProperty}" should be an object or a configuration header group name.`
-          )
-          return null
-        }
-      }
-    } else if (typeof matchProperties === 'object') {
-      Object.assign(values, matchProperties)
-    } else {
-      badRequest(res, `${property} should be an array or an object.`)
-      return null
-    }
-  }
-
-  return values
-}
-
 function error (res, status, message) {
   return res
     .status(status)
@@ -187,18 +112,6 @@ let configuration = {
   cookies: {}
 }
 
-const useResponseProperties = {
-  filePaths: () => {
-    throw new Error('not implemented')
-  },
-  headers: (res, value) => res.set(value),
-  body: (res, value) => res.send(value),
-  cookies: (res, value) =>
-    Object.entries(value).forEach((r, pair) => {
-      res.cookie(...pair)
-    })
-}
-
 function createFixtureServer () {
   const app = express()
   app.use(bodyParser.json())
@@ -221,17 +134,17 @@ function createFixtureServer () {
       }
 
       for (const property of REQUEST_PROPERTIES) {
-        request[property] = resolveProperty(
-          fixtureRes,
+        const { error, values } = resolveProperty(
           configuration,
           request[property],
           property
         )
 
-        // error
-        if (!request[property]) {
-          return
+        if (error) {
+          return badRequest(fixtureRes, error)
         }
+
+        request[property] = values
       }
 
       const { path, method } = route
@@ -254,16 +167,14 @@ function createFixtureServer () {
           }
 
           for (const property of RESPONSE_PROPERTIES) {
-            const values = resolveProperty(
-              res,
+            const { error, values } = resolveProperty(
               configuration,
               response[property],
               property
             )
 
-            // error
-            if (!values) {
-              return
+            if (error) {
+              return badRequest(fixtureRes, error)
             }
 
             useResponseProperties[property](res, values)
