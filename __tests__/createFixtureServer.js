@@ -118,6 +118,62 @@ describe('app.js', () => {
         .delete('/___fixtures/_2f70726f64756374732c676574')
         .expect(204, {})
     })
+
+    test('remove all fixtures', async () => {
+      await request(server)
+        .post('/___fixtures')
+        .send({
+          request: {
+            route: {
+              path: '/octopus',
+              method: 'get'
+            }
+          },
+          response: {
+            body: []
+          }
+        })
+        .expect(201, {
+          id: '_2f6f63746f7075732c676574'
+        })
+
+      await request(server)
+        .post('/___fixtures')
+        .send({
+          request: {
+            route: {
+              path: '/giraffes',
+              method: 'get'
+            }
+          },
+          response: {
+            body: []
+          }
+        })
+        .expect(201, {
+          id: '_2f67697261666665732c676574'
+        })
+
+      await request(server)
+        .delete('/___fixtures/all')
+        .expect(204, {})
+
+      await request(server)
+        .get('/octopus')
+        .expect(404, {})
+
+      await request(server)
+        .get('/___fixtures/_2f6f63746f7075732c676574')
+        .expect(404, {})
+
+      await request(server)
+        .get('/giraffes')
+        .expect(404, {})
+
+      await request(server)
+        .get('/___fixtures/_2f67697261666665732c676574')
+        .expect(404, {})
+    })
   })
 
   describe('matching headers', () => {
