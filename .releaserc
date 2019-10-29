@@ -1,0 +1,17 @@
+{
+  "branch": "master",
+  "repositoryUrl": "git@github.com:DevSide/fixture-server.git",
+  "debug": true,
+  "dryRun": false,
+  "ci": false,
+  "plugins": [
+    "@semantic-release/npm",
+    ["@semantic-release/git", {
+      "assets": ["package.json"],
+      "message": "chore(release): v${nextRelease.version}"
+    }],
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/github"
+  ]
+}

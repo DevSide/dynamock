@@ -1,10 +1,10 @@
 const createFixtureServer = require('./createFixtureServer')
 
-const [, , port] = process.argv
+const [, , port, host = '127.0.0.1'] = process.argv
 
 const server = createFixtureServer()
 
-server.listen(port, '127.0.0.1', () => {
+server.listen(port, host, () => {
   console.log(`Mock server is running on port ${port}...`)
 })
 
