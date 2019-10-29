@@ -61,9 +61,35 @@ function removeRoutes (app) {
   })
 }
 
-// function isRouteAlreadyRegistered(app, routeName) {
-//   return app._router.stack.some(({ route }) => !!route && route.stack.some(({ handle }) => handle.name === routeName))
-// }
+function isRouteAlreadyRegistered (app, routeName) {
+  const _routeName = '_' + routeName
+
+  // console.log('######## isRouteAlreadyRegistered', _routeName)
+  //
+  // app._router.stack.forEach(({ name, route }) => {
+  //   console.log('######## name', name)
+  //
+  //   if (route) {
+  //     route.stack.forEach(({ name }) => {
+  //       console.log('######## route.name', name)
+  //     })
+  //   }
+  //
+  // })
+
+  return app._router.stack.some(({ name, handle, route }) => {
+    if (name === _routeName) {
+      return true
+    }
+
+    if (route && route.stack.some(({ name }) => name === _routeName)) {
+      return true
+    }
+
+    return false
+  })
+}
+
 function sortObjectKeys (obj) {
   return Object.keys(obj)
     .sort()
@@ -145,9 +171,9 @@ function notFound (res, message) {
   return error(res, 404, message)
 }
 
-// function conflict(res, message) {
-//   return error(res, 409, message)
-// }
+function conflict (res, message) {
+  return error(res, 409, message)
+}
 
 const REQUEST_PROPERTIES = ['headers', 'params', 'body', 'query', 'cookies']
 const RESPONSE_PROPERTIES = ['headers', 'body', 'cookies']
@@ -211,11 +237,12 @@ function createFixtureServer () {
       const { path, method } = route
       const routeId = createFixtureId(fixture)
 
-      // TODO: should we handle a conflict for route ?
-      // It can't work with parameterized url like /path/:id
-      // if (isRouteAlreadyRegistered(app, routeId)) {
-      //   return conflict(fixtureRes, `Route ${method.toUpperCase()} ${path} is already registered.`)
-      // }
+      if (isRouteAlreadyRegistered(app, routeId)) {
+        return conflict(
+          fixtureRes,
+          `Route ${method.toUpperCase()} ${path} is already registered.`
+        )
+      }
 
       app[method](
         path,
@@ -243,7 +270,7 @@ function createFixtureServer () {
           }
 
           res.status(response.status || 200)
-        }, routeId)
+        }, '_' + routeId)
       )
 
       routeIds.push(routeId)
@@ -261,7 +288,7 @@ function createFixtureServer () {
   })
 
   app.delete('/___fixtures/:id', (req, res) => {
-    removeRoute(app, req.params.id)
+    removeRoute(app, '_' + req.params.id)
     res.status(204).send({})
   })
 

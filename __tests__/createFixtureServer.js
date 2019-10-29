@@ -58,58 +58,174 @@ describe('app.js', () => {
     })
   })
 
-  describe('create and remove simple fixture', () => {
+  describe('create fixtures', () => {
     const server = require('../createFixtureServer')()
 
-    test('create simple fixture', async () => {
+    test('create and remove simple fixture', async () => {
       const products = [{ id: 1 }, { id: 2 }]
 
-      await request(server)
-        .post('/___fixtures')
-        .send({
-          request: {
-            route: {
-              path: '/products',
-              method: 'get'
+      function createRoute () {
+        return request(server)
+          .post('/___fixtures')
+          .send({
+            request: {
+              route: {
+                path: '/products',
+                method: 'get'
+              }
+            },
+            response: {
+              body: products
             }
-          },
-          response: {
-            body: products
-          }
-        })
-        .expect(201, {
-          id: 'f0e63e05abb428d1c09fdc89bf55247abb6760a8'
-        })
+          })
+      }
+
+      await createRoute().expect(201, {
+        id: 'f0e63e05abb428d1c09fdc89bf55247abb6760a8'
+      })
+
+      await createRoute().expect(409)
 
       await request(server)
         .get('/products')
         .expect(200, products)
+
+      await request(server)
+        .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
+        .expect(204)
+
+      await request(server)
+        .get('/products')
+        .expect(404)
     })
 
-    test('remove fixture with id', async () => {
+    test('create and remove multiple fixtures', async () => {
+      const products = [{ id: 1 }, { id: 2 }]
+      const categories = [{ id: 1 }, { id: 2 }]
+
+      function createRoutes () {
+        return request(server)
+          .post('/___fixtures')
+          .send([
+            {
+              request: {
+                route: {
+                  path: '/products',
+                  method: 'get'
+                }
+              },
+              response: {
+                body: products
+              }
+            },
+            {
+              request: {
+                route: {
+                  path: '/categories',
+                  method: 'get'
+                }
+              },
+              response: {
+                body: categories
+              }
+            }
+          ])
+      }
+
+      await createRoutes().expect(201, [
+        { id: 'f0e63e05abb428d1c09fdc89bf55247abb6760a8' },
+        { id: 'aca265c8b8c928c38759b0cf08115a411607f8f6' }
+      ])
+
+      await createRoutes().expect(409)
+
+      await Promise.all([
+        request(server)
+          .get('/products')
+          .expect(200, products),
+        request(server)
+          .get('/categories')
+          .expect(200, categories)
+      ])
+
+      await Promise.all([
+        request(server)
+          .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
+          .expect(204),
+        request(server)
+          .delete('/___fixtures/aca265c8b8c928c38759b0cf08115a411607f8f6')
+          .expect(204)
+      ])
+
+      await Promise.all([
+        request(server)
+          .get('/products')
+          .expect(404),
+        request(server)
+          .get('/categories')
+          .expect(404)
+      ])
+    })
+
+    test('create multiple same fixtures', async () => {
       await request(server)
         .post('/___fixtures')
-        .send({
-          request: {
-            route: {
-              path: '/products',
-              method: 'get'
+        .send([
+          {
+            request: {
+              route: {
+                path: '/worms',
+                method: 'get'
+              }
+            },
+            response: {
+              body: []
             }
           },
-          response: {
-            body: []
+          {
+            request: {
+              route: {
+                path: '/worms',
+                method: 'get'
+              }
+            },
+            response: {
+              body: []
+            }
           }
-        })
-        .expect(201, {
-          id: '7471423e00c234a5f03064969debd4f5512ed1ab'
-        })
+        ])
+        .expect(409)
 
-      await request(server)
-        .delete('/___fixtures/7471423e00c234a5f03064969debd4f5512ed1ab')
-        .expect(204, {})
+      // TODO: next refacto will handle this test
+      // await request(server)
+      //   .post('/___fixtures')
+      //   .send([
+      //     {
+      //       request: {
+      //         route: {
+      //           path: '/worms',
+      //           method: 'get'
+      //         }
+      //       },
+      //       response: {
+      //         body: ['foo']
+      //       }
+      //     },
+      //     {
+      //       request: {
+      //         route: {
+      //           path: '/worms',
+      //           method: 'get'
+      //         }
+      //       },
+      //       response: {
+      //         body: ['bar']
+      //       }
+      //     }
+      //   ]).expect(409)
     })
 
-    test('remove all fixtures', async () => {
+    test('create and remove all fixtures', async () => {
       await request(server)
         .post('/___fixtures')
         .send({
@@ -146,22 +262,14 @@ describe('app.js', () => {
 
       await request(server)
         .delete('/___fixtures')
-        .expect(204, {})
+        .expect(204)
 
       await request(server)
         .get('/octopus')
         .expect(404, {})
 
       await request(server)
-        .get('/___fixtures/45b1b26011e768948244373e164cac946749f6f4')
-        .expect(404, {})
-
-      await request(server)
         .get('/giraffes')
-        .expect(404, {})
-
-      await request(server)
-        .get('/___fixtures/8b4ed050873ad1cc900b7b04747dadd907af8236')
         .expect(404, {})
     })
   })
@@ -169,7 +277,17 @@ describe('app.js', () => {
   describe('multiple fixtures', () => {
     const server = require('../createFixtureServer')()
 
-    test('add fixtures', async () => {
+    test('remove fixtures', async () => {
+      await request(server)
+        .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
+        .expect(204)
+
+      await request(server)
+        .delete('/___fixtures/8b9d2c90e10d88caf01df509e4306a6db10e5264')
+        .expect(204)
+    })
+
+    test('unable to create same routes', async () => {
       await request(server)
         .post('/___fixtures')
         .send([
@@ -187,7 +305,7 @@ describe('app.js', () => {
           {
             request: {
               route: {
-                path: '/categories',
+                path: '/products',
                 method: 'get'
               }
             },
@@ -196,20 +314,7 @@ describe('app.js', () => {
             }
           }
         ])
-        .expect(201, [
-          { id: '7471423e00c234a5f03064969debd4f5512ed1ab' },
-          { id: '8b9d2c90e10d88caf01df509e4306a6db10e5264' }
-        ])
-    })
-
-    test('remove fixtures', async () => {
-      await request(server)
-        .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
-        .expect(204, {})
-
-      await request(server)
-        .delete('/___fixtures/8b9d2c90e10d88caf01df509e4306a6db10e5264')
-        .expect(204, {})
+        .expect(409)
     })
   })
 
