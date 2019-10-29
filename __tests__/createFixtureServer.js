@@ -78,22 +78,12 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '_2f70726f64756374732c676574'
+          id: 'f0e63e05abb428d1c09fdc89bf55247abb6760a8'
         })
 
       await request(server)
         .get('/products')
         .expect(200, products)
-    })
-
-    test('remove existing fixture with path and method', async () => {
-      await request(server)
-        .delete('/___fixtures')
-        .send({
-          path: '/products',
-          method: 'get'
-        })
-        .expect(204, {})
     })
 
     test('remove fixture with id', async () => {
@@ -111,11 +101,11 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '_2f70726f64756374732c676574'
+          id: '7471423e00c234a5f03064969debd4f5512ed1ab'
         })
 
       await request(server)
-        .delete('/___fixtures/_2f70726f64756374732c676574')
+        .delete('/___fixtures/7471423e00c234a5f03064969debd4f5512ed1ab')
         .expect(204, {})
     })
 
@@ -134,7 +124,7 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '_2f6f63746f7075732c676574'
+          id: '45b1b26011e768948244373e164cac946749f6f4'
         })
 
       await request(server)
@@ -151,11 +141,11 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '_2f67697261666665732c676574'
+          id: '8b4ed050873ad1cc900b7b04747dadd907af8236'
         })
 
       await request(server)
-        .delete('/___fixtures/all')
+        .delete('/___fixtures')
         .expect(204, {})
 
       await request(server)
@@ -163,7 +153,7 @@ describe('app.js', () => {
         .expect(404, {})
 
       await request(server)
-        .get('/___fixtures/_2f6f63746f7075732c676574')
+        .get('/___fixtures/45b1b26011e768948244373e164cac946749f6f4')
         .expect(404, {})
 
       await request(server)
@@ -171,7 +161,7 @@ describe('app.js', () => {
         .expect(404, {})
 
       await request(server)
-        .get('/___fixtures/_2f67697261666665732c676574')
+        .get('/___fixtures/8b4ed050873ad1cc900b7b04747dadd907af8236')
         .expect(404, {})
     })
   })
@@ -207,22 +197,18 @@ describe('app.js', () => {
           }
         ])
         .expect(201, [
-          { id: '_2f70726f64756374732c676574' },
-          { id: '_2f63617465676f726965732c676574' }
+          { id: '7471423e00c234a5f03064969debd4f5512ed1ab' },
+          { id: '8b9d2c90e10d88caf01df509e4306a6db10e5264' }
         ])
     })
 
     test('remove fixtures', async () => {
       await request(server)
-        .delete('/___fixtures/_2f70726f64756374732c676574')
+        .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
         .expect(204, {})
 
       await request(server)
-        .delete('/___fixtures')
-        .send({
-          path: '/categories',
-          method: 'get'
-        })
+        .delete('/___fixtures/8b9d2c90e10d88caf01df509e4306a6db10e5264')
         .expect(204, {})
     })
   })
