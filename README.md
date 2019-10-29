@@ -19,7 +19,11 @@ npm install fixture-server
 
 #### PUT /\_\_\_config
 
+#### DELETE /\_\_\_config
+
 #### POST /\_\_\_fixtures
+
+#### POST /\_\_\_fixtures/bulk
 
 #### DELETE /\_\_\_fixtures/:id
 

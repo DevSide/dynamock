@@ -73,6 +73,17 @@ describe('app.js', () => {
         cookies: {}
       })
     })
+
+    test('reset configuration', async () => {
+      await request.delete('/___config').expect(200, {
+        routes: {},
+        filePaths: {},
+        headers: {},
+        params: {},
+        query: {},
+        cookies: {}
+      })
+    })
   })
 
   describe('create fixtures', () => {
