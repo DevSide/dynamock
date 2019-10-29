@@ -50,6 +50,16 @@ function removeRoute (app, routeName) {
   return removed
 }
 
+function removeRoutes (app) {
+  app._router.stack.forEach(({ route }) => {
+    if (!route) {
+      return
+    }
+
+    route.stack = []
+  })
+}
+
 // function isRouteAlreadyRegistered(app, routeName) {
 //   return app._router.stack.some(({ route }) => !!route && route.stack.some(({ handle }) => handle.name === routeName))
 // }
@@ -218,6 +228,11 @@ function createFixtureServer () {
     fixtureRes.status(201).send({
       id: routeName
     })
+  })
+
+  app.delete('/___fixtures/all', (req, res) => {
+    removeRoutes(app)
+    res.status(204).send({})
   })
 
   app.delete('/___fixtures/:id', (req, res) => {

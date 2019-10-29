@@ -2,7 +2,6 @@
 
 # fixture-server
 
-
 ## Install
 
 ```bash
