@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const crypto = require('crypto')
 
 // function isObjectEmpty (obj) {
 //   for (const key in obj) {
@@ -63,9 +64,25 @@ function removeRoutes (app) {
 // function isRouteAlreadyRegistered(app, routeName) {
 //   return app._router.stack.some(({ route }) => !!route && route.stack.some(({ handle }) => handle.name === routeName))
 // }
+function sortObjectKeys (obj) {
+  return Object.keys(obj)
+    .sort()
+    .reduce((acc, curr) => {
+      acc[curr] = obj[curr]
+      return acc
+    }, {})
+}
 
-function generateRouteId (path, method) {
-  return `_${Buffer.from(`${path},${method}`).toString('hex')}`
+function createFixtureId (fixture) {
+  const safeFixtureData = JSON.stringify({
+    request: sortObjectKeys(fixture.request),
+    response: sortObjectKeys(fixture.response)
+  })
+
+  return crypto
+    .createHash('sha1')
+    .update(safeFixtureData)
+    .digest('hex')
 }
 
 function resolveProperty (res, configuration, matchProperties, property) {
@@ -192,7 +209,7 @@ function createFixtureServer () {
       }
 
       const { path, method } = route
-      const routeId = generateRouteId(path, method)
+      const routeId = createFixtureId(fixture)
 
       // TODO: should we handle a conflict for route ?
       // It can't work with parameterized url like /path/:id
@@ -238,24 +255,13 @@ function createFixtureServer () {
     fixtureRes.status(201).send(result)
   })
 
-  app.delete('/___fixtures/all', (req, res) => {
+  app.delete('/___fixtures', (req, res) => {
     removeRoutes(app)
     res.status(204).send({})
   })
 
   app.delete('/___fixtures/:id', (req, res) => {
     removeRoute(app, req.params.id)
-    res.status(204).send({})
-  })
-
-  app.delete('/___fixtures', (req, res) => {
-    const { path, method } = req.body
-
-    if (typeof path !== 'string' || typeof method !== 'string') {
-      return badRequest(res, 'path or method are not provided')
-    }
-
-    removeRoute(app, generateRouteId(path, method))
     res.status(204).send({})
   })
 

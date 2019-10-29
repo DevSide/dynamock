@@ -13,6 +13,14 @@ yarn add fixture-server
 npm install fixture-server
 ```
 
-## Usage
+## Api
 
-TO DO
+#### GET /\_\_\_config
+
+#### PUT /\_\_\_config
+
+#### POST /\_\_\_fixtures
+
+#### DELETE /\_\_\_fixtures/:id
+
+#### DELETE /\_\_\_fixtures
