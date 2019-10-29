@@ -7,68 +7,12 @@ const {
   resolveProperty,
   useResponseProperties
 } = require('./properties')
-
-function setFnName (fn, name) {
-  Object.defineProperty(fn, 'name', { value: name, configurable: true })
-
-  return fn
-}
-
-function removeRoute (app, routeName) {
-  let removed = false
-
-  app._router.stack.forEach(({ route }) => {
-    if (!route) {
-      return
-    }
-
-    const routeIndex = route.stack.findIndex(
-      ({ handle }) => handle.name === routeName
-    )
-
-    if (routeIndex >= 0) {
-      route.stack.splice(routeIndex, 1)
-      removed = true
-    }
-  })
-
-  return removed
-}
-
-function removeRoutes (app) {
-  app._router.stack.forEach(({ route }) => {
-    if (!route) {
-      return
-    }
-
-    route.stack = []
-  })
-}
-
-function isRouteAlreadyRegistered (app, routeName) {
-  const _routeName = '_' + routeName
-
-  return app._router.stack.some(({ name, route }) => {
-    if (name === _routeName) {
-      return true
-    }
-
-    if (route && route.stack.some(({ name }) => name === _routeName)) {
-      return true
-    }
-
-    return false
-  })
-}
-
-function sortObjectKeys (obj) {
-  return Object.keys(obj)
-    .sort()
-    .reduce((acc, curr) => {
-      acc[curr] = obj[curr]
-      return acc
-    }, {})
-}
+const {
+  removeRoute,
+  removeRoutes,
+  isRouteAlreadyRegistered
+} = require('./routeManager')
+const { setFnName, sortObjectKeys } = require('./utils')
 
 function createFixtureId (fixture) {
   const safeFixtureData = JSON.stringify({
