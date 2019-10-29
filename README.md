@@ -2,7 +2,6 @@
 
 # fixture-server
 
-It is a single command line HTTP and Websocket proxy built on top of node-http-proxy.<br/>
 
 ## Install
 
