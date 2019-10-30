@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "",
   "repository": "https://github.com/DevSide/fixture-server",
-  "main": "src/index.js",
+  "bin": "bin/index.js",
+  "main": "src/createFixtureServer.js",
   "scripts": {
     "format": "prettier-eslint --write '**/*.js' '**/*.md'",
     "lint": "eslint '**/*.js'",

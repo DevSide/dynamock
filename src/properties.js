@@ -22,7 +22,7 @@ exports.resolveProperty = function resolveProperty (
 
   if (matchProperties) {
     // body can't use the array form to extract configuration
-    // because array is a valid response, need to change the array form to another
+    // we can't make a difference between array response and array using configuration
     if (property === 'body') {
       return {
         error: '',

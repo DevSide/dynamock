@@ -1,20 +1,32 @@
 describe('app.js', () => {
-  const request = require('supertest')
+  const supertest = require('supertest')
+  const createFixtureServer = require('../createFixtureServer')
+
+  let request = null
+  let server = null
+  let app = null
+
+  beforeEach(function (done) {
+    app = createFixtureServer()
+    server = app.listen(done)
+    request = supertest.agent(server)
+  })
+
+  afterEach(function (done) {
+    server.close(done)
+    server = null
+  })
 
   describe('manipulate configuration', () => {
-    const server = require('../createFixtureServer')()
-
     test('default configuration', () =>
-      request(server)
-        .get('/___config')
-        .expect(200, {
-          routes: {},
-          filePaths: {},
-          headers: {},
-          params: {},
-          query: {},
-          cookies: {}
-        }))
+      request.get('/___config').expect(200, {
+        routes: {},
+        filePaths: {},
+        headers: {},
+        params: {},
+        query: {},
+        cookies: {}
+      }))
 
     test('update configuration', async () => {
       const config = {
@@ -42,32 +54,58 @@ describe('app.js', () => {
         }
       }
 
-      await request(server)
+      await request
         .put('/___config')
         .send(config)
         .expect(200)
 
-      return request(server)
-        .get('/___config')
-        .expect(200, {
-          ...config,
-          params: {},
-          query: {},
-          cookies: {}
-        })
+      return request.get('/___config').expect(200, {
+        ...config,
+        params: {},
+        query: {},
+        cookies: {}
+      })
     })
   })
 
   describe('create fixtures', () => {
-    const server = require('../createFixtureServer')()
-
     test('create and remove simple fixture', async () => {
       const products = [{ id: 1 }, { id: 2 }]
 
-      function createRoute () {
-        return request(server)
-          .post('/___fixtures')
-          .send({
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            route: {
+              path: '/products',
+              method: 'get'
+            }
+          },
+          response: {
+            body: products
+          }
+        })
+        .expect(201, {
+          id: '_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508'
+        })
+
+      await request.get('/products').expect(200, products)
+
+      await request
+        .delete('/___fixtures/_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508')
+        .expect(204)
+
+      await request.get('/products').expect(404)
+    })
+
+    test('create and remove multiple fixtures', async () => {
+      const products = [{ id: 1 }, { id: 2 }]
+      const categories = [{ id: 1 }, { id: 2 }]
+
+      await request
+        .post('/___fixtures')
+        .send([
+          {
             request: {
               route: {
                 path: '/products',
@@ -77,156 +115,163 @@ describe('app.js', () => {
             response: {
               body: products
             }
-          })
-      }
-
-      await createRoute().expect(201, {
-        id: 'f0e63e05abb428d1c09fdc89bf55247abb6760a8'
-      })
-
-      await createRoute().expect(409)
-
-      await request(server)
-        .get('/products')
-        .expect(200, products)
-
-      await request(server)
-        .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
-        .expect(204)
-
-      await request(server)
-        .get('/products')
-        .expect(404)
-    })
-
-    test('create and remove multiple fixtures', async () => {
-      const products = [{ id: 1 }, { id: 2 }]
-      const categories = [{ id: 1 }, { id: 2 }]
-
-      function createRoutes () {
-        return request(server)
-          .post('/___fixtures')
-          .send([
-            {
-              request: {
-                route: {
-                  path: '/products',
-                  method: 'get'
-                }
-              },
-              response: {
-                body: products
-              }
-            },
-            {
-              request: {
-                route: {
-                  path: '/categories',
-                  method: 'get'
-                }
-              },
-              response: {
-                body: categories
-              }
-            }
-          ])
-      }
-
-      await createRoutes().expect(201, [
-        { id: 'f0e63e05abb428d1c09fdc89bf55247abb6760a8' },
-        { id: 'aca265c8b8c928c38759b0cf08115a411607f8f6' }
-      ])
-
-      await createRoutes().expect(409)
-
-      await Promise.all([
-        request(server)
-          .get('/products')
-          .expect(200, products),
-        request(server)
-          .get('/categories')
-          .expect(200, categories)
-      ])
-
-      await Promise.all([
-        request(server)
-          .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
-          .expect(204),
-        request(server)
-          .delete('/___fixtures/aca265c8b8c928c38759b0cf08115a411607f8f6')
-          .expect(204)
-      ])
-
-      await Promise.all([
-        request(server)
-          .get('/products')
-          .expect(404),
-        request(server)
-          .get('/categories')
-          .expect(404)
-      ])
-    })
-
-    test('create multiple same fixtures', async () => {
-      await request(server)
-        .post('/___fixtures')
-        .send([
-          {
-            request: {
-              route: {
-                path: '/worms',
-                method: 'get'
-              }
-            },
-            response: {
-              body: []
-            }
           },
           {
             request: {
               route: {
-                path: '/worms',
+                path: '/categories',
                 method: 'get'
               }
             },
             response: {
-              body: []
+              body: categories
             }
           }
         ])
-        .expect(409)
+        .expect(201, [
+          { id: '_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508' },
+          { id: '_086c67ef89fd832deeae33b209e6e8ecc6b32003' }
+        ])
 
-      // TODO: next refacto will handle this test
-      // await request(server)
-      //   .post('/___fixtures')
-      //   .send([
-      //     {
-      //       request: {
-      //         route: {
-      //           path: '/worms',
-      //           method: 'get'
-      //         }
-      //       },
-      //       response: {
-      //         body: ['foo']
-      //       }
-      //     },
-      //     {
-      //       request: {
-      //         route: {
-      //           path: '/worms',
-      //           method: 'get'
-      //         }
-      //       },
-      //       response: {
-      //         body: ['bar']
-      //       }
-      //     }
-      //   ]).expect(409)
+      await Promise.all([
+        request.get('/products').expect(200, products),
+        request.get('/categories').expect(200, categories)
+      ])
+
+      await Promise.all([
+        request
+          .delete('/___fixtures/_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508')
+          .expect(204),
+        request
+          .delete('/___fixtures/_086c67ef89fd832deeae33b209e6e8ecc6b32003')
+          .expect(204)
+      ])
+
+      await Promise.all([
+        request.get('/products').expect(404),
+        request.get('/categories').expect(404)
+      ])
     })
 
+    test.each([
+      // Conflicts
+      [
+        null,
+        { route: { method: 'get', path: '/products' } },
+        { route: { method: 'get', path: '/products' } },
+        true
+      ],
+      [
+        null,
+        { route: { method: 'get', path: '/products' }, headers: {} },
+        { route: { method: 'get', path: '/products' }, headers: {} },
+        true
+      ],
+      [
+        null,
+        { route: { method: 'get', path: '/products' }, headers: {} },
+        { route: { method: 'get', path: '/products' } },
+        true
+      ],
+      [
+        null,
+        { route: { method: 'get', path: '/products' }, headers: null },
+        { route: { method: 'get', path: '/products' }, headers: {} },
+        true
+      ],
+      [
+        null,
+        {
+          route: { method: 'get', path: '/products' },
+          headers: { a: 'a', b: 'b' }
+        },
+        {
+          route: { method: 'get', path: '/products' },
+          headers: { b: 'b', a: 'a' }
+        },
+        true
+      ],
+      // No conflicts
+      [
+        null,
+        { route: { method: 'get', path: '/products' } },
+        { route: { method: 'post', path: '/products' } },
+        false
+      ],
+      [
+        null,
+        { route: { method: 'post', path: '/products' } },
+        { route: { method: 'get', path: '/products' } },
+        false
+      ],
+      [
+        null,
+        { route: { method: 'get', path: '/products' } },
+        { route: { method: 'get', path: '/categories' } },
+        false
+      ],
+      [
+        null,
+        { route: { method: 'get', path: '/categories' } },
+        { route: { method: 'get', path: '/products' } },
+        false
+      ]
+    ])(
+      'conflict situation config="%o" requestA="%s %o" requestB="%s %o" shouldConflict=%s',
+      async (configuration, requestA, requestB, shouldConflict) => {
+        if (configuration) {
+          await request
+            .put('/___config')
+            .send({
+              headers: configuration
+            })
+            .expect(200)
+        }
+
+        // Check if combining fixtures in a single request also failed
+        const r1 = request.post('/___fixtures').send(
+          [requestA, requestB].map(request => ({
+            request: request,
+            response: {
+              body: {}
+            }
+          }))
+        )
+
+        if (shouldConflict) {
+          await r1.expect(409)
+        } else {
+          await r1.expect(201)
+          await request.delete('/___fixtures')
+        }
+
+        await request
+          .post('/___fixtures')
+          .send({
+            request: requestA,
+            response: {
+              body: {}
+            }
+          })
+          .expect(201)
+
+        const r2 = request.post('/___fixtures').send({
+          request: requestB,
+          response: {
+            body: {}
+          }
+        })
+
+        if (shouldConflict) {
+          await r2.expect(409)
+        } else {
+          await r2.expect(201)
+        }
+      }
+    )
+
     test('create and remove all fixtures', async () => {
-      await request(server)
+      await request
         .post('/___fixtures')
         .send({
           request: {
@@ -240,10 +285,10 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '45b1b26011e768948244373e164cac946749f6f4'
+          id: '_cd2cafef7bda972b054401001629b44e5153071a'
         })
 
-      await request(server)
+      await request
         .post('/___fixtures')
         .send({
           request: {
@@ -257,38 +302,30 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '8b4ed050873ad1cc900b7b04747dadd907af8236'
+          id: '_d10055677f253af6fa9f1a0279e506ae8af025df'
         })
 
-      await request(server)
-        .delete('/___fixtures')
-        .expect(204)
+      await request.delete('/___fixtures').expect(204)
 
-      await request(server)
-        .get('/octopus')
-        .expect(404, {})
+      await request.get('/octopus').expect(404, {})
 
-      await request(server)
-        .get('/giraffes')
-        .expect(404, {})
+      await request.get('/giraffes').expect(404, {})
     })
   })
 
   describe('multiple fixtures', () => {
-    const server = require('../createFixtureServer')()
-
     test('remove fixtures', async () => {
-      await request(server)
-        .delete('/___fixtures/f0e63e05abb428d1c09fdc89bf55247abb6760a8')
+      await request
+        .delete('/___fixtures/_f0e63e05abb428d1c09fdc89bf55247abb6760a8')
         .expect(204)
 
-      await request(server)
-        .delete('/___fixtures/8b9d2c90e10d88caf01df509e4306a6db10e5264')
+      await request
+        .delete('/___fixtures/_8b9d2c90e10d88caf01df509e4306a6db10e5264')
         .expect(204)
     })
 
     test('unable to create same routes', async () => {
-      await request(server)
+      await request
         .post('/___fixtures')
         .send([
           {
@@ -337,12 +374,11 @@ describe('app.js', () => {
     ])(
       'match headers config="%o" match="%s %o" request="%s %o" result=%s',
       async (configuration, matchValues, values, shouldMatch) => {
-        const server = require('../createFixtureServer')()
         const path = '/test'
         const method = 'get'
 
         if (configuration) {
-          await request(server)
+          await request
             .put('/___config')
             .send({
               headers: configuration
@@ -350,7 +386,7 @@ describe('app.js', () => {
             .expect(200)
         }
 
-        await request(server)
+        await request
           .post('/___fixtures')
           .send({
             request: {
@@ -367,13 +403,13 @@ describe('app.js', () => {
           .expect(201)
 
         if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request(server)
+          await request
             // eslint-disable-next-line no-unexpected-multiline
             [method](path)
             .expect(404)
         }
 
-        const r = request(server)
+        const r = request
           // eslint-disable-next-line no-unexpected-multiline
           [method](path)
           .set(values)
@@ -416,12 +452,11 @@ describe('app.js', () => {
     ])(
       'match cookies config="%o" match="%s %o" request="%s %o" result=%s',
       async (configuration, matchValues, values, shouldMatch) => {
-        const server = require('../createFixtureServer')()
         const path = '/test'
         const method = 'get'
 
         if (configuration) {
-          await request(server)
+          await request
             .put('/___config')
             .send({
               cookies: configuration
@@ -429,7 +464,7 @@ describe('app.js', () => {
             .expect(200)
         }
 
-        await request(server)
+        await request
           .post('/___fixtures')
           .send({
             request: {
@@ -446,7 +481,7 @@ describe('app.js', () => {
           .expect(201)
 
         if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request(server)
+          await request
             // eslint-disable-next-line no-unexpected-multiline
             [method](path)
             .expect(404)
@@ -459,7 +494,7 @@ describe('app.js', () => {
           }, [])
           .join(';')
 
-        const r = request(server)[method](path)
+        const r = request[method](path)
 
         if (cookies) {
           r.set('Cookie', [cookies])
@@ -493,11 +528,10 @@ describe('app.js', () => {
     ])(
       'match params config="%o" match="%s %o" request="%s %o" result=%s',
       async (configuration, matchPath, matchValues, path, shouldMatch) => {
-        const server = require('../createFixtureServer')()
         const method = 'get'
 
         if (configuration) {
-          await request(server)
+          await request
             .put('/___config')
             .send({
               params: configuration
@@ -506,13 +540,13 @@ describe('app.js', () => {
         }
 
         if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request(server)
+          await request
             // eslint-disable-next-line no-unexpected-multiline
             [method](path)
             .expect(404)
         }
 
-        await request(server)
+        await request
           .post('/___fixtures')
           .send({
             request: {
@@ -528,7 +562,7 @@ describe('app.js', () => {
           })
           .expect(201)
 
-        const r = request(server)[method](path)
+        const r = request[method](path)
 
         if (shouldMatch) {
           await r.expect(200, {})
@@ -560,11 +594,10 @@ describe('app.js', () => {
     ])(
       'match query config="%o" match="%s %o" request="%s %o" result=%s',
       async (configuration, matchPath, matchValues, path, shouldMatch) => {
-        const server = require('../createFixtureServer')()
         const method = 'get'
 
         if (configuration) {
-          await request(server)
+          await request
             .put('/___config')
             .send({
               query: configuration
@@ -572,7 +605,7 @@ describe('app.js', () => {
             .expect(200)
         }
 
-        await request(server)
+        await request
           .post('/___fixtures')
           .send({
             request: {
@@ -588,7 +621,7 @@ describe('app.js', () => {
           })
           .expect(201)
 
-        const r = request(server)[method](path)
+        const r = request[method](path)
 
         if (shouldMatch) {
           await r.expect(200, {})
@@ -612,12 +645,11 @@ describe('app.js', () => {
     ])(
       'match body config="%o" match="%s %o" request="%s %o" result=%s',
       async (configuration, matchValues, values, shouldMatch) => {
-        const server = require('../createFixtureServer')()
         const path = '/test'
         const method = 'get'
 
         if (configuration) {
-          await request(server)
+          await request
             .put('/___config')
             .send({
               body: configuration
@@ -625,7 +657,7 @@ describe('app.js', () => {
             .expect(200)
         }
 
-        await request(server)
+        await request
           .post('/___fixtures')
           .send({
             request: {
@@ -642,13 +674,13 @@ describe('app.js', () => {
           .expect(201)
 
         if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request(server)
+          await request
             // eslint-disable-next-line no-unexpected-multiline
             [method](path)
             .expect(404)
         }
 
-        const r = request(server)
+        const r = request
           // eslint-disable-next-line no-unexpected-multiline
           [method](path)
           .send(values)

@@ -3,6 +3,7 @@
 .yarn
 **/node_modules
 **/*.log
+coverage
 
 # Other
 **/.idea

@@ -1,15 +1,17 @@
-const createFixtureServer = require('./createFixtureServer')
+#!/usr/bin/env node
+
+const createFixtureServer = require('../src/createFixtureServer')
 
 const [, , port, host = '127.0.0.1'] = process.argv
 
 const server = createFixtureServer()
 
 server.listen(port, host, () => {
-  console.log(`Mock server is running on port ${port}...`)
+  console.log(`fixture-server is running on port ${port}...`)
 })
 
 function shutDown () {
-  console.log('Mock server is shutting down gracefully')
+  console.log('fixture-server is shutting down gracefully')
   server.close(() => {
     process.exit(0)
   })

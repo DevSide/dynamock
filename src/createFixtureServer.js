@@ -1,30 +1,13 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const crypto = require('crypto')
 const {
   doesPropertyMatch,
   resolveProperty,
   useResponseProperties
 } = require('./properties')
-const {
-  removeRoute,
-  removeRoutes,
-  isRouteAlreadyRegistered
-} = require('./routeManager')
-const { setFnName, sortObjectKeys } = require('./utils')
-
-function createFixtureId (fixture) {
-  const safeFixtureData = JSON.stringify({
-    request: sortObjectKeys(fixture.request),
-    response: sortObjectKeys(fixture.response)
-  })
-
-  return crypto
-    .createHash('sha1')
-    .update(safeFixtureData)
-    .digest('hex')
-}
+const { removeRoute, removeRoutes, getRouteId } = require('./routeManager')
+const { setFnName } = require('./utils')
 
 function error (res, status, message) {
   return res
@@ -58,12 +41,15 @@ let configuration = {
 
 function createFixtureServer () {
   const app = express()
+  const server = require('http').createServer(app)
+
   app.use(bodyParser.json())
   app.use(cookieParser())
 
   app.post('/___fixtures', (fixtureReq, fixtureRes) => {
     const fixtures = [].concat(fixtureReq.body)
     const routeIds = []
+    const createRoutes = []
 
     for (const fixture of fixtures) {
       const { request, response } = fixture
@@ -92,43 +78,50 @@ function createFixtureServer () {
       }
 
       const { path, method } = route
-      const routeId = createFixtureId(fixture)
+      const { error, routeId } = getRouteId(app, route)
 
-      if (isRouteAlreadyRegistered(app, routeId)) {
+      if (error || routeIds.some(id => id === routeId)) {
         return conflict(
           fixtureRes,
           `Route ${method.toUpperCase()} ${path} is already registered.`
         )
       }
 
-      app[method](
-        path,
-        setFnName((req, res) => {
-          for (const property of REQUEST_PROPERTIES) {
-            if (!doesPropertyMatch(req, request, property)) {
-              return notFound(res, 'Not mocked')
-            }
-          }
-
-          for (const property of RESPONSE_PROPERTIES) {
-            const { error, values } = resolveProperty(
-              configuration,
-              response[property],
-              property
-            )
-
-            if (error) {
-              return badRequest(fixtureRes, error)
+      // Lazy create routes: we don't register any routes before all fixtures get validated
+      createRoutes.push(() =>
+        app[method](
+          path,
+          setFnName((req, res) => {
+            for (const property of REQUEST_PROPERTIES) {
+              if (!doesPropertyMatch(req, request, property)) {
+                return notFound(res, 'Not mocked')
+              }
             }
 
-            useResponseProperties[property](res, values)
-          }
+            for (const property of RESPONSE_PROPERTIES) {
+              const { error, values } = resolveProperty(
+                configuration,
+                response[property],
+                property
+              )
 
-          res.status(response.status || 200)
-        }, '_' + routeId)
+              if (error) {
+                return badRequest(fixtureRes, error)
+              }
+
+              useResponseProperties[property](res, values)
+            }
+
+            res.status(response.status || 200)
+          }, routeId)
+        )
       )
 
       routeIds.push(routeId)
+    }
+
+    for (const createRoute of createRoutes) {
+      createRoute()
     }
 
     const result =
@@ -143,7 +136,7 @@ function createFixtureServer () {
   })
 
   app.delete('/___fixtures/:id', (req, res) => {
-    removeRoute(app, '_' + req.params.id)
+    removeRoute(app, req.params.id)
     res.status(204).send({})
   })
 
@@ -184,7 +177,11 @@ function createFixtureServer () {
     res.status(200).send(configuration)
   })
 
-  return app
+  server.on('close', () => {
+    removeRoutes(app)
+  })
+
+  return server
 }
 
 module.exports = createFixtureServer

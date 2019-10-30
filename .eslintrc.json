@@ -5,7 +5,9 @@
       "files": ["src/**/__tests__/*.js"],
       "globals": {
         "describe": true,
-        "test": true
+        "test": true,
+        "beforeEach": true,
+        "afterEach": true
       }
     }
   ]
