@@ -39,6 +39,96 @@ let configuration = {
   cookies: {}
 }
 
+function handleFixtureRoute (
+  app,
+  fixtureRes,
+  fixture,
+  checkConflict = () => ''
+) {
+  const { request, response } = fixture
+  const route = configuration[request.route] || request.route
+
+  if (
+    typeof route !== 'object' ||
+    typeof route.path !== 'string' ||
+    typeof route.method !== 'string'
+  ) {
+    return {
+      createError: () =>
+        badRequest(fixtureRes, 'path or method are not provided')
+    }
+  }
+
+  for (const property of REQUEST_PROPERTIES) {
+    const { error, values } = resolveProperty(
+      configuration,
+      request[property],
+      property
+    )
+
+    if (error) {
+      return {
+        createError: () => badRequest(fixtureRes, error)
+      }
+    }
+
+    request[property] = values
+  }
+
+  const { path, method } = route
+  const { error, routeId } = getRouteId(app, route)
+
+  if (error) {
+    return {
+      createError: () =>
+        conflict(
+          fixtureRes,
+          `Route ${method.toUpperCase()} ${path} is already registered.`
+        )
+    }
+  }
+
+  const customError = checkConflict(routeId)
+
+  if (customError) {
+    return {
+      createError: () => conflict(fixtureRes, customError)
+    }
+  }
+
+  // Lazy create routes: we don't register any routes before all fixtures get validated
+  return {
+    routeId,
+    createRoute: () =>
+      app[method](
+        path,
+        setFnName((req, res) => {
+          for (const property of REQUEST_PROPERTIES) {
+            if (!doesPropertyMatch(req, request, property)) {
+              return notFound(res, 'Not mocked')
+            }
+          }
+
+          for (const property of RESPONSE_PROPERTIES) {
+            const { error, values } = resolveProperty(
+              configuration,
+              response[property],
+              property
+            )
+
+            if (error) {
+              return badRequest(fixtureRes, error)
+            }
+
+            useResponseProperties[property](res, values)
+          }
+
+          res.status(response.status || 200)
+        }, routeId)
+      )
+  }
+}
+
 function createFixtureServer () {
   const app = express()
   const server = require('http').createServer(app)
@@ -47,76 +137,41 @@ function createFixtureServer () {
   app.use(cookieParser())
 
   app.post('/___fixtures', (fixtureReq, fixtureRes) => {
-    const fixtures = [].concat(fixtureReq.body)
+    const fixture = fixtureReq.body
+
+    const { createError, routeId, createRoute } = handleFixtureRoute(
+      app,
+      fixtureRes,
+      fixture
+    )
+
+    if (createError) {
+      return createError()
+    }
+
+    createRoute()
+
+    fixtureRes.status(201).send({ id: routeId })
+  })
+
+  app.post('/___fixtures/bulk', (fixtureReq, fixtureRes) => {
+    const fixtures = fixtureReq.body
     const routeIds = []
     const createRoutes = []
 
     for (const fixture of fixtures) {
-      const { request, response } = fixture
-      const route = configuration[request.route] || request.route
-
-      if (
-        typeof route !== 'object' ||
-        typeof route.path !== 'string' ||
-        typeof route.method !== 'string'
-      ) {
-        return badRequest(fixtureRes, 'path or method are not provided')
-      }
-
-      for (const property of REQUEST_PROPERTIES) {
-        const { error, values } = resolveProperty(
-          configuration,
-          request[property],
-          property
-        )
-
-        if (error) {
-          return badRequest(fixtureRes, error)
-        }
-
-        request[property] = values
-      }
-
-      const { path, method } = route
-      const { error, routeId } = getRouteId(app, route)
-
-      if (error || routeIds.some(id => id === routeId)) {
-        return conflict(
-          fixtureRes,
-          `Route ${method.toUpperCase()} ${path} is already registered.`
-        )
-      }
-
-      // Lazy create routes: we don't register any routes before all fixtures get validated
-      createRoutes.push(() =>
-        app[method](
-          path,
-          setFnName((req, res) => {
-            for (const property of REQUEST_PROPERTIES) {
-              if (!doesPropertyMatch(req, request, property)) {
-                return notFound(res, 'Not mocked')
-              }
-            }
-
-            for (const property of RESPONSE_PROPERTIES) {
-              const { error, values } = resolveProperty(
-                configuration,
-                response[property],
-                property
-              )
-
-              if (error) {
-                return badRequest(fixtureRes, error)
-              }
-
-              useResponseProperties[property](res, values)
-            }
-
-            res.status(response.status || 200)
-          }, routeId)
-        )
+      const { createError, routeId, createRoute } = handleFixtureRoute(
+        app,
+        fixtureRes,
+        fixture,
+        routeId => routeIds.some(id => id === routeId)
       )
 
+      if (createError) {
+        return createError()
+      }
+
+      createRoutes.push(createRoute)
       routeIds.push(routeId)
     }
 
@@ -124,10 +179,7 @@ function createFixtureServer () {
       createRoute()
     }
 
-    const result =
-      routeIds.length > 1 ? routeIds.map(id => ({ id })) : { id: routeIds[0] }
-
-    fixtureRes.status(201).send(result)
+    fixtureRes.status(201).send(routeIds.map(id => ({ id })))
   })
 
   app.delete('/___fixtures', (req, res) => {
@@ -162,7 +214,7 @@ function createFixtureServer () {
       typeof query !== 'object' ||
       typeof cookies !== 'object'
     ) {
-      return badRequest(res, '')
+      return badRequest(res, 'Wrong configuration format')
     }
 
     configuration = {

@@ -45,7 +45,7 @@ exports.removeRoute = function removeRoute (app, routeId) {
   let removed = false
 
   app._router.stack.forEach(({ route }) => {
-    if (!route) {
+    if (!route || removed) {
       return
     }
 

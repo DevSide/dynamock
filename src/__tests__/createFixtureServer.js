@@ -103,7 +103,7 @@ describe('app.js', () => {
       const categories = [{ id: 1 }, { id: 2 }]
 
       await request
-        .post('/___fixtures')
+        .post('/___fixtures/bulk')
         .send([
           {
             request: {
@@ -229,7 +229,7 @@ describe('app.js', () => {
         }
 
         // Check if combining fixtures in a single request also failed
-        const r1 = request.post('/___fixtures').send(
+        const r1 = request.post('/___fixtures/bulk').send(
           [requestA, requestB].map(request => ({
             request: request,
             response: {
@@ -310,48 +310,6 @@ describe('app.js', () => {
       await request.get('/octopus').expect(404, {})
 
       await request.get('/giraffes').expect(404, {})
-    })
-  })
-
-  describe('multiple fixtures', () => {
-    test('remove fixtures', async () => {
-      await request
-        .delete('/___fixtures/_f0e63e05abb428d1c09fdc89bf55247abb6760a8')
-        .expect(204)
-
-      await request
-        .delete('/___fixtures/_8b9d2c90e10d88caf01df509e4306a6db10e5264')
-        .expect(204)
-    })
-
-    test('unable to create same routes', async () => {
-      await request
-        .post('/___fixtures')
-        .send([
-          {
-            request: {
-              route: {
-                path: '/products',
-                method: 'get'
-              }
-            },
-            response: {
-              body: []
-            }
-          },
-          {
-            request: {
-              route: {
-                path: '/products',
-                method: 'get'
-              }
-            },
-            response: {
-              body: []
-            }
-          }
-        ])
-        .expect(409)
     })
   })
 

@@ -30,6 +30,7 @@ exports.resolveProperty = function resolveProperty (
       }
     }
 
+    // TODO: handle configuration.routes
     if (Array.isArray(matchProperties)) {
       for (const matchProperty of matchProperties) {
         if (typeof matchProperty === 'string') {
