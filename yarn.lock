@@ -4884,6 +4884,11 @@ methods@^1.1.1, methods@^1.1.2, methods@~1.1.2:
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
   integrity sha1-VSmk1nZUE07cxSZmVoNbD4Ua/O4=
 
+metro-memory-fs@^0.56.3:
+  version "0.56.3"
+  resolved "https://registry.yarnpkg.com/metro-memory-fs/-/metro-memory-fs-0.56.3.tgz#7cf228a87e03fcbc7d010672618356e7b29e1663"
+  integrity sha512-Z5ODTTFUEhb5FpJc5dl3WK3sgItmzphdWxesabcHEYjqr5lf7szg3Bqr1v+IcYus0K/NDRDLJ0+c5NfTHsVYtw==
+
 micromatch@^3.1.10, micromatch@^3.1.4:
   version "3.1.10"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-3.1.10.tgz#70859bc95c9840952f359a068a3fc49f9ecfac23"

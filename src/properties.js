@@ -1,3 +1,8 @@
+const send = require('send')
+
+exports.REQUEST_PROPERTIES = ['headers', 'params', 'body', 'query', 'cookies']
+exports.RESPONSE_PROPERTIES = ['headers', 'body', 'cookies', 'filepath']
+
 exports.doesPropertyMatch = function doesPropertyMatch (
   request,
   match,
@@ -23,7 +28,7 @@ exports.resolveProperty = function resolveProperty (
   if (matchProperties) {
     // body can't use the array form to extract configuration
     // we can't make a difference between array response and array using configuration
-    if (property === 'body') {
+    if (property === 'body' || property === 'filepath') {
       return {
         error: '',
         values: matchProperties
@@ -73,12 +78,12 @@ exports.resolveProperty = function resolveProperty (
 }
 
 exports.useResponseProperties = {
-  filePaths: () => {
-    throw new Error('not implemented')
+  filepath: (req, res, value) => {
+    send(req, value).pipe(res)
   },
-  headers: (res, value) => res.set(value),
-  body: (res, value) => res.send(value),
-  cookies: (res, value) =>
+  headers: (req, res, value) => res.set(value),
+  body: (req, res, value) => res.send(value),
+  cookies: (req, res, value) =>
     Object.entries(value).forEach((r, pair) => {
       res.cookie(...pair)
     })

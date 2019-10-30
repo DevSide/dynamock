@@ -1,13 +1,20 @@
 describe('app.js', () => {
   const supertest = require('supertest')
-  const createFixtureServer = require('../createFixtureServer')
+  const { dirname } = require('path')
 
-  let request = null
-  let server = null
-  let app = null
+  let request
+  let server
+  let app
 
   beforeEach(function (done) {
-    app = createFixtureServer()
+    jest.mock('fs', () => {
+      const mockFs = new (require('metro-memory-fs'))()
+      mockFs.ReadStream = class {} // This fix an error with destroy package
+      return mockFs
+    })
+    require('fs').reset()
+
+    app = require('../createFixtureServer')()
     server = app.listen(done)
     request = supertest.agent(server)
   })
@@ -311,6 +318,42 @@ describe('app.js', () => {
 
       await request.get('/giraffes').expect(404, {})
     })
+
+    test('create and remove filepath fixture', async () => {
+      const fs = require('fs')
+      const file = '/tmp/panda.txt'
+
+      fs.mkdirSync(dirname(file))
+      fs.writeFileSync(file, 'pandas !')
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            route: {
+              path: '/panda.txt',
+              method: 'get'
+            }
+          },
+          response: {
+            filepath: file
+          }
+        })
+        .expect(201, {
+          id: '_38aba9e8e2f898a144f94d85b9de33098cd3836d'
+        })
+
+      await request
+        .get('/panda.txt')
+        .expect('Content-Type', /text\/plain/)
+        .expect(200, 'pandas !')
+
+      await request
+        .delete('/___fixtures/_38aba9e8e2f898a144f94d85b9de33098cd3836d')
+        .expect(204)
+
+      await request.get('/panda.txt').expect(404)
+    })
   })
 
   describe('matching headers', () => {
@@ -604,7 +647,7 @@ describe('app.js', () => {
       'match body config="%o" match="%s %o" request="%s %o" result=%s',
       async (configuration, matchValues, values, shouldMatch) => {
         const path = '/test'
-        const method = 'get'
+        const method = 'post'
 
         if (configuration) {
           await request

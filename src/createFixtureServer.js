@@ -1,7 +1,10 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+
 const {
+  REQUEST_PROPERTIES,
+  RESPONSE_PROPERTIES,
   doesPropertyMatch,
   resolveProperty,
   useResponseProperties
@@ -26,9 +29,6 @@ function notFound (res, message) {
 function conflict (res, message) {
   return error(res, 409, message)
 }
-
-const REQUEST_PROPERTIES = ['headers', 'params', 'body', 'query', 'cookies']
-const RESPONSE_PROPERTIES = ['headers', 'body', 'cookies']
 
 let configuration = {
   routes: {},
@@ -110,6 +110,14 @@ function handleFixtureRoute (
           }
 
           for (const property of RESPONSE_PROPERTIES) {
+            // Body is ignored if filepath is set and vice versa
+            if (
+              (response.filepath && property === 'body') ||
+              (response.body && property === 'filepath')
+            ) {
+              continue
+            }
+
             const { error, values } = resolveProperty(
               configuration,
               response[property],
@@ -120,7 +128,7 @@ function handleFixtureRoute (
               return badRequest(fixtureRes, error)
             }
 
-            useResponseProperties[property](res, values)
+            useResponseProperties[property](req, res, values)
           }
 
           res.status(response.status || 200)
