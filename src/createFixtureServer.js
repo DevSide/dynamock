@@ -30,17 +30,20 @@ function conflict (res, message) {
   return error(res, 409, message)
 }
 
-let configuration = {
-  routes: {},
-  filePaths: {},
-  headers: {},
-  params: {},
-  query: {},
-  cookies: {}
+function createConfiguration () {
+  return {
+    routes: {},
+    filePaths: {},
+    headers: {},
+    params: {},
+    query: {},
+    cookies: {}
+  }
 }
 
 function handleFixtureRoute (
   app,
+  configuration,
   fixtureRes,
   fixture,
   checkConflict = () => ''
@@ -144,11 +147,14 @@ function createFixtureServer () {
   app.use(bodyParser.json())
   app.use(cookieParser())
 
+  let configuration = createConfiguration()
+
   app.post('/___fixtures', (fixtureReq, fixtureRes) => {
     const fixture = fixtureReq.body
 
     const { createError, routeId, createRoute } = handleFixtureRoute(
       app,
+      configuration,
       fixtureRes,
       fixture
     )
@@ -170,6 +176,7 @@ function createFixtureServer () {
     for (const fixture of fixtures) {
       const { createError, routeId, createRoute } = handleFixtureRoute(
         app,
+        configuration,
         fixtureRes,
         fixture,
         routeId => routeIds.some(id => id === routeId)
@@ -234,6 +241,11 @@ function createFixtureServer () {
       cookies
     }
 
+    res.status(200).send(configuration)
+  })
+
+  app.delete('/___config', (req, res) => {
+    configuration = createConfiguration()
     res.status(200).send(configuration)
   })
 
