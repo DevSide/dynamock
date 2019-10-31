@@ -58,7 +58,7 @@ function handleFixtureRoute (
   ) {
     return {
       createError: () =>
-        badRequest(fixtureRes, 'path or method are not provided')
+        badRequest(fixtureRes, 'Path or method are not provided')
     }
   }
 
@@ -86,7 +86,7 @@ function handleFixtureRoute (
       createError: () =>
         conflict(
           fixtureRes,
-          `Route ${method.toUpperCase()} ${path} is already registered.`
+          `Route ${method.toUpperCase()} ${path} is already registered`
         )
     }
   }
@@ -131,6 +131,7 @@ function handleFixtureRoute (
               return badRequest(fixtureRes, error)
             }
 
+            // TODO: use configuration for the response
             useResponseProperties[property](req, res, values)
           }
 
@@ -246,7 +247,7 @@ function createFixtureServer () {
 
   app.delete('/___config', (req, res) => {
     configuration = createConfiguration()
-    res.status(200).send(configuration)
+    res.status(204).send()
   })
 
   server.on('close', () => {

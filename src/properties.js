@@ -43,7 +43,7 @@ exports.resolveProperty = function resolveProperty (
 
           if (!fromConfig) {
             return {
-              error: `${property} group named ${matchProperty} is not in the configuration`,
+              error: `${property} group named "${matchProperty}" is not in the configuration`,
               values: null
             }
           }
@@ -56,7 +56,7 @@ exports.resolveProperty = function resolveProperty (
           Object.assign(values, matchProperty)
         } else {
           return {
-            error: `${property} "${matchProperty}" should be an object or a configuration header group name.`,
+            error: `${property} "${matchProperty}" should be an object or a configuration header group name`,
             values: null
           }
         }
@@ -65,7 +65,7 @@ exports.resolveProperty = function resolveProperty (
       Object.assign(values, matchProperties)
     } else {
       return {
-        error: `${property} should be an array or an object.`,
+        error: `${property} should be an array or an object`,
         values: null
       }
     }

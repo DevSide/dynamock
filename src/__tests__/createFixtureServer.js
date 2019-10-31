@@ -75,14 +75,7 @@ describe('app.js', () => {
     })
 
     test('reset configuration', async () => {
-      await request.delete('/___config').expect(200, {
-        routes: {},
-        filePaths: {},
-        headers: {},
-        params: {},
-        query: {},
-        cookies: {}
-      })
+      await request.delete('/___config').expect(204)
     })
   })
 
