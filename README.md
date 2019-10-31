@@ -33,17 +33,17 @@ Using the configuration is optional. However it gives the ability of reusing red
 
 - Status 200 - OK
 
-```js
+```json
 {
-  "headers": "{object} - Dictionary of headers (string) by name (string)",
-  "query": "{object} - Dictionary of query (string) by name (string)",
-  "cookies": "{object} - Dictionary of cookies (string) by name (string)"
+  "headers": "{object} - Dictionary of headers (object) by name (string)",
+  "query": "{object} - Dictionary of query (object) by name (string)",
+  "cookies": "{object} - Dictionary of cookies (object) by name (string)"
 }
 ```
 
 Example:
 
-```js
+```json
 {
   "headers": {},
   "query": {},
@@ -57,17 +57,17 @@ Example:
 
 - Body
 
-```js
+```json
 {
-  "headers": "{object} [default={}] - Dictionary of headers (string) by name (string)",
-  "query": "{object} [default={}] - Dictionary of query (string) by name (string)",
-  "cookies": "{object} [default={}] - Dictionary of cookies (string) by name (string)"
+  "headers": "{object} [default={}] - Dictionary of headers (object) by name (string)",
+  "query": "{object} [default={}] - Dictionary of query (object) by name (string)",
+  "cookies": "{object} [default={}] - Dictionary of cookies (object) by name (string)"
 }
 ```
 
 Example:
 
-```js
+```json
 {
   "headers": {
     "apiBearer": {
@@ -81,7 +81,7 @@ Example:
 
 - Status 200 - OK
 
-```js
+```json
 {
   "headers": "{object}",
   "query": "{object}",
@@ -91,7 +91,7 @@ Example:
 
 Example:
 
-```js
+```json
 {
   "headers": {
     "captcha": {
@@ -149,7 +149,7 @@ The fixtures are composed of:
 
 - Body
 
-```js
+```json
 {
   "request": {
     "route": {
@@ -174,7 +174,7 @@ The fixtures are composed of:
 
 Examples:
 
-```js
+```json
 {
   "request": {
     "route": {
@@ -188,7 +188,7 @@ Examples:
 }
 ```
 
-```js
+```json
 {
   "request": {
     "route": {
@@ -202,11 +202,11 @@ Examples:
 }
 ```
 
-_Responses_
+**Responses**
 
 - Status 200 - OK
 
-```js
+```json
 {
   "id": "{string}"
 }
@@ -214,7 +214,7 @@ _Responses_
 
 Example:
 
-```js
+```json
 {
   "id": "_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508"
 }
@@ -254,26 +254,26 @@ It is meant to setup multiple fixtures at once.
 
 - Body
 
-```js
-;[
+```json
+[
   {
-    request: {
-      route: {
-        path: '{string} - Http path to match requests',
-        method: '{string} - Http method to match requests'
+    "request": {
+      "route": {
+        "path": "{string} - Http path to match requests",
+        "method": "{string} - Http method to match requests"
       },
-      headers: '{object} [default={}] - Headers to match requests',
-      params: '{object} [default={}] - Params to match requests',
-      query: '{object} [default={}] - Query to match requests',
-      cookies: '{object} [default={}] - Cookies to match requests',
-      body: '{object} [default=``] - Body to match requests'
+      "headers": "{object} [default={}] - Headers to match requests",
+      "params": "{object} [default={}] - Params to match requests",
+      "query": "{object} [default={}] - Query to match requests",
+      "cookies": "{object} [default={}] - Cookies to match requests",
+      "body": "{object} [default=``] - Body to match requests"
     },
-    response: {
-      status: '{number} [default=200] - Response status code',
-      headers: '{object} [default={}] - Response headers',
-      cookies: '{object} [default={}] - Response cookies',
-      body: '{string|object|array} [default=``] - Body to match requests',
-      filepath: '{string} [default=``] - Filepath to serve with auto mime-types'
+    "response": {
+      "status": "{number} [default=200] - Response status code",
+      "headers": "{object} [default={}] - Response headers",
+      "cookies": "{object} [default={}] - Response cookies",
+      "body": "{string|object|array} [default=``] - Body to match requests",
+      "filepath": "{string} [default=``] - Filepath to serve with auto mime-types"
     }
   }
 ]
@@ -281,28 +281,28 @@ It is meant to setup multiple fixtures at once.
 
 Examples:
 
-```js
-;[
+```json
+[
   {
-    request: {
-      route: {
-        path: '/pandas',
-        method: 'get'
+    "request": {
+      "route": {
+        "path": "/pandas",
+        "method": "get"
       }
     },
-    response: {
-      body: [{ id: '1' }, { id: '2' }]
+    "response": {
+      "body": [{ "id": "1" }, { "id": "2" }]
     }
   },
   {
-    request: {
-      route: {
-        path: '/cdn/images/fennec.jpg',
-        method: 'get'
+    "request": {
+      "route": {
+        "path": "/cdn/images/fennec.jpg",
+        "method": "get"
       }
     },
-    response: {
-      filepath: '/absolute/path/tofennec.jpg'
+    "response": {
+      "filepath": "/absolute/path/tofennec.jpg"
     }
   }
 ]
@@ -310,23 +310,23 @@ Examples:
 
 - Status 200 - OK
 
-```js
-;[
+```json
+[
   {
-    id: '{string}'
+    "id": "{string}"
   }
 ]
 ```
 
 Example:
 
-```js
-;[
+```json
+[
   {
-    id: '_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508'
+    "id": "_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508"
   },
   {
-    id: '_086c67ef89fd832deeae33b209e6e8ecc6b32003'
+    "id": "_086c67ef89fd832deeae33b209e6e8ecc6b32003"
   }
 ]
 ```
@@ -363,7 +363,7 @@ Route {METHOD} ${PATH} is already registered.
 
 - Params
 
-```js
+```json
 {
   "id": "{string}"
 }
