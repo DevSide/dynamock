@@ -1,24 +1,34 @@
 const { isObjectEmpty, sortObjectKeys, hash } = require('./utils')
 
-function normalizeRoute (unsafeRoute) {
-  const route = sortObjectKeys(unsafeRoute)
+function normalizeFixture (unsafeFixture) {
+  const fixture = {
+    request: sortObjectKeys(unsafeFixture.request),
+    response: sortObjectKeys(unsafeFixture.response)
+  }
 
-  for (const prop in route) {
-    const property = route[prop]
-    if (typeof property === 'object' && !Array.isArray(property)) {
-      if (isObjectEmpty(property) || property === null) {
-        delete route[prop]
-      } else {
-        route[prop] = sortObjectKeys(unsafeRoute)
+  for (const requestOrResponse of [fixture.request, fixture.response]) {
+    for (const property in requestOrResponse) {
+      if (property === 'body') {
+        continue
+      }
+
+      const propertyValue = requestOrResponse[property]
+
+      if (typeof propertyValue === 'object' && !Array.isArray(propertyValue)) {
+        if (isObjectEmpty(propertyValue) || propertyValue === null) {
+          delete requestOrResponse[property]
+        } else {
+          requestOrResponse[property] = sortObjectKeys(propertyValue)
+        }
       }
     }
   }
 
-  return route
+  return fixture
 }
 
-exports.getRouteId = function getRouteId (app, unsafeRoute) {
-  const route = normalizeRoute(unsafeRoute)
+exports.getRouteId = function getRouteId (app, unsafeFixture) {
+  const route = normalizeFixture(unsafeFixture)
   const routeId = '_' + hash(JSON.stringify(route))
 
   const doesRouteAlreadyIn = app._router.stack.some(({ name, route }) => {

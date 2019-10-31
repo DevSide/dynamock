@@ -27,8 +27,8 @@ describe('app.js', () => {
   describe('manipulate configuration', () => {
     test('default configuration', () =>
       request.get('/___config').expect(200, {
-        routes: {},
-        filePaths: {},
+        paths: {},
+        methods: {},
         headers: {},
         params: {},
         query: {},
@@ -37,19 +37,6 @@ describe('app.js', () => {
 
     test('update configuration', async () => {
       const config = {
-        routes: {
-          getProducts: {
-            path: '/products',
-            method: 'get,'
-          },
-          postCategory: {
-            path: '/categories',
-            method: 'post,'
-          }
-        },
-        filePaths: {
-          assets: './assets'
-        },
         headers: {
           serverCors: {
             'Access-Control-Allow-Origin': '*',
@@ -67,7 +54,17 @@ describe('app.js', () => {
         .expect(200)
 
       return request.get('/___config').expect(200, {
-        ...config,
+        paths: {},
+        methods: {},
+        headers: {
+          serverCors: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*'
+          },
+          clientToken: {
+            authorization: 'Bearer client-token'
+          }
+        },
         params: {},
         query: {},
         cookies: {}
@@ -87,23 +84,21 @@ describe('app.js', () => {
         .post('/___fixtures')
         .send({
           request: {
-            route: {
-              path: '/products',
-              method: 'get'
-            }
+            path: '/products',
+            method: 'get'
           },
           response: {
             body: products
           }
         })
         .expect(201, {
-          id: '_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508'
+          id: '_33c6576937436b740a2de39e87c35ba939f8e632'
         })
 
       await request.get('/products').expect(200, products)
 
       await request
-        .delete('/___fixtures/_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508')
+        .delete('/___fixtures/_33c6576937436b740a2de39e87c35ba939f8e632')
         .expect(204)
 
       await request.get('/products').expect(404)
@@ -118,10 +113,8 @@ describe('app.js', () => {
         .send([
           {
             request: {
-              route: {
-                path: '/products',
-                method: 'get'
-              }
+              path: '/products',
+              method: 'get'
             },
             response: {
               body: products
@@ -129,10 +122,8 @@ describe('app.js', () => {
           },
           {
             request: {
-              route: {
-                path: '/categories',
-                method: 'get'
-              }
+              path: '/categories',
+              method: 'get'
             },
             response: {
               body: categories
@@ -140,8 +131,8 @@ describe('app.js', () => {
           }
         ])
         .expect(201, [
-          { id: '_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508' },
-          { id: '_086c67ef89fd832deeae33b209e6e8ecc6b32003' }
+          { id: '_33c6576937436b740a2de39e87c35ba939f8e632' },
+          { id: '_524f2126883bf307c73ebda847f4b41cd3598bad' }
         ])
 
       await Promise.all([
@@ -151,10 +142,10 @@ describe('app.js', () => {
 
       await Promise.all([
         request
-          .delete('/___fixtures/_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508')
+          .delete('/___fixtures/_33c6576937436b740a2de39e87c35ba939f8e632')
           .expect(204),
         request
-          .delete('/___fixtures/_086c67ef89fd832deeae33b209e6e8ecc6b32003')
+          .delete('/___fixtures/_524f2126883bf307c73ebda847f4b41cd3598bad')
           .expect(204)
       ])
 
@@ -168,63 +159,57 @@ describe('app.js', () => {
       // Conflicts
       [
         null,
-        { route: { method: 'get', path: '/products' } },
-        { route: { method: 'get', path: '/products' } },
+        { method: 'get', path: '/products' },
+        { method: 'get', path: '/products' },
         true
       ],
       [
         null,
-        { route: { method: 'get', path: '/products' }, headers: {} },
-        { route: { method: 'get', path: '/products' }, headers: {} },
+        { method: 'get', path: '/products', headers: {} },
+        { method: 'get', path: '/products', headers: {} },
         true
       ],
       [
         null,
-        { route: { method: 'get', path: '/products' }, headers: {} },
-        { route: { method: 'get', path: '/products' } },
+        { method: 'get', path: '/products', headers: {} },
+        { method: 'get', path: '/products' },
         true
       ],
       [
         null,
-        { route: { method: 'get', path: '/products' }, headers: null },
-        { route: { method: 'get', path: '/products' }, headers: {} },
+        { method: 'get', path: '/products', headers: null },
+        { method: 'get', path: '/products', headers: {} },
         true
       ],
       [
         null,
-        {
-          route: { method: 'get', path: '/products' },
-          headers: { a: 'a', b: 'b' }
-        },
-        {
-          route: { method: 'get', path: '/products' },
-          headers: { b: 'b', a: 'a' }
-        },
+        { method: 'get', path: '/products', headers: { a: 'a', b: 'b' } },
+        { method: 'get', path: '/products', headers: { b: 'b', a: 'a' } },
         true
       ],
       // No conflicts
       [
         null,
-        { route: { method: 'get', path: '/products' } },
-        { route: { method: 'post', path: '/products' } },
+        { method: 'get', path: '/products' },
+        { method: 'post', path: '/products' },
         false
       ],
       [
         null,
-        { route: { method: 'post', path: '/products' } },
-        { route: { method: 'get', path: '/products' } },
+        { method: 'post', path: '/products' },
+        { method: 'get', path: '/products' },
         false
       ],
       [
         null,
-        { route: { method: 'get', path: '/products' } },
-        { route: { method: 'get', path: '/categories' } },
+        { method: 'get', path: '/products' },
+        { method: 'get', path: '/categories' },
         false
       ],
       [
         null,
-        { route: { method: 'get', path: '/categories' } },
-        { route: { method: 'get', path: '/products' } },
+        { method: 'get', path: '/categories' },
+        { method: 'get', path: '/products' },
         false
       ]
     ])(
@@ -286,34 +271,30 @@ describe('app.js', () => {
         .post('/___fixtures')
         .send({
           request: {
-            route: {
-              path: '/octopus',
-              method: 'get'
-            }
+            path: '/octopus',
+            method: 'get'
           },
           response: {
             body: []
           }
         })
         .expect(201, {
-          id: '_cd2cafef7bda972b054401001629b44e5153071a'
+          id: '_28108d4eb932b6072942a215b90a7b2f8ed58f20'
         })
 
       await request
         .post('/___fixtures')
         .send({
           request: {
-            route: {
-              path: '/giraffes',
-              method: 'get'
-            }
+            path: '/giraffes',
+            method: 'get'
           },
           response: {
             body: []
           }
         })
         .expect(201, {
-          id: '_d10055677f253af6fa9f1a0279e506ae8af025df'
+          id: '_c15ade1e13fd610b74885d4135803bc2245f3410'
         })
 
       await request.delete('/___fixtures').expect(204)
@@ -334,17 +315,15 @@ describe('app.js', () => {
         .post('/___fixtures')
         .send({
           request: {
-            route: {
-              path: '/panda.txt',
-              method: 'get'
-            }
+            path: '/panda.txt',
+            method: 'get'
           },
           response: {
             filepath: file
           }
         })
         .expect(201, {
-          id: '_38aba9e8e2f898a144f94d85b9de33098cd3836d'
+          id: '_84ae3159c8de155bc45c268642c8c050ba00b061'
         })
 
       await request
@@ -353,7 +332,7 @@ describe('app.js', () => {
         .expect(200, 'pandas !')
 
       await request
-        .delete('/___fixtures/_38aba9e8e2f898a144f94d85b9de33098cd3836d')
+        .delete('/___fixtures/_84ae3159c8de155bc45c268642c8c050ba00b061')
         .expect(204)
 
       await request.get('/panda.txt').expect(404)
@@ -395,10 +374,8 @@ describe('app.js', () => {
           .post('/___fixtures')
           .send({
             request: {
-              route: {
-                path,
-                method
-              },
+              path,
+              method,
               headers: matchValues
             },
             response: {
@@ -473,10 +450,8 @@ describe('app.js', () => {
           .post('/___fixtures')
           .send({
             request: {
-              route: {
-                path,
-                method
-              },
+              path,
+              method,
               cookies: matchValues
             },
             response: {
@@ -555,10 +530,8 @@ describe('app.js', () => {
           .post('/___fixtures')
           .send({
             request: {
-              route: {
-                path: matchPath,
-                method
-              },
+              path: matchPath,
+              method,
               params: matchValues
             },
             response: {
@@ -614,10 +587,8 @@ describe('app.js', () => {
           .post('/___fixtures')
           .send({
             request: {
-              route: {
-                path: matchPath,
-                method
-              },
+              path: matchPath,
+              method,
               query: matchValues
             },
             response: {
@@ -666,10 +637,8 @@ describe('app.js', () => {
           .post('/___fixtures')
           .send({
             request: {
-              route: {
-                path,
-                method
-              },
+              path,
+              method,
               body: matchValues
             },
             response: {

@@ -152,10 +152,8 @@ The fixtures are composed of:
 ```json
 {
   "request": {
-    "route": {
-      "path": "{string} - Http path to match requests",
-      "method": "{string} - Http method to match requests"
-    },
+    "path": "{string} - Http path to match requests",
+    "method": "{string} - Http method to match requests"
     "headers": "{object} [default={}] - Headers to match requests",
     "params": "{object} [default={}] - Params to match requests",
     "query": "{object} [default={}] - Query to match requests",
@@ -177,10 +175,8 @@ Examples:
 ```json
 {
   "request": {
-    "route": {
-      "path": "/pandas",
-      "method": "get"
-    }
+    "path": "/pandas",
+    "method": "get"
   },
   "response": {
     "body": [{ "id": "1" }, { "id": "2" }]
@@ -191,10 +187,8 @@ Examples:
 ```json
 {
   "request": {
-    "route": {
-      "path": "/cdn/images/fennec.jpg",
-      "method": "get"
-    }
+    "path": "/cdn/images/fennec.jpg",
+    "method": "get"
   },
   "response": {
     "filepath": "/absolute/path/tofennec.jpg"
@@ -258,10 +252,8 @@ It is meant to setup multiple fixtures at once.
 [
   {
     "request": {
-      "route": {
-        "path": "{string} - Http path to match requests",
-        "method": "{string} - Http method to match requests"
-      },
+      "path": "{string} - Http path to match requests",
+      "method": "{string} - Http method to match requests"
       "headers": "{object} [default={}] - Headers to match requests",
       "params": "{object} [default={}] - Params to match requests",
       "query": "{object} [default={}] - Query to match requests",
@@ -285,10 +277,8 @@ Examples:
 [
   {
     "request": {
-      "route": {
-        "path": "/pandas",
-        "method": "get"
-      }
+      "path": "/pandas",
+      "method": "get"
     },
     "response": {
       "body": [{ "id": "1" }, { "id": "2" }]
@@ -296,10 +286,8 @@ Examples:
   },
   {
     "request": {
-      "route": {
-        "path": "/cdn/images/fennec.jpg",
-        "method": "get"
-      }
+      "path": "/cdn/images/fennec.jpg",
+      "method": "get"
     },
     "response": {
       "filepath": "/absolute/path/tofennec.jpg"

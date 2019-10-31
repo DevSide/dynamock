@@ -22,9 +22,9 @@ function badRequest (res, message) {
   return error(res, 400, message)
 }
 
-function notFound (res, message) {
-  return error(res, 404, message)
-}
+// function notFound (res, message) {
+//   return error(res, 404, message)
+// }
 
 function conflict (res, message) {
   return error(res, 409, message)
@@ -32,8 +32,8 @@ function conflict (res, message) {
 
 function createConfiguration () {
   return {
-    routes: {},
-    filePaths: {},
+    paths: {},
+    methods: {},
     headers: {},
     params: {},
     query: {},
@@ -49,13 +49,10 @@ function handleFixtureRoute (
   checkConflict = () => ''
 ) {
   const { request, response } = fixture
-  const route = configuration[request.route] || request.route
+  const path = configuration.paths[request.path] || request.path
+  const method = configuration.methods[request.method] || request.method
 
-  if (
-    typeof route !== 'object' ||
-    typeof route.path !== 'string' ||
-    typeof route.method !== 'string'
-  ) {
+  if (typeof path !== 'string' || typeof method !== 'string') {
     return {
       createError: () =>
         badRequest(fixtureRes, 'Path or method are not provided')
@@ -78,8 +75,7 @@ function handleFixtureRoute (
     request[property] = values
   }
 
-  const { path, method } = route
-  const { error, routeId } = getRouteId(app, route)
+  const { error, routeId } = getRouteId(app, fixture)
 
   if (error) {
     return {
@@ -105,10 +101,10 @@ function handleFixtureRoute (
     createRoute: () =>
       app[method](
         path,
-        setFnName((req, res) => {
+        setFnName((req, res, next) => {
           for (const property of REQUEST_PROPERTIES) {
             if (!doesPropertyMatch(req, request, property)) {
-              return notFound(res, 'Not mocked')
+              return next()
             }
           }
 
@@ -214,8 +210,8 @@ function createFixtureServer () {
 
   app.put('/___config', (req, res) => {
     const {
-      routes = {},
-      filePaths = {},
+      paths = {},
+      methods = {},
       headers = {},
       params = {},
       query = {},
@@ -223,8 +219,8 @@ function createFixtureServer () {
     } = req.body
 
     if (
-      typeof routes !== 'object' ||
-      typeof filePaths !== 'object' ||
+      typeof paths !== 'object' ||
+      typeof methods !== 'object' ||
       typeof headers !== 'object' ||
       typeof params !== 'object' ||
       typeof query !== 'object' ||
@@ -234,8 +230,8 @@ function createFixtureServer () {
     }
 
     configuration = {
-      routes,
-      filePaths,
+      paths,
+      methods,
       headers,
       params,
       query,
