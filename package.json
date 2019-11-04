@@ -1,6 +1,6 @@
 {
   "name": "fixture-server",
-  "version": "0.0.1",
+  "version": "1.0.0-beta.0",
   "description": "",
   "repository": "https://github.com/DevSide/fixture-server",
   "bin": "bin/index.js",
