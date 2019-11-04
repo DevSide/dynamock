@@ -14,7 +14,7 @@ describe('app.js', () => {
     })
     require('fs').reset()
 
-    app = require('../createFixtureServer')()
+    app = require('../createServer')()
     server = app.listen(done)
     request = supertest.agent(server)
   })

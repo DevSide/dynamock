@@ -137,7 +137,7 @@ function handleFixtureRoute (
   }
 }
 
-function createFixtureServer () {
+function createServer () {
   const app = express()
   const server = require('http').createServer(app)
 
@@ -253,4 +253,4 @@ function createFixtureServer () {
   return server
 }
 
-module.exports = createFixtureServer
+module.exports = createServer

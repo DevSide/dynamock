@@ -3,8 +3,8 @@
   "version": "1.0.0-beta.1",
   "description": "",
   "repository": "https://github.com/DevSide/dynamock",
-  "bin": "bin/index.js",
-  "main": "src/createFixtureServer.js",
+  "bin": "bin/dynamock.js",
+  "main": "src/createServer.js",
   "scripts": {
     "format": "prettier-eslint --write '**/*.js' '**/*.md'",
     "lint": "eslint '**/*.js'",
