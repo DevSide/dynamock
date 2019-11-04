@@ -1,6 +1,6 @@
 {
   "branch": "master",
-  "repositoryUrl": "git@github.com:DevSide/fixture-server.git",
+  "repositoryUrl": "git@github.com:DevSide/dynamock.git",
   "debug": true,
   "dryRun": false,
   "ci": false,

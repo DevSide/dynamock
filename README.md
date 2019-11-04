@@ -1,16 +1,16 @@
 ⚠️ NOT PRODUCTION READY ⚠️
 
-# fixture-server
+# dynamock
 
-[![Build Status](https://travis-ci.com/DevSide/fixture-server.svg?branch=master)](https://travis-ci.com/DevSide/fixture-server)
-[![Coverage Status](https://coveralls.io/repos/github/DevSide/fixture-server/badge.svg?branch=master)](https://coveralls.io/github/DevSide/fixture-server?branch=master)
+[![Build Status](https://travis-ci.com/DevSide/dynamock.svg?branch=master)](https://travis-ci.com/DevSide/dynamock)
+[![Coverage Status](https://coveralls.io/repos/github/DevSide/dynamock/badge.svg?branch=master)](https://coveralls.io/github/DevSide/dynamock?branch=master)
 
 ## Install
 
 ```bash
-yarn add fixture-server
+yarn add dynamock
 # or NPM
-npm install fixture-server
+npm install dynamock
 ```
 
 ## Usage
