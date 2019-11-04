@@ -1,8 +1,8 @@
 {
-  "name": "fixture-server",
+  "name": "dynamock",
   "version": "1.0.0-beta.0",
   "description": "",
-  "repository": "https://github.com/DevSide/fixture-server",
+  "repository": "https://github.com/DevSide/dynamock",
   "bin": "bin/index.js",
   "main": "src/createFixtureServer.js",
   "scripts": {
