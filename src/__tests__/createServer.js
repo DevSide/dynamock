@@ -491,15 +491,21 @@ describe('app.js', () => {
 
   describe('matching params', () => {
     test.each([
-      [null, '/test/:x', { x: 1 }, '/test/1', true],
-      [null, '/test/:x', { x: 1 }, '/test/2', false],
-      [null, '/test/:x/:y', { x: 1 }, '/test/1', false],
-      [null, '/test/:x/:y', { x: 1 }, '/test/1/2', true],
-      [null, '/test/:x/:y', { x: 1, y: 2 }, '/test/1/2', true],
-      [{ xOnly: { x: 1 } }, '/test/:x', ['xOnly'], '/test/1', true],
-      [{ xAndY: { x: 1, y: 2 } }, '/test/:x/:y', ['xAndY'], '/test/1/2', true],
+      [null, '/test/:x', { x: '1' }, '/test/1', true],
+      [null, '/test/:x', { x: '1' }, '/test/2', false],
+      [null, '/test/:x/:y', { x: '1' }, '/test/1', false],
+      [null, '/test/:x/:y', { x: '1' }, '/test/1/2', true],
+      [null, '/test/:x/:y', { x: '1', y: '2' }, '/test/1/2', true],
+      [{ xOnly: { x: '1' } }, '/test/:x', ['xOnly'], '/test/1', true],
       [
-        { xOnly: { x: 1 }, yOnly: { y: 2 } },
+        { xAndY: { x: '1', y: '2' } },
+        '/test/:x/:y',
+        ['xAndY'],
+        '/test/1/2',
+        true
+      ],
+      [
+        { xOnly: { x: '1' }, yOnly: { y: '2' } },
         '/test/:x/:y',
         ['xOnly', 'yOnly'],
         '/test/1/2',
@@ -553,17 +559,23 @@ describe('app.js', () => {
 
   describe('matching query', () => {
     test.each([
-      [null, '/test', { x: 1 }, '/test', false],
-      [null, '/test', { x: 1 }, '/test?x=1', true],
-      [null, '/test', { x: 1 }, '/test?x=2', false],
-      [null, '/test', { x: 1, y: 2 }, '/test?x=1', false],
-      [null, '/test', { x: 1, y: 2 }, '/test?x=1&y=2', true],
-      [null, '/test', { x: 1 }, '/test?x=1&y=2', true],
-      [{ xOnly: { x: 1 } }, '/test', ['xOnly'], '/test?x=1', true],
-      [{ xOnly: { x: 1 } }, '/test', ['xOnly'], '/test?x=2', false],
-      [{ xAndY: { x: 1, y: 2 } }, '/test', ['xAndY'], '/test?x=1&y=2', true],
+      [null, '/test', { x: '1' }, '/test', false],
+      [null, '/test', { x: '1' }, '/test?x=1', true],
+      [null, '/test', { x: '1' }, '/test?x=2', false],
+      [null, '/test', { x: '1', y: '2' }, '/test?x=1', false],
+      [null, '/test', { x: '1', y: '2' }, '/test?x=1&y=2', true],
+      [null, '/test', { x: '1' }, '/test?x=1&y=2', true],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', true],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=2', false],
       [
-        { xOnly: { x: 1 }, yOnly: { y: 2 } },
+        { xAndY: { x: '1', y: '2' } },
+        '/test',
+        ['xAndY'],
+        '/test?x=1&y=2',
+        true
+      ],
+      [
+        { xOnly: { x: '1' }, yOnly: { y: '2' } },
         '/test',
         ['xOnly', 'yOnly'],
         '/test?x=1&y=2',

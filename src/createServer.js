@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-
+const querystring = require('querystring')
 const {
   REQUEST_PROPERTIES,
   RESPONSE_PROPERTIES,
@@ -11,6 +11,7 @@ const {
 } = require('./properties')
 const { removeRoute, removeRoutes, getRouteId } = require('./routeManager')
 const { setFnName } = require('./utils')
+const _isEmpty = require('lodash/isEmpty')
 
 function error (res, status, message) {
   return res
@@ -21,10 +22,6 @@ function error (res, status, message) {
 function badRequest (res, message) {
   return error(res, 400, message)
 }
-
-// function notFound (res, message) {
-//   return error(res, 404, message)
-// }
 
 function conflict (res, message) {
   return error(res, 409, message)
@@ -49,13 +46,23 @@ function handleFixtureRoute (
   checkConflict = () => ''
 ) {
   const { request, response } = fixture
-  const path = configuration.paths[request.path] || request.path
+  let path = configuration.paths[request.path] || request.path
   const method = configuration.methods[request.method] || request.method
 
   if (typeof path !== 'string' || typeof method !== 'string') {
     return {
       createError: () =>
         badRequest(fixtureRes, 'Path or method are not provided')
+    }
+  }
+
+  // Extract query string from path and merge params
+  const indexQueryString = path.indexOf('?')
+  if (indexQueryString >= 0) {
+    path = path.substring(0, indexQueryString)
+    request.query = {
+      ...(request.query || {}),
+      ...querystring.parse(path.substring(indexQueryString + 1))
     }
   }
 
@@ -99,7 +106,7 @@ function handleFixtureRoute (
   return {
     routeId,
     createRoute: () =>
-      app[method](
+      app[method.toLowerCase()](
         path,
         setFnName((req, res, next) => {
           for (const property of REQUEST_PROPERTIES) {
@@ -107,6 +114,8 @@ function handleFixtureRoute (
               return next()
             }
           }
+
+          res.status(response.status || 200)
 
           for (const property of RESPONSE_PROPERTIES) {
             // Body is ignored if filepath is set and vice versa
@@ -127,11 +136,16 @@ function handleFixtureRoute (
               return badRequest(fixtureRes, error)
             }
 
-            // TODO: use configuration for the response
-            useResponseProperties[property](req, res, values)
+            if (!_isEmpty(values) || property === 'body') {
+              // TODO: use configuration for the response
+              useResponseProperties[property](req, res, values)
+            }
           }
 
-          res.status(response.status || 200)
+          // Ensure we have a response
+          if (!response.filepath && response.body === undefined) {
+            res.send('')
+          }
         }, routeId)
       )
   }
