@@ -155,7 +155,6 @@ The fixtures are composed of:
     "path": "{string} - Http path to match requests",
     "method": "{string} - Http method to match requests"
     "headers": "{object} [default={}] - Headers to match requests",
-    "params": "{object} [default={}] - Params to match requests",
     "query": "{object} [default={}] - Query to match requests",
     "cookies": "{object} [default={}] - Cookies to match requests",
     "body": "{object} [default=``] - Body to match requests"
@@ -255,7 +254,6 @@ It is meant to setup multiple fixtures at once.
       "path": "{string} - Http path to match requests",
       "method": "{string} - Http method to match requests"
       "headers": "{object} [default={}] - Headers to match requests",
-      "params": "{object} [default={}] - Params to match requests",
       "query": "{object} [default={}] - Query to match requests",
       "cookies": "{object} [default={}] - Cookies to match requests",
       "body": "{object} [default=``] - Body to match requests"

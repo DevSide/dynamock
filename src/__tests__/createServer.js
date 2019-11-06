@@ -30,7 +30,6 @@ describe('app.js', () => {
         paths: {},
         methods: {},
         headers: {},
-        params: {},
         query: {},
         cookies: {}
       }))
@@ -65,7 +64,6 @@ describe('app.js', () => {
             authorization: 'Bearer client-token'
           }
         },
-        params: {},
         query: {},
         cookies: {}
       })
@@ -88,17 +86,18 @@ describe('app.js', () => {
             method: 'get'
           },
           response: {
+            status: 418,
             body: products
           }
         })
         .expect(201, {
-          id: '_33c6576937436b740a2de39e87c35ba939f8e632'
+          id: '6a68271761e4729581283c2b40b7e428c25513cf'
         })
 
-      await request.get('/products').expect(200, products)
+      await request.get('/products').expect(418, products)
 
       await request
-        .delete('/___fixtures/_33c6576937436b740a2de39e87c35ba939f8e632')
+        .delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf')
         .expect(204)
 
       await request.get('/products').expect(404)
@@ -131,8 +130,8 @@ describe('app.js', () => {
           }
         ])
         .expect(201, [
-          { id: '_33c6576937436b740a2de39e87c35ba939f8e632' },
-          { id: '_524f2126883bf307c73ebda847f4b41cd3598bad' }
+          { id: '6a68271761e4729581283c2b40b7e428c25513cf' },
+          { id: '1b8b0bca022acacfd5955c510e06e1ff671a823c' }
         ])
 
       await Promise.all([
@@ -142,10 +141,10 @@ describe('app.js', () => {
 
       await Promise.all([
         request
-          .delete('/___fixtures/_33c6576937436b740a2de39e87c35ba939f8e632')
+          .delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf')
           .expect(204),
         request
-          .delete('/___fixtures/_524f2126883bf307c73ebda847f4b41cd3598bad')
+          .delete('/___fixtures/1b8b0bca022acacfd5955c510e06e1ff671a823c')
           .expect(204)
       ])
 
@@ -161,24 +160,6 @@ describe('app.js', () => {
         null,
         { method: 'get', path: '/products' },
         { method: 'get', path: '/products' },
-        true
-      ],
-      [
-        null,
-        { method: 'get', path: '/products', headers: {} },
-        { method: 'get', path: '/products', headers: {} },
-        true
-      ],
-      [
-        null,
-        { method: 'get', path: '/products', headers: {} },
-        { method: 'get', path: '/products' },
-        true
-      ],
-      [
-        null,
-        { method: 'get', path: '/products', headers: null },
-        { method: 'get', path: '/products', headers: {} },
         true
       ],
       [
@@ -279,9 +260,8 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '_28108d4eb932b6072942a215b90a7b2f8ed58f20'
+          id: 'eb05231114f144acb7bca60806ac25ad7f43c973'
         })
-
       await request
         .post('/___fixtures')
         .send({
@@ -294,7 +274,7 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '_c15ade1e13fd610b74885d4135803bc2245f3410'
+          id: '66474236616bc5a68c6498b497b2ce9a43484892'
         })
 
       await request.delete('/___fixtures').expect(204)
@@ -323,7 +303,7 @@ describe('app.js', () => {
           }
         })
         .expect(201, {
-          id: '_84ae3159c8de155bc45c268642c8c050ba00b061'
+          id: 'd8a1f72e9cd206c612847a7089e8c9460648c4bf'
         })
 
       await request
@@ -332,7 +312,7 @@ describe('app.js', () => {
         .expect(200, 'pandas !')
 
       await request
-        .delete('/___fixtures/_84ae3159c8de155bc45c268642c8c050ba00b061')
+        .delete('/___fixtures/d8a1f72e9cd206c612847a7089e8c9460648c4bf')
         .expect(204)
 
       await request.get('/panda.txt').expect(404)
@@ -341,11 +321,6 @@ describe('app.js', () => {
 
   describe('matching headers', () => {
     test.each([
-      [null, {}, {}, true],
-      [null, [], {}, true],
-      [null, {}, [], true],
-      [null, [], [], true],
-      [null, {}, { x: 'y' }, true],
       [null, { x: 'y' }, { x: 'y' }, true],
       [null, { x: 'y' }, { x: 'y', other: 'other' }, true],
       [null, { x: 'y', other: 'other' }, { x: 'y' }, false],
@@ -407,11 +382,6 @@ describe('app.js', () => {
 
   describe('matching cookies', () => {
     test.each([
-      [null, {}, {}, true],
-      [null, [], {}, true],
-      [null, {}, [], true],
-      [null, [], [], true],
-      [null, {}, { x: 'x' }, true],
       [null, { x: 'x' }, { x: 'x' }, true],
       [null, { x: 'x' }, { x: 'x', other: 'other' }, true],
       [null, { x: 'x', other: 'other' }, { x: 'x' }, false],
@@ -479,74 +449,6 @@ describe('app.js', () => {
         if (cookies) {
           r.set('Cookie', [cookies])
         }
-
-        if (shouldMatch) {
-          await r.expect(200, {})
-        } else {
-          await r.expect(404)
-        }
-      }
-    )
-  })
-
-  describe('matching params', () => {
-    test.each([
-      [null, '/test/:x', { x: '1' }, '/test/1', true],
-      [null, '/test/:x', { x: '1' }, '/test/2', false],
-      [null, '/test/:x/:y', { x: '1' }, '/test/1', false],
-      [null, '/test/:x/:y', { x: '1' }, '/test/1/2', true],
-      [null, '/test/:x/:y', { x: '1', y: '2' }, '/test/1/2', true],
-      [{ xOnly: { x: '1' } }, '/test/:x', ['xOnly'], '/test/1', true],
-      [
-        { xAndY: { x: '1', y: '2' } },
-        '/test/:x/:y',
-        ['xAndY'],
-        '/test/1/2',
-        true
-      ],
-      [
-        { xOnly: { x: '1' }, yOnly: { y: '2' } },
-        '/test/:x/:y',
-        ['xOnly', 'yOnly'],
-        '/test/1/2',
-        true
-      ]
-    ])(
-      'match params config="%o" match="%s %o" request="%s %o" result=%s',
-      async (configuration, matchPath, matchValues, path, shouldMatch) => {
-        const method = 'get'
-
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              params: configuration
-            })
-            .expect(200)
-        }
-
-        if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request
-            // eslint-disable-next-line no-unexpected-multiline
-            [method](path)
-            .expect(404)
-        }
-
-        await request
-          .post('/___fixtures')
-          .send({
-            request: {
-              path: matchPath,
-              method,
-              params: matchValues
-            },
-            response: {
-              body: {}
-            }
-          })
-          .expect(201)
-
-        const r = request[method](path)
 
         if (shouldMatch) {
           await r.expect(200, {})

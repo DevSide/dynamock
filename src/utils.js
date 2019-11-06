@@ -1,28 +1,32 @@
 const crypto = require('crypto')
 
-exports.isObjectEmpty = function isObjectEmpty (obj) {
-  for (const key in obj) {
-    if (Object.hasOwnProperty.call(obj, key)) {
-      return false
+exports.isArrayOrObject = function isArrayOrObject (value) {
+  return typeof value === 'object'
+}
+
+exports.isObject = function isObject (value) {
+  return typeof value === 'object' && !Array.isArray(value)
+}
+
+exports.sortObjectKeysRecurs = function sortObjectKeysRecurs (src) {
+  if (Array.isArray(src)) {
+    const out = []
+
+    for (const item of src) {
+      out.push(sortObjectKeysRecurs(item))
     }
+
+    return out
+  } else if (typeof src === 'object') {
+    return Object.keys(src)
+      .sort()
+      .reduce((acc, curr) => {
+        acc[curr] = sortObjectKeysRecurs(src[curr])
+        return acc
+      }, {})
   }
 
-  return true
-}
-
-exports.setFnName = function setFnName (fn, name) {
-  Object.defineProperty(fn, 'name', { value: name, configurable: true })
-
-  return fn
-}
-
-exports.sortObjectKeys = function sortObjectKeys (obj) {
-  return Object.keys(obj)
-    .sort()
-    .reduce((acc, curr) => {
-      acc[curr] = obj[curr]
-      return acc
-    }, {})
+  return src
 }
 
 exports.hash = function hash (str) {

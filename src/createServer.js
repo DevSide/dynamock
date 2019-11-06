@@ -1,30 +1,27 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const querystring = require('querystring')
 const {
   REQUEST_PROPERTIES,
   RESPONSE_PROPERTIES,
   doesPropertyMatch,
-  resolveProperty,
   useResponseProperties
 } = require('./properties')
-const { removeRoute, removeRoutes, getRouteId } = require('./routeManager')
-const { setFnName } = require('./utils')
-const _isEmpty = require('lodash/isEmpty')
+const {
+  removeFixture,
+  removeFixtures,
+  registerFixture,
+  getFixtureIterator
+} = require('./fixtures')
 
-function error (res, status, message) {
+function resError (res, status, message) {
   return res
     .status(status)
     .send({ message: `[FIXTURE SERVER ERROR ${status}]: ${message}` })
 }
 
 function badRequest (res, message) {
-  return error(res, 400, message)
-}
-
-function conflict (res, message) {
-  return error(res, 409, message)
+  return resError(res, 400, message)
 }
 
 function createConfiguration () {
@@ -32,122 +29,8 @@ function createConfiguration () {
     paths: {},
     methods: {},
     headers: {},
-    params: {},
     query: {},
     cookies: {}
-  }
-}
-
-function handleFixtureRoute (
-  app,
-  configuration,
-  fixtureRes,
-  fixture,
-  checkConflict = () => ''
-) {
-  const { request, response } = fixture
-  let path = configuration.paths[request.path] || request.path
-  const method = configuration.methods[request.method] || request.method
-
-  if (typeof path !== 'string' || typeof method !== 'string') {
-    return {
-      createError: () =>
-        badRequest(fixtureRes, 'Path or method are not provided')
-    }
-  }
-
-  // Extract query string from path and merge params
-  const indexQueryString = path.indexOf('?')
-  if (indexQueryString >= 0) {
-    path = path.substring(0, indexQueryString)
-    request.query = {
-      ...(request.query || {}),
-      ...querystring.parse(path.substring(indexQueryString + 1))
-    }
-  }
-
-  for (const property of REQUEST_PROPERTIES) {
-    const { error, values } = resolveProperty(
-      configuration,
-      request[property],
-      property
-    )
-
-    if (error) {
-      return {
-        createError: () => badRequest(fixtureRes, error)
-      }
-    }
-
-    request[property] = values
-  }
-
-  const { error, routeId } = getRouteId(app, fixture)
-
-  if (error) {
-    return {
-      createError: () =>
-        conflict(
-          fixtureRes,
-          `Route ${method.toUpperCase()} ${path} is already registered`
-        )
-    }
-  }
-
-  const customError = checkConflict(routeId)
-
-  if (customError) {
-    return {
-      createError: () => conflict(fixtureRes, customError)
-    }
-  }
-
-  // Lazy create routes: we don't register any routes before all fixtures get validated
-  return {
-    routeId,
-    createRoute: () =>
-      app[method.toLowerCase()](
-        path,
-        setFnName((req, res, next) => {
-          for (const property of REQUEST_PROPERTIES) {
-            if (!doesPropertyMatch(req, request, property)) {
-              return next()
-            }
-          }
-
-          res.status(response.status || 200)
-
-          for (const property of RESPONSE_PROPERTIES) {
-            // Body is ignored if filepath is set and vice versa
-            if (
-              (response.filepath && property === 'body') ||
-              (response.body && property === 'filepath')
-            ) {
-              continue
-            }
-
-            const { error, values } = resolveProperty(
-              configuration,
-              response[property],
-              property
-            )
-
-            if (error) {
-              return badRequest(fixtureRes, error)
-            }
-
-            if (!_isEmpty(values) || property === 'body') {
-              // TODO: use configuration for the response
-              useResponseProperties[property](req, res, values)
-            }
-          }
-
-          // Ensure we have a response
-          if (!response.filepath && response.body === undefined) {
-            res.send('')
-          }
-        }, routeId)
-      )
   }
 }
 
@@ -161,61 +44,54 @@ function createServer () {
   let configuration = createConfiguration()
 
   app.post('/___fixtures', (fixtureReq, fixtureRes) => {
-    const fixture = fixtureReq.body
-
-    const { createError, routeId, createRoute } = handleFixtureRoute(
-      app,
-      configuration,
-      fixtureRes,
-      fixture
+    const unsafeFixture = fixtureReq.body
+    const { error, status, fixtureId } = registerFixture(
+      unsafeFixture,
+      configuration
     )
 
-    if (createError) {
-      return createError()
+    if (error) {
+      return resError(fixtureRes, status, error)
     }
 
-    createRoute()
-
-    fixtureRes.status(201).send({ id: routeId })
+    fixtureRes.status(201).send({ id: fixtureId })
   })
 
   app.post('/___fixtures/bulk', (fixtureReq, fixtureRes) => {
     const fixtures = fixtureReq.body
-    const routeIds = []
-    const createRoutes = []
+    const fixtureIds = []
 
-    for (const fixture of fixtures) {
-      const { createError, routeId, createRoute } = handleFixtureRoute(
-        app,
-        configuration,
-        fixtureRes,
-        fixture,
-        routeId => routeIds.some(id => id === routeId)
+    for (const unsafeFixture of fixtures) {
+      const { error, status, fixtureId } = registerFixture(
+        unsafeFixture,
+        configuration
       )
 
-      if (createError) {
-        return createError()
+      if (error) {
+        for (const fixtureId of fixtureIds) {
+          removeFixture(fixtureId)
+        }
+
+        return resError(fixtureRes, status, error)
       }
 
-      createRoutes.push(createRoute)
-      routeIds.push(routeId)
+      fixtureIds.push(fixtureId)
     }
 
-    for (const createRoute of createRoutes) {
-      createRoute()
-    }
-
-    fixtureRes.status(201).send(routeIds.map(id => ({ id })))
+    fixtureRes.status(201).send(fixtureIds.map(id => ({ id })))
   })
 
   app.delete('/___fixtures', (req, res) => {
-    removeRoutes(app)
+    removeFixtures()
     res.status(204).send({})
   })
 
   app.delete('/___fixtures/:id', (req, res) => {
-    removeRoute(app, req.params.id)
-    res.status(204).send({})
+    if (removeFixture(req.params.id)) {
+      res.status(204).send({})
+    } else {
+      resError(res, 404, 'Fixture not found.')
+    }
   })
 
   app.get('/___config', (req, res) => {
@@ -227,7 +103,6 @@ function createServer () {
       paths = {},
       methods = {},
       headers = {},
-      params = {},
       query = {},
       cookies = {}
     } = req.body
@@ -236,18 +111,16 @@ function createServer () {
       typeof paths !== 'object' ||
       typeof methods !== 'object' ||
       typeof headers !== 'object' ||
-      typeof params !== 'object' ||
       typeof query !== 'object' ||
       typeof cookies !== 'object'
     ) {
-      return badRequest(res, 'Wrong configuration format')
+      return badRequest(res, 'Wrong configuration format.')
     }
 
     configuration = {
       paths,
       methods,
       headers,
-      params,
       query,
       cookies
     }
@@ -260,8 +133,39 @@ function createServer () {
     res.status(204).send()
   })
 
+  app.use(function fixtureHandler (req, res, next) {
+    // eslint-disable-next-line no-labels
+    fixtureLoop: for (const [, fixture] of getFixtureIterator()) {
+      const { request, response } = fixture
+
+      if (req.path !== request.path || req.method !== request.method) {
+        continue
+      }
+
+      for (const property of REQUEST_PROPERTIES) {
+        if (!doesPropertyMatch(req, request, property)) {
+          // eslint-disable-next-line no-labels
+          continue fixtureLoop
+        }
+      }
+
+      res.status(response.status || 200)
+
+      // Loop over RESPONSE_PROPERTIES which has the right order
+      // avoiding "Can't set headers after they are sent"
+      for (const property of RESPONSE_PROPERTIES) {
+        if (response[property] !== undefined) {
+          useResponseProperties[property](req, res, response[property])
+        }
+      }
+      return
+    }
+
+    next()
+  })
+
   server.on('close', () => {
-    removeRoutes(app)
+    removeFixtures()
   })
 
   return server
