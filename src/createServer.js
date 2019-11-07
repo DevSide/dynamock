@@ -133,20 +133,31 @@ function createServer () {
     res.status(204).send()
   })
 
-  app.use(function fixtureHandler (req, res, next) {
+  app.use(async function fixtureHandler (req, res, next) {
     // eslint-disable-next-line no-labels
     fixtureLoop: for (const [, fixture] of getFixtureIterator()) {
-      const { request, response } = fixture
+      const { request, response, options = {} } = fixture
 
-      if (req.path !== request.path || req.method !== request.method) {
+      if (
+        (req.path !== request.path && request.path !== '*') ||
+        req.method !== request.method
+      ) {
         continue
       }
 
       for (const property of REQUEST_PROPERTIES) {
-        if (!doesPropertyMatch(req, request, property)) {
+        const propertyOption = options.request
+          ? options.request[property]
+          : undefined
+
+        if (!doesPropertyMatch(req, request, property, propertyOption)) {
           // eslint-disable-next-line no-labels
           continue fixtureLoop
         }
+      }
+
+      if (response.delay) {
+        await new Promise(resolve => setTimeout(resolve, response.delay))
       }
 
       res.status(response.status || 200)
@@ -158,6 +169,7 @@ function createServer () {
           useResponseProperties[property](req, res, response[property])
         }
       }
+
       return
     }
 

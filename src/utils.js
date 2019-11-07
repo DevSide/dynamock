@@ -17,7 +17,7 @@ exports.sortObjectKeysRecurs = function sortObjectKeysRecurs (src) {
     }
 
     return out
-  } else if (typeof src === 'object') {
+  } else if (typeof src === 'object' && src !== null) {
     return Object.keys(src)
       .sort()
       .reduce((acc, curr) => {

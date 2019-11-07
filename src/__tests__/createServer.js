@@ -382,28 +382,39 @@ describe('app.js', () => {
 
   describe('matching cookies', () => {
     test.each([
-      [null, { x: 'x' }, { x: 'x' }, true],
-      [null, { x: 'x' }, { x: 'x', other: 'other' }, true],
-      [null, { x: 'x', other: 'other' }, { x: 'x' }, false],
-      [{ xOnly: { x: 'x' } }, ['xOnly'], {}, false],
-      [{ xOnly: { x: 'x' } }, ['xOnly'], { x: 'x' }, true],
-      [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x' }, false],
-      [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x', y: 'y' }, true],
+      [null, { x: 'x' }, { x: 'x' }, null, true],
+      [null, { x: 'x' }, { x: 'x' }, { strict: true }, true],
+      [null, { x: 'x' }, { x: 'x', other: 'other' }, null, true],
+      [null, { x: 'x' }, { x: 'x', other: 'other' }, { strict: true }, false],
+      [null, { x: 'x', other: 'other' }, { x: 'x' }, null, false],
+      [{ xOnly: { x: 'x' } }, ['xOnly'], {}, null, false],
+      [{ xOnly: { x: 'x' } }, ['xOnly'], { x: 'x' }, null, true],
+      [{ xOnly: { x: 'x' } }, ['xOnly'], { x: 'x' }, { strict: true }, true],
+      [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x' }, null, false],
+      [
+        { xAndY: { x: 'x', y: 'y' } },
+        ['xAndY'],
+        { x: 'x', y: 'y' },
+        null,
+        true
+      ],
       [
         { xOnly: { x: 'x' }, yOnly: { y: 'y' } },
         ['xOnly', 'yOnly'],
         { x: 'x' },
+        null,
         false
       ],
       [
         { xOnly: { x: 'x' }, yOnly: { y: 'y' } },
         ['xOnly', 'yOnly'],
         { x: 'x', y: 'y' },
+        null,
         true
       ]
     ])(
       'match cookies config="%o" match="%s %o" request="%s %o" result=%s',
-      async (configuration, matchValues, values, shouldMatch) => {
+      async (configuration, matchValues, values, options, shouldMatch) => {
         const path = '/test'
         const method = 'get'
 
@@ -426,7 +437,16 @@ describe('app.js', () => {
             },
             response: {
               body: {}
-            }
+            },
+            ...(options
+              ? {
+                options: {
+                  request: {
+                    cookies: options
+                  }
+                }
+              }
+              : {})
           })
           .expect(201)
 

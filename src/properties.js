@@ -11,6 +11,12 @@ function difference (object, base) {
           _isObject(value) && _isObject(base[key])
             ? changes(value, base[key])
             : value
+
+        if (_isObject(result[key]) && _isEmpty(result[key])) {
+          delete result[key]
+        } else if (_isEmpty(result[key])) {
+          result[key] = null
+        }
       }
     })
   }
@@ -22,10 +28,16 @@ exports.RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']
 exports.doesPropertyMatch = function doesPropertyMatch (
   request,
   match,
-  property
+  property,
+  options = { strict: false }
 ) {
   const requestProperty = request[property] || {}
   const matchProperty = match[property] || {}
+
+  if (options.strict) {
+    return _isEqual(requestProperty, matchProperty)
+  }
+
   const diff = difference(matchProperty, requestProperty)
 
   return _isEmpty(diff)

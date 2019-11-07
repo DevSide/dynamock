@@ -10,15 +10,9 @@ const querystring = require('querystring')
 
 const fixtureStorage = new Map()
 
-function validateFixture (fixture, configuration) {
-  if (!isObject(fixture)) {
-    return 'fixture should be an object.'
-  }
-
-  const { request, response } = fixture
-
-  if (!isObject(request) || !isObject(response)) {
-    return 'request and response should be objects.'
+function validateFixtureRequest (request, configuration) {
+  if (!isObject(request)) {
+    return 'request should be an object.'
   }
 
   // Check request
@@ -64,7 +58,14 @@ function validateFixture (fixture, configuration) {
     }
   }
 
-  // Check response
+  return ''
+}
+
+function validateFixtureResponse (response, configuration) {
+  if (!isObject(response)) {
+    return 'request should be an object.'
+  }
+
   if (response.body !== undefined && response.filepath !== undefined) {
     return 'response.body and response.filepath are exclusive.'
   }
@@ -130,9 +131,98 @@ function validateFixture (fixture, configuration) {
   return ''
 }
 
+function validateFixtureOptions (options, configuration) {
+  if (options === undefined) {
+    return ''
+  }
+
+  if (!isObject(options) || isEmpty(options)) {
+    return 'options should be an non empty object.'
+  }
+
+  for (const option in options) {
+    if (option === 'request') {
+      if (!isObject(options.request) || isEmpty(options.request)) {
+        return 'options.request should be an non empty object.'
+      }
+
+      for (const requestOption in options.request) {
+        if (!REQUEST_PROPERTIES.includes(requestOption)) {
+          return `options.request.${requestOption} is not a known property.`
+        }
+
+        const requestOptionValue = options.request[requestOption]
+
+        if (!isObject(requestOptionValue)) {
+          return `options.request.${requestOption} should be an object.`
+        }
+
+        for (const opt in requestOptionValue) {
+          if (opt === 'strict') {
+            if (typeof requestOptionValue.strict !== 'boolean') {
+              return `options.request.${requestOption}.strict should be a boolean.`
+            }
+          } else {
+            return `options.request.${requestOption}.${opt} is not a known property.`
+          }
+        }
+      }
+
+      continue
+    }
+
+    if (option === 'response') {
+      if (!isObject(options.response) || isEmpty(options.response)) {
+        return 'options.response should be an non empty object.'
+      }
+
+      for (const responseOption in options.response) {
+        if (responseOption === 'delay') {
+          if (typeof options.response.delay !== 'number') {
+            return 'options.response.delay should be a number.'
+          }
+
+          continue
+        }
+
+        return `options.response.${responseOption} is not a known property.`
+      }
+
+      continue
+    }
+
+    return `options.${option} is not a known property.`
+  }
+
+  return ''
+}
+
+function validateFixture (fixture, configuration) {
+  if (!isObject(fixture)) {
+    return 'fixture should be an object.'
+  }
+
+  let error
+
+  if ((error = validateFixtureRequest(fixture.request, configuration))) {
+    return error
+  }
+
+  if ((error = validateFixtureResponse(fixture.response, configuration))) {
+    return error
+  }
+
+  if ((error = validateFixtureOptions(fixture.options, configuration))) {
+    return error
+  }
+
+  return ''
+}
+
 function normalizeFixture (fixture, configuration) {
   const request = sortObjectKeysRecurs(fixture.request)
-  const response = fixture.response
+  const response = sortObjectKeysRecurs(fixture.response)
+  const options = fixture.options
 
   for (const property in request) {
     if (property === 'body') {
@@ -196,10 +286,11 @@ function normalizeFixture (fixture, configuration) {
     }
   }
 
-  return {
-    request,
-    response
+  if (options) {
+    return { request, response, options }
   }
+
+  return { request, response }
 }
 
 function createFixtureId (fixture) {

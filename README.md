@@ -152,8 +152,8 @@ The fixtures are composed of:
 ```json
 {
   "request": {
-    "path": "{string} - Http path to match requests",
-    "method": "{string} - Http method to match requests"
+    "path": "{string} - Http path to match requests, use wildcard '*' to match every path",
+    "method": "{string} - Http method to match requests, case insensitive",
     "headers": "{object} [default={}] - Headers to match requests",
     "query": "{object} [default={}] - Query to match requests",
     "cookies": "{object} [default={}] - Cookies to match requests",
@@ -164,7 +164,24 @@ The fixtures are composed of:
     "headers": "{object} [default={}] - Response headers",
     "cookies": "{object} [default={}] - Response cookies",
     "body": "{string|object|array} [default=``] - Body to match requests",
-    "filepath": "{string} [default=``] - Filepath to serve with auto mime-types"
+    "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
+    "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
+  },
+  "options": {
+    "request": {
+      "headers": {
+        "strict": "{boolean} [default=false] - Strictly match headers"
+      },
+      "cookies": {
+        "strict": "{boolean} [default=false] - Strictly match cookies"
+      },
+      "query": {
+        "strict": "{boolean} [default=false] - Strictly match query"
+      },
+      "body": {
+        "strict": "{boolean} [default=false] - Strictly match body"
+      }
+    }
   }
 }
 ```
@@ -190,7 +207,52 @@ Examples:
     "method": "get"
   },
   "response": {
-    "filepath": "/absolute/path/tofennec.jpg"
+    "filepath": "/absolute/path/tofennec.jpg",
+    "delay": 1000
+  }
+}
+```
+
+```json
+{
+  "request": {
+    "path": "/heros",
+    "method": "POST",
+    "body": {
+      "name": "po",
+      "type": "panda"
+    }
+  },
+  "response": {
+    "body": {
+      "id": "1",
+      "name": "po",
+      "type": "panda"
+    }
+  },
+  "options": {
+    "request": {
+      "body": {
+        "strict": true
+      }
+    }
+  }
+}
+```
+
+```json
+{
+  "request": {
+    "path": "*",
+    "method": "OPTIONS"
+  },
+  "response": {
+    "headers": {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "*",
+      "Access-Control-Allow-Headers": "*"
+    },
+    "body": ""
   }
 }
 ```
@@ -209,7 +271,7 @@ Example:
 
 ```json
 {
-  "id": "_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508"
+  "id": "38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508"
 }
 ```
 
@@ -263,7 +325,25 @@ It is meant to setup multiple fixtures at once.
       "headers": "{object} [default={}] - Response headers",
       "cookies": "{object} [default={}] - Response cookies",
       "body": "{string|object|array} [default=``] - Body to match requests",
-      "filepath": "{string} [default=``] - Filepath to serve with auto mime-types"
+      "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
+      "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
+    },
+    "options": {
+      "request": {
+        "headers": {
+          "strict": "{boolean} [default=false] - Strictly match headers"
+        },
+        "cookies": {
+          "strict": "{boolean} [default=false] - Strictly match cookies"
+        },
+        "query": {
+          "strict": "{boolean} [default=false] - Strictly match query"
+        },
+        "body": {
+        "strict": "{boolean} [default=false] - Strictly match body"
+        }
+       }
+      }
     }
   }
 ]
@@ -309,37 +389,21 @@ Example:
 ```json
 [
   {
-    "id": "_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508"
+    "id": "38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508"
   },
   {
-    "id": "_086c67ef89fd832deeae33b209e6e8ecc6b32003"
+    "id": "086c67ef89fd832deeae33b209e6e8ecc6b32003"
   }
 ]
 ```
 
 - Status 400 - BAD REQUEST
 
-```
-Path or method are not provided
-```
-
-```
-${PROPERTY} group named "${VALUE}" is not in the configuration
-```
-
-```
-${PROPERTY} "${VALUE}" should be an object or a configuration header group name.
-```
-
-```
-${PROPERTY} should be an array or an object
-```
+The fixture is not valid
 
 - Status 409 - CONFLICT
 
-```
-Route {METHOD} ${PATH} is already registered.
-```
+Another fixture with the same matcher is already registered
 
 <br/>
 
