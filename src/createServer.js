@@ -14,7 +14,11 @@ const {
   registerFixture,
   getFixtureIterator
 } = require('./fixtures')
-const { validateConfiguration } = require('./configuration')
+const {
+  validateConfiguration,
+  createConfiguration,
+  updateConfiguration
+} = require('./configuration')
 
 function resError (res, status, message) {
   return res
@@ -28,16 +32,6 @@ function badRequest (res, message) {
 
 function conflict (res, message) {
   return resError(res, 409, message)
-}
-
-function createConfiguration () {
-  return {
-    paths: {},
-    methods: {},
-    headers: {},
-    query: {},
-    cookies: {}
-  }
 }
 
 function createServer () {
@@ -71,39 +65,39 @@ function createServer () {
   })
 
   app.post('/___fixtures/bulk', (req, res) => {
-      const fixtures = req.body
-      const fixtureIds = []
+    const fixtures = req.body
+    const fixtureIds = []
 
-      const cleanUpOnError = () => {
-        for (const { id } of fixtureIds) {
-          removeFixture(id)
-        }
+    const cleanUpOnError = () => {
+      for (const { id } of fixtureIds) {
+        removeFixture(id)
+      }
+    }
+
+    for (const unsafeFixture of fixtures) {
+      const validationError = validateFixture(unsafeFixture, configuration)
+
+      if (validationError) {
+        cleanUpOnError()
+
+        return badRequest(res, validationError)
       }
 
-      for (const unsafeFixture of fixtures) {
-        const validationError = validateFixture(unsafeFixture, configuration)
+      const { conflictError, fixtureId } = registerFixture(
+        unsafeFixture,
+        configuration
+      )
 
-        if (validationError) {
-          cleanUpOnError()
+      if (conflictError) {
+        cleanUpOnError()
 
-          return badRequest(res, validationError)
-        }
-
-        const { conflictError, fixtureId } = registerFixture(
-          unsafeFixture,
-          configuration
-        )
-
-        if (conflictError) {
-          cleanUpOnError()
-
-          return conflict(res, conflictError)
-        }
-
-        fixtureIds.push({ id: fixtureId })
+        return conflict(res, conflictError)
       }
 
-      res.status(201).send(fixtureIds)
+      fixtureIds.push({ id: fixtureId })
+    }
+
+    res.status(201).send(fixtureIds)
   })
 
   app.delete('/___fixtures', (req, res) => {
@@ -131,18 +125,7 @@ function createServer () {
     }
 
     const { headers, query, cookies } = req.body
-
-    if (headers) {
-      Object.assign(configuration.headers, headers)
-    }
-
-    if (query) {
-      Object.assign(configuration.query, query)
-    }
-
-    if (cookies) {
-      Object.assign(configuration.cookies, cookies)
-    }
+    updateConfiguration(configuration, headers, query, cookies)
 
     res.status(200).send(configuration)
   })

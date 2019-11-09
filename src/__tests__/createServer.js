@@ -29,8 +29,6 @@ describe('createServer.js', () => {
   describe('manipulate configuration', () => {
     test('default configuration', () =>
       request.get('/___config').expect(200, {
-        paths: {},
-        methods: {},
         headers: {},
         query: {},
         cookies: {}
@@ -62,8 +60,6 @@ describe('createServer.js', () => {
         .expect(200)
 
       return request.get('/___config').expect(200, {
-        paths: {},
-        methods: {},
         headers: {
           serverCors: {
             'Access-Control-Allow-Origin': '*',

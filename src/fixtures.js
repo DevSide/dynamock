@@ -1,6 +1,7 @@
 const { hash, sortObjectKeysRecurs } = require('./utils')
 const querystring = require('querystring')
 const Joi = require('@hapi/joi')
+
 const fixtureStorage = new Map()
 
 exports.validateFixture = function validateFixture (
@@ -74,7 +75,6 @@ function normalizeArrayMatcher (property, propertyValue, configuration) {
   // Merge with configuration
   for (const propertyItem of propertyValue) {
     if (typeof propertyItem === 'string') {
-      // console.log('########', property, propertyValue, propertyItem, configuration[property][propertyItem])
       Object.assign(result, configuration[property][propertyItem])
     } else {
       Object.assign(result, propertyItem)
