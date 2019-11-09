@@ -152,13 +152,13 @@ The fixtures are composed of:
 ```json
 {
   "request": {
-    "path": "{string} - Http path to match requests",
-    "method": "{string} - Http method to match requests"
+    "path": "{string} - Http path to match requests, use wildcard '*' to match all",
+    "method": "{string} - Http method to match requests, case insensitive, use wildcard '*' to match all",
     "headers": "{object} [default={}] - Headers to match requests",
     "query": "{object} [default={}] - Query to match requests",
     "cookies": "{object} [default={}] - Cookies to match requests",
     "body": "{object} [default=``] - Body to match requests",
-    "options":  {
+    "options": {
       "headers": {
         "strict": "{boolean} [default=false] - Strictly match headers"
       },
@@ -313,13 +313,13 @@ It is meant to setup multiple fixtures at once.
 [
   {
     "request": {
-      "path": "{string} - Http path to match requests",
-      "method": "{string} - Http method to match requests"
+      "path": "{string} - Http path to match requests, use wildcard '*' to match all",
+      "method": "{string} - Http method to match requests, case insensitive, use wildcard '*' to match all",
       "headers": "{object} [default={}] - Headers to match requests",
       "query": "{object} [default={}] - Query to match requests",
       "cookies": "{object} [default={}] - Cookies to match requests",
       "body": "{object} [default=``] - Body to match requests",
-      "options":  {
+      "options": {
         "headers": {
           "strict": "{boolean} [default=false] - Strictly match headers"
         },

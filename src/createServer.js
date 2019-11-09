@@ -135,7 +135,7 @@ function createServer () {
 
       if (
         (req.path !== request.path && request.path !== '*') ||
-        req.method !== request.method
+        (req.method !== request.method && request.method !== '*')
       ) {
         continue
       }
