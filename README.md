@@ -152,23 +152,13 @@ The fixtures are composed of:
 ```json
 {
   "request": {
-    "path": "{string} - Http path to match requests, use wildcard '*' to match every path",
-    "method": "{string} - Http method to match requests, case insensitive",
+    "path": "{string} - Http path to match requests",
+    "method": "{string} - Http method to match requests"
     "headers": "{object} [default={}] - Headers to match requests",
     "query": "{object} [default={}] - Query to match requests",
     "cookies": "{object} [default={}] - Cookies to match requests",
-    "body": "{object} [default=``] - Body to match requests"
-  },
-  "response": {
-    "status": "{number} [default=200] - Response status code",
-    "headers": "{object} [default={}] - Response headers",
-    "cookies": "{object} [default={}] - Response cookies",
-    "body": "{string|object|array} [default=``] - Body to match requests",
-    "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
-    "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
-  },
-  "options": {
-    "request": {
+    "body": "{object} [default=``] - Body to match requests",
+    "options":  {
       "headers": {
         "strict": "{boolean} [default=false] - Strictly match headers"
       },
@@ -181,6 +171,16 @@ The fixtures are composed of:
       "body": {
         "strict": "{boolean} [default=false] - Strictly match body"
       }
+    }
+  },
+  "response": {
+    "status": "{number} [default=200] - Response status code",
+    "headers": "{object} [default={}] - Response headers",
+    "cookies": "{object} [default={}] - Response cookies",
+    "body": "{string|object|array} [default=``] - Body to match requests",
+    "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
+    "options": {
+      "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
     }
   }
 }
@@ -318,18 +318,8 @@ It is meant to setup multiple fixtures at once.
       "headers": "{object} [default={}] - Headers to match requests",
       "query": "{object} [default={}] - Query to match requests",
       "cookies": "{object} [default={}] - Cookies to match requests",
-      "body": "{object} [default=``] - Body to match requests"
-    },
-    "response": {
-      "status": "{number} [default=200] - Response status code",
-      "headers": "{object} [default={}] - Response headers",
-      "cookies": "{object} [default={}] - Response cookies",
-      "body": "{string|object|array} [default=``] - Body to match requests",
-      "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
-      "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
-    },
-    "options": {
-      "request": {
+      "body": "{object} [default=``] - Body to match requests",
+      "options":  {
         "headers": {
           "strict": "{boolean} [default=false] - Strictly match headers"
         },
@@ -340,9 +330,18 @@ It is meant to setup multiple fixtures at once.
           "strict": "{boolean} [default=false] - Strictly match query"
         },
         "body": {
-        "strict": "{boolean} [default=false] - Strictly match body"
+          "strict": "{boolean} [default=false] - Strictly match body"
         }
-       }
+      }
+    },
+    "response": {
+      "status": "{number} [default=200] - Response status code",
+      "headers": "{object} [default={}] - Response headers",
+      "cookies": "{object} [default={}] - Response cookies",
+      "body": "{string|object|array} [default=``] - Body to match requests",
+      "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
+      "options": {
+        "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
       }
     }
   }

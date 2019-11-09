@@ -1,4 +1,6 @@
-describe('app.js', () => {
+describe('createServer.js', () => {
+  jest.useFakeTimers()
+
   const supertest = require('supertest')
   const { dirname } = require('path')
 
@@ -35,21 +37,28 @@ describe('app.js', () => {
       }))
 
     test('update configuration', async () => {
-      const config = {
-        headers: {
-          serverCors: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': '*'
-          },
-          clientToken: {
-            authorization: 'Bearer client-token'
+      await request
+        .put('/___config')
+        .send({
+          headers: {
+            serverCors: {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': '*'
+            }
           }
-        }
-      }
+        })
+        .expect(200)
 
       await request
         .put('/___config')
-        .send(config)
+        .send({
+          headers: {
+            clientToken: {
+              authorization: 'Bearer client-token'
+            }
+          },
+          cookies: {}
+        })
         .expect(200)
 
       return request.get('/___config').expect(200, {
@@ -411,6 +420,13 @@ describe('app.js', () => {
         { x: 'x', y: 'y' },
         null,
         true
+      ],
+      [
+        { xOnly: { x: 'x' } },
+        ['xOnly', { y: 'y' }],
+        { x: 'x', y: 'y' },
+        null,
+        true
       ]
     ])(
       'match cookies config="%o" match="%s %o" request="%s %o" result=%s',
@@ -433,20 +449,18 @@ describe('app.js', () => {
             request: {
               path,
               method,
-              cookies: matchValues
-            },
-            response: {
-              body: {}
-            },
-            ...(options
-              ? {
-                options: {
-                  request: {
+              cookies: matchValues,
+              ...(options
+                ? {
+                  options: {
                     cookies: options
                   }
                 }
-              }
-              : {})
+                : {})
+            },
+            response: {
+              body: {}
+            }
           })
           .expect(201)
 
@@ -481,19 +495,24 @@ describe('app.js', () => {
 
   describe('matching query', () => {
     test.each([
-      [null, '/test', { x: '1' }, '/test', false],
-      [null, '/test', { x: '1' }, '/test?x=1', true],
-      [null, '/test', { x: '1' }, '/test?x=2', false],
-      [null, '/test', { x: '1', y: '2' }, '/test?x=1', false],
-      [null, '/test', { x: '1', y: '2' }, '/test?x=1&y=2', true],
-      [null, '/test', { x: '1' }, '/test?x=1&y=2', true],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', true],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=2', false],
+      [null, '/test', { x: '1' }, '/test', null, false],
+      [null, '/test', { x: '1' }, '/test', { strict: true }, false],
+      [null, '/test', { x: '1' }, '/test?x=1', null, true],
+      [null, '/test', { x: '1' }, '/test?x=1', { strict: true }, true],
+      [null, '/test', { x: '1' }, '/test?x=2', null, false],
+      [null, '/test', { x: '1', y: '2' }, '/test?x=1', null, false],
+      [null, '/test', { x: '1', y: '2' }, '/test?x=1&y=2', null, true],
+      [null, '/test', { x: '1', y: '2' }, '/test?y=2&x=1', null, true],
+      [null, '/test', { x: '1' }, '/test?x=1&y=2', null, true],
+      [null, '/test', { x: '1' }, '/test?x=1&y=2', { strict: true }, false],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', null, true],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=2', null, false],
       [
         { xAndY: { x: '1', y: '2' } },
         '/test',
         ['xAndY'],
         '/test?x=1&y=2',
+        null,
         true
       ],
       [
@@ -501,11 +520,27 @@ describe('app.js', () => {
         '/test',
         ['xOnly', 'yOnly'],
         '/test?x=1&y=2',
+        null,
+        true
+      ],
+      [
+        { xOnly: { x: '1' } },
+        '/test',
+        ['xOnly', { y: '2' }],
+        '/test?x=1&y=2',
+        null,
         true
       ]
     ])(
       'match query config="%o" match="%s %o" request="%s %o" result=%s',
-      async (configuration, matchPath, matchValues, path, shouldMatch) => {
+      async (
+        configuration,
+        matchPath,
+        matchValues,
+        path,
+        options,
+        shouldMatch
+      ) => {
         const method = 'get'
 
         if (configuration) {
@@ -523,7 +558,14 @@ describe('app.js', () => {
             request: {
               path: matchPath,
               method,
-              query: matchValues
+              query: matchValues,
+              ...(options
+                ? {
+                  options: {
+                    query: options
+                  }
+                }
+                : {})
             },
             response: {
               body: {}
@@ -548,12 +590,16 @@ describe('app.js', () => {
       [null, [], {}, true],
       [null, {}, [], true],
       [null, [], [], true],
+      [null, '', '', true],
+      [null, { x: null }, { x: null }, true],
+      [null, ['a', 'b'], ['a', 'b'], true],
+      [null, ['a', 'b'], ['b', 'a'], false],
       [null, {}, { x: 'x' }, true],
       [null, { x: 'x' }, { x: 'x' }, true],
       [null, { x: 'x' }, { x: 'x', other: 'other' }, true],
       [null, { x: 'x', other: 'other' }, { x: 'x' }, false]
     ])(
-      'match body config="%o" match="%s %o" request="%s %o" result=%s',
+      'match body config="%o" match="%s" request="%o" result=%s',
       async (configuration, matchValues, values, shouldMatch) => {
         const path = '/test'
         const method = 'post'
@@ -600,5 +646,29 @@ describe('app.js', () => {
         }
       }
     )
+  })
+
+  describe('analyze response', () => {
+    test('delay response', async () => {
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/products',
+            method: 'get'
+          },
+          response: {
+            body: [],
+            options: {
+              delay: 1000
+            }
+          }
+        })
+        .expect(201)
+
+      // await request.get('/products').expect(200, [])
+      // expect(setTimeout).toHaveBeenCalledTimes(1)
+      // expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000)
+    })
   })
 })

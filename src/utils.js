@@ -1,11 +1,48 @@
 const crypto = require('crypto')
+const _isEqual = require('lodash/isEqual')
 
-exports.isArrayOrObject = function isArrayOrObject (value) {
-  return typeof value === 'object'
+function isObjectEmpty (object) {
+  for (const key in object) {
+    if (Object.prototype.hasOwnProperty.call(object, key)) return false
+  }
+  return true
 }
 
-exports.isObject = function isObject (value) {
-  return typeof value === 'object' && !Array.isArray(value)
+function isObject (object) {
+  return typeof object === 'object' && !Array.isArray(object)
+}
+
+exports.isIncluded = function isIncluded (object, base) {
+  function _isIncluded (object, base) {
+    for (const key in object) {
+      if (!Object.prototype.hasOwnProperty.call(object, key)) {
+        continue
+      }
+
+      const value = object[key]
+      const baseValue = base[key]
+
+      if (isObject(value) && value !== null) {
+        if (isObjectEmpty(value)) {
+          continue
+        }
+
+        if (isObject(baseValue) && _isIncluded(value, baseValue)) {
+          continue
+        }
+      }
+
+      if (_isEqual(value, baseValue)) {
+        continue
+      }
+
+      return false
+    }
+
+    return true
+  }
+
+  return _isIncluded(object, base)
 }
 
 exports.sortObjectKeysRecurs = function sortObjectKeysRecurs (src) {
@@ -17,13 +54,17 @@ exports.sortObjectKeysRecurs = function sortObjectKeysRecurs (src) {
     }
 
     return out
-  } else if (typeof src === 'object' && src !== null) {
-    return Object.keys(src)
-      .sort()
-      .reduce((acc, curr) => {
-        acc[curr] = sortObjectKeysRecurs(src[curr])
-        return acc
-      }, {})
+  }
+
+  if (typeof src === 'object' && src !== null) {
+    const out = {}
+    const sortedKeys = Object.keys(src).sort()
+
+    for (const key of sortedKeys) {
+      out[key] = sortObjectKeysRecurs(src[key])
+    }
+
+    return out
   }
 
   return src

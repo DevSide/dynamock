@@ -13,6 +13,7 @@ const {
   registerFixture,
   getFixtureIterator
 } = require('./fixtures')
+const { validateConfiguration } = require('./configuration')
 
 function resError (res, status, message) {
   return res
@@ -99,30 +100,24 @@ function createServer () {
   })
 
   app.put('/___config', (req, res) => {
-    const {
-      paths = {},
-      methods = {},
-      headers = {},
-      query = {},
-      cookies = {}
-    } = req.body
+    const error = validateConfiguration(req.body)
 
-    if (
-      typeof paths !== 'object' ||
-      typeof methods !== 'object' ||
-      typeof headers !== 'object' ||
-      typeof query !== 'object' ||
-      typeof cookies !== 'object'
-    ) {
-      return badRequest(res, 'Wrong configuration format.')
+    if (error) {
+      return badRequest(res, error.message)
     }
 
-    configuration = {
-      paths,
-      methods,
-      headers,
-      query,
-      cookies
+    const { headers, query, cookies } = req.body
+
+    if (headers) {
+      Object.assign(configuration.headers, headers)
+    }
+
+    if (query) {
+      Object.assign(configuration.query, query)
+    }
+
+    if (cookies) {
+      Object.assign(configuration.cookies, cookies)
     }
 
     res.status(200).send(configuration)
@@ -136,7 +131,7 @@ function createServer () {
   app.use(async function fixtureHandler (req, res, next) {
     // eslint-disable-next-line no-labels
     fixtureLoop: for (const [, fixture] of getFixtureIterator()) {
-      const { request, response, options = {} } = fixture
+      const { request, response } = fixture
 
       if (
         (req.path !== request.path && request.path !== '*') ||
@@ -146,18 +141,16 @@ function createServer () {
       }
 
       for (const property of REQUEST_PROPERTIES) {
-        const propertyOption = options.request
-          ? options.request[property]
-          : undefined
-
-        if (!doesPropertyMatch(req, request, property, propertyOption)) {
+        if (!doesPropertyMatch(req, request, property)) {
           // eslint-disable-next-line no-labels
           continue fixtureLoop
         }
       }
 
-      if (response.delay) {
-        await new Promise(resolve => setTimeout(resolve, response.delay))
+      if (response.options && response.options.delay) {
+        await new Promise(resolve =>
+          setTimeout(resolve, response.options.delay)
+        )
       }
 
       res.status(response.status || 200)

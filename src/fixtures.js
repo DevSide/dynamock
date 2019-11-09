@@ -1,222 +1,62 @@
-const isEmpty = require('lodash/isEmpty')
-const {
-  hash,
-  isArrayOrObject,
-  isObject,
-  sortObjectKeysRecurs
-} = require('./utils')
-const { REQUEST_PROPERTIES, RESPONSE_PROPERTIES } = require('./properties')
+const { hash, sortObjectKeysRecurs } = require('./utils')
 const querystring = require('querystring')
-
+const Joi = require('@hapi/joi')
 const fixtureStorage = new Map()
 
-function validateFixtureRequest (request, configuration) {
-  if (!isObject(request)) {
-    return 'request should be an object.'
-  }
-
-  // Check request
-  if (!request.path || !request.method) {
-    return 'request.path and request.method should be defined.'
-  }
-
-  for (const property in request) {
-    if (property === 'body' || property === 'path' || property === 'method') {
-      continue
-    }
-
-    const propertyValue = request[property]
-
-    if (!REQUEST_PROPERTIES.includes(property)) {
-      return `request.${property} is not a known property.`
-    }
-
-    if (!isArrayOrObject(propertyValue)) {
-      return `request.${property} should be an array or object.`
-    }
-
-    if (isEmpty(propertyValue)) {
-      return `request.${property} should not be empty.`
-    }
-
-    if (Array.isArray(propertyValue)) {
-      for (let i = 0; i < propertyValue.length; i++) {
-        const item = propertyValue[i]
-
-        if (typeof item === 'string') {
-          if (configuration[property][item] === undefined) {
-            return `request.${property}[${i}] is not in the configuration.`
-          }
-        } else if (isObject(item)) {
-          if (isEmpty(item)) {
-            return `request.${property}[${i}] should not be empty.`
-          }
-        } else {
-          return `request.${property}[${i}] should be an object or a string.`
-        }
-      }
-    }
-  }
-
-  return ''
-}
-
-function validateFixtureResponse (response, configuration) {
-  if (!isObject(response)) {
-    return 'request should be an object.'
-  }
-
-  if (response.body !== undefined && response.filepath !== undefined) {
-    return 'response.body and response.filepath are exclusive.'
-  }
-
-  if (response.body === undefined && response.filepath === undefined) {
-    return 'response.body or response.filepath should be defined.'
-  }
-
-  for (const property in response) {
-    if (property === 'body') {
-      continue
-    }
-
-    const propertyValue = response[property]
-
-    if (property === 'filepath') {
-      if (!propertyValue || typeof propertyValue !== 'string') {
-        return 'response.filepath should be a string.'
-      }
-
-      continue
-    }
-
-    if (property === 'status') {
-      if (!propertyValue || typeof propertyValue !== 'number') {
-        return 'response.status should be a number.'
-      }
-
-      continue
-    }
-
-    if (!RESPONSE_PROPERTIES.includes(property)) {
-      return `response.${property} is not a known property.`
-    }
-
-    if (!isArrayOrObject(propertyValue)) {
-      return `response.${property} should be an array or object.`
-    }
-
-    if (isEmpty(propertyValue)) {
-      return `response.${property} should not be empty.`
-    }
-
-    if (Array.isArray(propertyValue)) {
-      for (let i = 0; i < propertyValue.length; i++) {
-        const item = propertyValue[i]
-
-        if (typeof item === 'string') {
-          if (configuration[property][item] === undefined) {
-            return `response.${property}[${i}] is not in the configuration.`
-          }
-        } else if (isObject(item)) {
-          if (isEmpty(item)) {
-            return `response.${property}[${i}] should not be empty.`
-          }
-        } else {
-          return `response.${property}[${i}] should be an object or a string.`
-        }
-      }
-    }
-  }
-
-  return ''
-}
-
-function validateFixtureOptions (options, configuration) {
-  if (options === undefined) {
-    return ''
-  }
-
-  if (!isObject(options) || isEmpty(options)) {
-    return 'options should be an non empty object.'
-  }
-
-  for (const option in options) {
-    if (option === 'request') {
-      if (!isObject(options.request) || isEmpty(options.request)) {
-        return 'options.request should be an non empty object.'
-      }
-
-      for (const requestOption in options.request) {
-        if (!REQUEST_PROPERTIES.includes(requestOption)) {
-          return `options.request.${requestOption} is not a known property.`
-        }
-
-        const requestOptionValue = options.request[requestOption]
-
-        if (!isObject(requestOptionValue)) {
-          return `options.request.${requestOption} should be an object.`
-        }
-
-        for (const opt in requestOptionValue) {
-          if (opt === 'strict') {
-            if (typeof requestOptionValue.strict !== 'boolean') {
-              return `options.request.${requestOption}.strict should be a boolean.`
-            }
-          } else {
-            return `options.request.${requestOption}.${opt} is not a known property.`
-          }
-        }
-      }
-
-      continue
-    }
-
-    if (option === 'response') {
-      if (!isObject(options.response) || isEmpty(options.response)) {
-        return 'options.response should be an non empty object.'
-      }
-
-      for (const responseOption in options.response) {
-        if (responseOption === 'delay') {
-          if (typeof options.response.delay !== 'number') {
-            return 'options.response.delay should be a number.'
-          }
-
-          continue
-        }
-
-        return `options.response.${responseOption} is not a known property.`
-      }
-
-      continue
-    }
-
-    return `options.${option} is not a known property.`
-  }
-
-  return ''
-}
-
 function validateFixture (fixture, configuration) {
-  if (!isObject(fixture)) {
-    return 'fixture should be an object.'
-  }
+  const schemaProperty = Joi.alternatives([
+    Joi.array().items(
+      Joi.custom((value, helpers) => {
+        const path = helpers.state.path
+        const property = path[path.length - 2]
 
-  let error
+        if (!configuration[property][value]) {
+          throw new Error(`${value} not found in configuration`)
+        }
 
-  if ((error = validateFixtureRequest(fixture.request, configuration))) {
-    return error
-  }
+        return value
+      }),
+      Joi.object()
+    ),
+    Joi.object()
+  ])
 
-  if ((error = validateFixtureResponse(fixture.response, configuration))) {
-    return error
-  }
+  // TODO: move schema outside the func
+  const schema = Joi.object({
+    request: Joi.object({
+      body: Joi.any(),
+      path: Joi.string().required(),
+      method: Joi.string().required(),
+      headers: schemaProperty,
+      cookies: schemaProperty,
+      query: schemaProperty,
+      options: Joi.object({
+        headers: Joi.object({
+          strict: Joi.bool()
+        }),
+        cookies: Joi.object({
+          strict: Joi.bool()
+        }),
+        query: Joi.object({
+          strict: Joi.bool()
+        })
+      })
+    }).required(),
+    response: Joi.object({
+      status: Joi.number(),
+      body: Joi.any(),
+      filepath: Joi.string(),
+      headers: schemaProperty,
+      cookies: schemaProperty,
+      options: Joi.object({
+        delay: Joi.number()
+      })
+    })
+      .or('body', 'filepath')
+      .required()
+  }).required()
 
-  if ((error = validateFixtureOptions(fixture.options, configuration))) {
-    return error
-  }
-
-  return ''
+  return schema.validate(fixture).error
 }
 
 function normalizeFixture (fixture, configuration) {
@@ -305,7 +145,7 @@ exports.registerFixture = function registerFixture (
 
   if (error) {
     return {
-      error,
+      error: error.message,
       status: 400,
       fixtureId: ''
     }
