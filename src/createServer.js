@@ -128,7 +128,7 @@ function createServer () {
     res.status(204).send()
   })
 
-  app.use(async function fixtureHandler (req, res, next) {
+  app.use(function fixtureHandler (req, res, next) {
     // eslint-disable-next-line no-labels
     fixtureLoop: for (const [, fixture] of getFixtureIterator()) {
       const { request, response } = fixture
@@ -147,20 +147,22 @@ function createServer () {
         }
       }
 
-      if (response.options && response.options.delay) {
-        await new Promise(resolve =>
-          setTimeout(resolve, response.options.delay)
-        )
+      const send = () => {
+        res.status(response.status || 200)
+
+        // Loop over RESPONSE_PROPERTIES which has the right order
+        // avoiding "Can't set headers after they are sent"
+        for (const property of RESPONSE_PROPERTIES) {
+          if (response[property] !== undefined) {
+            useResponseProperties[property](req, res, response[property])
+          }
+        }
       }
 
-      res.status(response.status || 200)
-
-      // Loop over RESPONSE_PROPERTIES which has the right order
-      // avoiding "Can't set headers after they are sent"
-      for (const property of RESPONSE_PROPERTIES) {
-        if (response[property] !== undefined) {
-          useResponseProperties[property](req, res, response[property])
-        }
+      if (response.options && response.options.delay) {
+        setTimeout(send, response.options.delay)
+      } else {
+        send()
       }
 
       return
