@@ -3,7 +3,10 @@ const querystring = require('querystring')
 const Joi = require('@hapi/joi')
 const fixtureStorage = new Map()
 
-function validateFixture (fixture, configuration) {
+exports.validateFixture = function validateFixture (
+  unsafeFixture,
+  configuration
+) {
   const schemaProperty = Joi.alternatives([
     Joi.array().items(
       Joi.custom((value, helpers) => {
@@ -56,7 +59,49 @@ function validateFixture (fixture, configuration) {
       .required()
   }).required()
 
-  return schema.validate(fixture).error
+  const error = schema.validate(unsafeFixture).error
+
+  if (error) {
+    return error.message
+  }
+
+  return ''
+}
+
+function normalizeArrayMatcher (property, propertyValue, configuration) {
+  const result = {}
+
+  // Merge with configuration
+  for (const propertyItem of propertyValue) {
+    if (typeof propertyItem === 'string') {
+      // console.log('########', property, propertyValue, propertyItem, configuration[property][propertyItem])
+      Object.assign(result, configuration[property][propertyItem])
+    } else {
+      Object.assign(result, propertyItem)
+    }
+  }
+
+  return result
+}
+
+function normalizePath (request) {
+  // extract query from path is needed and move it in query property
+  const indexQueryString = request.path.indexOf('?')
+
+  if (indexQueryString >= 0) {
+    const path = request.path.substring(0, indexQueryString)
+    const query = querystring.parse(
+      request.path.substring(indexQueryString + 1)
+    )
+
+    request.path = path
+
+    if (request.query) {
+      Object.assign(request.query, query)
+    } else {
+      request.query = query
+    }
+  }
 }
 
 function normalizeFixture (fixture, configuration) {
@@ -75,36 +120,18 @@ function normalizeFixture (fixture, configuration) {
     }
 
     if (property === 'path') {
-      // extract query from path is needed and move it in query property
-      const indexQueryString = request.path.indexOf('?')
-
-      if (indexQueryString >= 0) {
-        const path = request.path.substring(0, indexQueryString)
-        const query = querystring.parse(
-          request.path.substring(indexQueryString + 1)
-        )
-
-        request.path = path
-
-        if (request.query) {
-          Object.assign(request.query, query)
-        } else {
-          request.query = query
-        }
-      }
+      normalizePath(request)
       continue
     }
 
     const propertyValue = request[property]
 
     if (Array.isArray(propertyValue)) {
-      request[property] = propertyValue.reduce((acc, propertyItem) => {
-        if (typeof propertyItem === 'string') {
-          return Object.assign(acc, configuration[property][propertyItem])
-        }
-
-        return Object.assign(acc, propertyItem)
-      }, {})
+      request[property] = normalizeArrayMatcher(
+        property,
+        propertyValue,
+        configuration
+      )
     }
   }
 
@@ -116,13 +143,11 @@ function normalizeFixture (fixture, configuration) {
     const propertyValue = response[property]
 
     if (Array.isArray(propertyValue)) {
-      response[property] = propertyValue.reduce((acc, propertyItem) => {
-        if (typeof propertyItem === 'string') {
-          return Object.assign(acc, configuration[property][propertyItem])
-        }
-
-        return Object.assign(acc, propertyItem)
-      }, {})
+      response[property] = normalizeArrayMatcher(
+        property,
+        propertyValue,
+        configuration
+      )
     }
   }
 
@@ -137,27 +162,13 @@ function createFixtureId (fixture) {
   return hash(JSON.stringify(fixture.request))
 }
 
-exports.registerFixture = function registerFixture (
-  unsafeFixture,
-  configuration
-) {
-  const error = validateFixture(unsafeFixture, configuration)
-
-  if (error) {
-    return {
-      error: error.message,
-      status: 400,
-      fixtureId: ''
-    }
-  }
-
-  const fixture = normalizeFixture(unsafeFixture, configuration)
+exports.registerFixture = function registerFixture (newFixture, configuration) {
+  const fixture = normalizeFixture(newFixture, configuration)
   const fixtureId = createFixtureId(fixture)
 
   if (fixtureStorage.has(fixtureId)) {
     return {
-      error: `Route ${fixture.request.method} ${fixture.request.path} is already registered`,
-      status: 409,
+      conflictError: `Route ${fixture.request.method} ${fixture.request.path} is already registered`,
       fixtureId
     }
   }
@@ -165,8 +176,7 @@ exports.registerFixture = function registerFixture (
   fixtureStorage.set(fixtureId, fixture)
 
   return {
-    error: '',
-    status: 0,
+    conflictError: '',
     fixtureId
   }
 }

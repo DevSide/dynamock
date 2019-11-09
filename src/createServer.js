@@ -8,6 +8,7 @@ const {
   useResponseProperties
 } = require('./properties')
 const {
+  validateFixture,
   removeFixture,
   removeFixtures,
   registerFixture,
@@ -23,6 +24,10 @@ function resError (res, status, message) {
 
 function badRequest (res, message) {
   return resError(res, 400, message)
+}
+
+function conflict (res, message) {
+  return resError(res, 409, message)
 }
 
 function createConfiguration () {
@@ -44,42 +49,61 @@ function createServer () {
 
   let configuration = createConfiguration()
 
-  app.post('/___fixtures', (fixtureReq, fixtureRes) => {
-    const unsafeFixture = fixtureReq.body
-    const { error, status, fixtureId } = registerFixture(
+  app.post('/___fixtures', (req, res) => {
+    const unsafeFixture = req.body
+
+    const validationError = validateFixture(unsafeFixture, configuration)
+
+    if (validationError) {
+      return badRequest(res, validationError)
+    }
+
+    const { conflictError, fixtureId } = registerFixture(
       unsafeFixture,
       configuration
     )
 
-    if (error) {
-      return resError(fixtureRes, status, error)
+    if (conflictError) {
+      return conflict(res, conflictError)
     }
 
-    fixtureRes.status(201).send({ id: fixtureId })
+    res.status(201).send({ id: fixtureId })
   })
 
-  app.post('/___fixtures/bulk', (fixtureReq, fixtureRes) => {
-    const fixtures = fixtureReq.body
-    const fixtureIds = []
+  app.post('/___fixtures/bulk', (req, res) => {
+      const fixtures = req.body
+      const fixtureIds = []
 
-    for (const unsafeFixture of fixtures) {
-      const { error, status, fixtureId } = registerFixture(
-        unsafeFixture,
-        configuration
-      )
-
-      if (error) {
-        for (const fixtureId of fixtureIds) {
-          removeFixture(fixtureId)
+      const cleanUpOnError = () => {
+        for (const { id } of fixtureIds) {
+          removeFixture(id)
         }
-
-        return resError(fixtureRes, status, error)
       }
 
-      fixtureIds.push(fixtureId)
-    }
+      for (const unsafeFixture of fixtures) {
+        const validationError = validateFixture(unsafeFixture, configuration)
 
-    fixtureRes.status(201).send(fixtureIds.map(id => ({ id })))
+        if (validationError) {
+          cleanUpOnError()
+
+          return badRequest(res, validationError)
+        }
+
+        const { conflictError, fixtureId } = registerFixture(
+          unsafeFixture,
+          configuration
+        )
+
+        if (conflictError) {
+          cleanUpOnError()
+
+          return conflict(res, conflictError)
+        }
+
+        fixtureIds.push({ id: fixtureId })
+      }
+
+      res.status(201).send(fixtureIds)
   })
 
   app.delete('/___fixtures', (req, res) => {

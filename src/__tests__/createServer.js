@@ -203,7 +203,7 @@ describe('createServer.js', () => {
         false
       ]
     ])(
-      'conflict situation config="%o" requestA="%s %o" requestB="%s %o" shouldConflict=%s',
+      'conflict situation config="%o" requestA="%o" requestB="%o" shouldConflict=%s',
       async (configuration, requestA, requestB, shouldConflict) => {
         if (configuration) {
           await request
@@ -340,7 +340,7 @@ describe('createServer.js', () => {
       [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], { a: 'a' }, false],
       [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], { a: 'a', b: 'b' }, true]
     ])(
-      'match headers config="%o" match="%s %o" request="%s %o" result=%s',
+      'match headers config="%o" match="%o" request="%o" result=%s',
       async (configuration, matchValues, values, shouldMatch) => {
         const path = '/test'
         const method = 'get'
