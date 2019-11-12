@@ -43,6 +43,9 @@ exports.validateFixture = function validateFixture (
         }),
         query: Joi.object({
           strict: Joi.bool()
+        }),
+        body: Joi.object({
+          strict: Joi.bool()
         })
       })
     }).required(),
