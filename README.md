@@ -154,9 +154,9 @@ The fixtures are composed of:
   "request": {
     "path": "{string} - Http path to match requests, use wildcard '*' to match all",
     "method": "{string} - Http method to match requests, case insensitive, use wildcard '*' to match all",
-    "headers": "{object} [default={}] - Headers to match requests",
-    "query": "{object} [default={}] - Query to match requests",
-    "cookies": "{object} [default={}] - Cookies to match requests",
+    "headers": "{object|array} [default={}] - Headers to match requests",
+    "query": "{object|array} [default={}] - Query to match requests",
+    "cookies": "{object|array} [default={}] - Cookies to match requests",
     "body": "{object} [default=``] - Body to match requests",
     "options": {
       "headers": {
@@ -175,9 +175,9 @@ The fixtures are composed of:
   },
   "response": {
     "status": "{number} [default=200] - Response status code",
-    "headers": "{object} [default={}] - Response headers",
-    "cookies": "{object} [default={}] - Response cookies",
-    "body": "{string|object|array} [default=``] - Body to match requests",
+    "headers": "{object|array} [default={}] - Response headers",
+    "cookies": "{object|array} [default={}] - Response cookies",
+    "body": "{string|object|array} [default=``] - Body to response",
     "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
     "options": {
       "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
@@ -208,7 +208,9 @@ Examples:
   },
   "response": {
     "filepath": "/absolute/path/tofennec.jpg",
-    "delay": 1000
+    "options": {
+      "delay": 1000
+    }
   }
 }
 ```
@@ -277,21 +279,7 @@ Example:
 
 - Status 400 - BAD REQUEST
 
-```
-Path or method are not provided
-```
-
-```
-${PROPERTY} group named "${VALUE}" is not in the configuration
-```
-
-```
-${PROPERTY} "${VALUE}" should be an object or a configuration header group name.
-```
-
-```
-${PROPERTY} should be an array or an object
-```
+The configuration is not valid
 
 - Status 409 - CONFLICT
 
@@ -315,9 +303,9 @@ It is meant to setup multiple fixtures at once.
     "request": {
       "path": "{string} - Http path to match requests, use wildcard '*' to match all",
       "method": "{string} - Http method to match requests, case insensitive, use wildcard '*' to match all",
-      "headers": "{object} [default={}] - Headers to match requests",
-      "query": "{object} [default={}] - Query to match requests",
-      "cookies": "{object} [default={}] - Cookies to match requests",
+      "headers": "{object|array} [default={}] - Headers to match requests",
+      "query": "{object|array} [default={}] - Query to match requests",
+      "cookies": "{object|array} [default={}] - Cookies to match requests",
       "body": "{object} [default=``] - Body to match requests",
       "options": {
         "headers": {
@@ -336,9 +324,9 @@ It is meant to setup multiple fixtures at once.
     },
     "response": {
       "status": "{number} [default=200] - Response status code",
-      "headers": "{object} [default={}] - Response headers",
-      "cookies": "{object} [default={}] - Response cookies",
-      "body": "{string|object|array} [default=``] - Body to match requests",
+      "headers": "{object|array} [default={}] - Response headers",
+      "cookies": "{object|array} [default={}] - Response cookies",
+      "body": "{string|object|array} [default=``] - Body response",
       "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
       "options": {
         "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
@@ -421,7 +409,7 @@ Another fixture with the same matcher is already registered
 Example:
 
 ```
-    DELETE /___fixtures/_38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508
+    DELETE /___fixtures/38ed32e9fb0a1e5c7cb1b6f0ff43f6060d8b4508
 ```
 
 **Responses**
