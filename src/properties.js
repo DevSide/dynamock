@@ -4,20 +4,29 @@ const { isIncluded } = require('./utils')
 exports.REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
 exports.RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']
 
-exports.doesPropertyMatch = function doesPropertyMatch (
+exports.requestPropertyMatch = function requestPropertyMatch (
   request,
   match,
   property
 ) {
-  const requestProperty = request[property] || {}
-  const matchProperty = match[property] || {}
+  let requestProperty = request[property]
+  let matchProperty = match[property]
 
   if (
     match.options &&
     match.options[property] &&
     match.options[property].strict
   ) {
-    return _isEqual(requestProperty, matchProperty)
+    if (property !== 'body') {
+      matchProperty = matchProperty || {}
+      requestProperty = requestProperty || {}
+    }
+
+    return _isEqual(matchProperty, requestProperty)
+  }
+
+  if (!matchProperty && property !== 'body') {
+    return true
   }
 
   return isIncluded(matchProperty, requestProperty)

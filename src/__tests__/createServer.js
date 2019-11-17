@@ -93,6 +93,9 @@ describe('createServer.js', () => {
           response: {
             status: 418,
             body: products
+          },
+          options: {
+            lifetime: 2
           }
         })
         .expect(201, {
@@ -122,6 +125,9 @@ describe('createServer.js', () => {
             },
             response: {
               body: products
+            },
+            options: {
+              lifetime: 2
             }
           },
           {
@@ -131,6 +137,9 @@ describe('createServer.js', () => {
             },
             response: {
               body: categories
+            },
+            options: {
+              lifetime: 2
             }
           }
         ])
@@ -164,6 +173,18 @@ describe('createServer.js', () => {
       [
         null,
         { method: 'get', path: '/products' },
+        { method: 'get', path: '/products' },
+        true
+      ],
+      [
+        null,
+        {
+          method: 'get',
+          path: '/products',
+          headers: {},
+          cookies: {},
+          query: {}
+        },
         { method: 'get', path: '/products' },
         true
       ],
@@ -644,7 +665,90 @@ describe('createServer.js', () => {
     )
   })
 
-  describe('analyze response', () => {
+  describe('lifetime option', () => {
+    test('the fixture should be consumed once', async () => {
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/products',
+            method: 'get'
+          },
+          response: {
+            body: ''
+          }
+        })
+        .expect(201)
+
+      await request.get('/products').expect(200)
+      await request.get('/products').expect(404)
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/products',
+            method: 'get'
+          },
+          response: {
+            body: ''
+          },
+          options: {
+            lifetime: 1
+          }
+        })
+        .expect(201)
+
+      await request.get('/products').expect(200)
+      await request.get('/products').expect(404)
+    })
+
+    test('the fixture should be consumed twice', async () => {
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/products',
+            method: 'get'
+          },
+          response: {
+            body: ''
+          },
+          options: {
+            lifetime: 2
+          }
+        })
+        .expect(201)
+
+      await request.get('/products').expect(200)
+      await request.get('/products').expect(200)
+      await request.get('/products').expect(404)
+    })
+
+    test('the fixture can be consumed in unlimited', async () => {
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/products',
+            method: 'get'
+          },
+          response: {
+            body: ''
+          },
+          options: {
+            lifetime: 0
+          }
+        })
+        .expect(201)
+
+      for (let i = 0; i < 10; i++) {
+        await request.get('/products').expect(200)
+      }
+    })
+  })
+
+  describe('delay option', () => {
     test('delay response', async () => {
       await request
         .post('/___fixtures')

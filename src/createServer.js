@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser')
 const {
   REQUEST_PROPERTIES,
   RESPONSE_PROPERTIES,
-  doesPropertyMatch,
+  requestPropertyMatch,
   useResponseProperties
 } = require('./properties')
 const {
@@ -106,11 +106,8 @@ function createServer () {
   })
 
   app.delete('/___fixtures/:id', (req, res) => {
-    if (removeFixture(req.params.id)) {
-      res.status(204).send({})
-    } else {
-      resError(res, 404, 'Fixture not found.')
-    }
+    removeFixture(req.params.id)
+    res.status(204).send()
   })
 
   app.get('/___config', (req, res) => {
@@ -137,8 +134,8 @@ function createServer () {
 
   app.use(function fixtureHandler (req, res, next) {
     // eslint-disable-next-line no-labels
-    fixtureLoop: for (const [, fixture] of getFixtureIterator()) {
-      const { request, response } = fixture
+    fixtureLoop: for (const [fixtureId, fixture] of getFixtureIterator()) {
+      const { request, response, options = {} } = fixture
 
       if (
         (req.path !== request.path && request.path !== '*') ||
@@ -148,7 +145,7 @@ function createServer () {
       }
 
       for (const property of REQUEST_PROPERTIES) {
-        if (!doesPropertyMatch(req, request, property)) {
+        if (!requestPropertyMatch(req, request, property)) {
           // eslint-disable-next-line no-labels
           continue fixtureLoop
         }
@@ -163,6 +160,13 @@ function createServer () {
           if (response[property] !== undefined) {
             useResponseProperties[property](req, res, response[property])
           }
+        }
+
+        // The fixture has been consumed
+        if (options.lifetime === undefined || options.lifetime === 1) {
+          removeFixture(fixtureId)
+        } else if (options.lifetime > 0) {
+          options.lifetime--
         }
       }
 

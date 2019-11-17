@@ -1,5 +1,7 @@
-const { hash, sortObjectKeysRecurs } = require('./utils')
+const { hash, sortObjectKeysRecurs, isObjectEmpty } = require('./utils')
 const querystring = require('querystring')
+
+// TODO: remove Joi with a lightweight composable validation library
 const Joi = require('@hapi/joi')
 
 const fixtureStorage = new Map()
@@ -50,17 +52,27 @@ exports.validateFixture = function validateFixture (
       })
     }).required(),
     response: Joi.object({
-      status: Joi.number(),
+      status: Joi.number()
+        .integer()
+        .min(200)
+        .max(600),
       body: Joi.any(),
       filepath: Joi.string(),
       headers: schemaProperty,
       cookies: schemaProperty,
       options: Joi.object({
         delay: Joi.number()
+          .integer()
+          .min(0)
       })
     })
       .or('body', 'filepath')
-      .required()
+      .required(),
+    options: Joi.object({
+      lifetime: Joi.number()
+        .integer()
+        .min(0)
+    })
   }).required()
 
   const error = schema.validate(unsafeFixture).error
@@ -135,6 +147,11 @@ function normalizeFixture (fixture, configuration) {
         propertyValue,
         configuration
       )
+    } else if (
+      typeof propertyValue === 'object' &&
+      isObjectEmpty(propertyValue)
+    ) {
+      delete request[property]
     }
   }
 

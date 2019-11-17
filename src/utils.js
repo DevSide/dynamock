@@ -1,6 +1,7 @@
 const crypto = require('crypto')
 const _isEqual = require('lodash/isEqual')
 
+exports.isObjectEmpty = isObjectEmpty
 function isObjectEmpty (object) {
   for (const key in object) {
     if (Object.prototype.hasOwnProperty.call(object, key)) return false

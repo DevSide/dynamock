@@ -17,7 +17,7 @@ npm install dynamock
 
 WIP
 
-## Properties matching
+## Property response matching
 
 WIP
 
@@ -182,6 +182,9 @@ The fixtures are composed of:
     "options": {
       "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
     }
+  },
+  "options": {
+    "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
   }
 }
 ```
@@ -331,6 +334,9 @@ It is meant to setup multiple fixtures at once.
       "options": {
         "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
       }
+    },
+    "options": {
+      "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
     }
   }
 ]
@@ -390,7 +396,7 @@ The fixture is not valid
 
 - Status 409 - CONFLICT
 
-Another fixture with the same matcher is already registered
+Another fixture with the same request is already registered
 
 <br/>
 
