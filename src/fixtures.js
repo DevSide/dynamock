@@ -32,7 +32,9 @@ exports.validateFixture = function validateFixture (
     request: Joi.object({
       body: Joi.any(),
       path: Joi.string().required(),
-      method: Joi.string().required(),
+      method: Joi.string()
+        .regex(/^(head|delete|put|post|get|options|patch)$/i)
+        .required(),
       headers: schemaProperty,
       cookies: schemaProperty,
       query: schemaProperty,

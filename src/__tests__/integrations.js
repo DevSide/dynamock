@@ -104,67 +104,58 @@ describe('createServer.js', () => {
       [{}, { body: '' }, undefined, false],
       [{ unknown: 'unknown' }, { body: '' }, undefined, false],
       [{ method: 'get' }, { body: '' }, undefined, false],
-      [{ path: '/pandas' }, { body: '' }, undefined, false],
+      [{ path: '/' }, { body: '' }, undefined, false],
+      [{ path: '/' }, { body: '' }, undefined, false],
+
+      [{ path: '/', method: 'unknown' }, { body: '' }, undefined, false],
+      [{ path: '/', method: 'head' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'HEAD' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'delete' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'put' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'post' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'get' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'options' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'patch' }, { body: '' }, undefined, true],
 
       // request body
-      [
-        { method: 'get', path: '/pandas', body: '' },
-        { body: '' },
-        undefined,
-        true
-      ],
-      [
-        { method: 'get', path: '/pandas', body: {} },
-        { body: '' },
-        undefined,
-        true
-      ],
-      [
-        { method: 'get', path: '/pandas', body: 1 },
-        { body: '' },
-        undefined,
-        true
-      ],
-      [
-        { method: 'get', path: '/pandas', body: [] },
-        { body: '' },
-        undefined,
-        true
-      ],
+      [{ method: 'get', path: '/', body: '' }, { body: '' }, undefined, true],
+      [{ method: 'get', path: '/', body: {} }, { body: '' }, undefined, true],
+      [{ method: 'get', path: '/', body: 1 }, { body: '' }, undefined, true],
+      [{ method: 'get', path: '/', body: [] }, { body: '' }, undefined, true],
 
       // request headers
       [
-        { method: 'get', path: '/pandas', headers: {} },
+        { method: 'get', path: '/', headers: {} },
         { body: '' },
         undefined,
         true
       ],
       [
-        { method: 'get', path: '/pandas', headers: null },
+        { method: 'get', path: '/', headers: null },
         { body: '' },
         undefined,
         false
       ],
       [
-        { method: 'get', path: '/pandas', headers: { a: 'b' } },
+        { method: 'get', path: '/', headers: { a: 'b' } },
         { body: '' },
         undefined,
         true
       ],
       [
-        { method: 'get', path: '/pandas', headers: [] },
+        { method: 'get', path: '/', headers: [] },
         { body: '' },
         undefined,
         true
       ],
       [
-        { method: 'get', path: '/pandas', headers: [1] },
+        { method: 'get', path: '/', headers: [1] },
         { body: '' },
         undefined,
         false
       ],
       [
-        { method: 'get', path: '/pandas', headers: ['not-in-configuration'] },
+        { method: 'get', path: '/', headers: ['not-in-configuration'] },
         { body: '' },
         undefined,
         false
