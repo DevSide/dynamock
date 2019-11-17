@@ -4,9 +4,9 @@ describe('createServer.js', () => {
   const supertest = require('supertest')
   const { dirname } = require('path')
 
-  let request
-  let server
   let app
+  let server
+  let request
 
   beforeEach(function (done) {
     jest.mock('fs', () => {
@@ -77,9 +77,121 @@ describe('createServer.js', () => {
     test('reset configuration', async () => {
       await request.delete('/___config').expect(204)
     })
+
+    test.each([
+      // valid
+      [{}, true],
+      [{ headers: {}, cookies: {}, query: {} }, true],
+
+      // invalid
+      [[], false],
+      [{ unknown: 'unknown' }, false],
+      [{ headers: [] }, false]
+    ])(
+      'validate config="%o" response="%o" options="%o" isValid=%s',
+      (config, isValid) => {
+        return request
+          .put('/___config')
+          .send(config)
+          .expect(isValid ? 200 : 400)
+      }
+    )
   })
 
-  describe('create fixtures', () => {
+  describe('validation fixture', () => {
+    test.each([
+      // request path / method
+      [{}, { body: '' }, undefined, false],
+      [{ unknown: 'unknown' }, { body: '' }, undefined, false],
+      [{ method: 'get' }, { body: '' }, undefined, false],
+      [{ path: '/pandas' }, { body: '' }, undefined, false],
+
+      // request body
+      [
+        { method: 'get', path: '/pandas', body: '' },
+        { body: '' },
+        undefined,
+        true
+      ],
+      [
+        { method: 'get', path: '/pandas', body: {} },
+        { body: '' },
+        undefined,
+        true
+      ],
+      [
+        { method: 'get', path: '/pandas', body: 1 },
+        { body: '' },
+        undefined,
+        true
+      ],
+      [
+        { method: 'get', path: '/pandas', body: [] },
+        { body: '' },
+        undefined,
+        true
+      ],
+
+      // request headers
+      [
+        { method: 'get', path: '/pandas', headers: {} },
+        { body: '' },
+        undefined,
+        true
+      ],
+      [
+        { method: 'get', path: '/pandas', headers: null },
+        { body: '' },
+        undefined,
+        false
+      ],
+      [
+        { method: 'get', path: '/pandas', headers: { a: 'b' } },
+        { body: '' },
+        undefined,
+        true
+      ],
+      [
+        { method: 'get', path: '/pandas', headers: [] },
+        { body: '' },
+        undefined,
+        true
+      ],
+      [
+        { method: 'get', path: '/pandas', headers: [1] },
+        { body: '' },
+        undefined,
+        false
+      ],
+      [
+        { method: 'get', path: '/pandas', headers: ['not-in-configuration'] },
+        { body: '' },
+        undefined,
+        false
+      ]
+    ])(
+      'validate request="%o" response="%o" options="%o" isValid=%s',
+      async (req, resp, options, isValid) => {
+        await request
+          .post('/___fixtures')
+          .send({ request: req, response: resp, options })
+          .expect(isValid ? 201 : 400)
+
+        // Same error in bulk
+        if (!isValid) {
+          await request
+            .post('/___fixtures/bulk')
+            .send([
+              { request: { method: 'get', path: '/' } },
+              { request: req, response: resp, options }
+            ])
+            .expect(400)
+        }
+      }
+    )
+  })
+
+  describe('create and delete fixtures', () => {
     test('create and remove simple fixture', async () => {
       const products = [{ id: 1 }, { id: 2 }]
 
@@ -168,6 +280,79 @@ describe('createServer.js', () => {
       ])
     })
 
+    test('create and remove all fixtures', async () => {
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/octopus',
+            method: 'get'
+          },
+          response: {
+            body: []
+          }
+        })
+        .expect(201, {
+          id: 'eb05231114f144acb7bca60806ac25ad7f43c973'
+        })
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/giraffes',
+            method: 'get'
+          },
+          response: {
+            body: []
+          }
+        })
+        .expect(201, {
+          id: '66474236616bc5a68c6498b497b2ce9a43484892'
+        })
+
+      await request.delete('/___fixtures').expect(204)
+
+      await request.get('/octopus').expect(404, {})
+
+      await request.get('/giraffes').expect(404, {})
+    })
+
+    test('create and remove filepath fixture', async () => {
+      const fs = require('fs')
+      const file = '/tmp/panda.txt'
+
+      fs.mkdirSync(dirname(file))
+      fs.writeFileSync(file, 'pandas !')
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/panda.txt',
+            method: 'get'
+          },
+          response: {
+            filepath: file
+          }
+        })
+        .expect(201, {
+          id: 'd8a1f72e9cd206c612847a7089e8c9460648c4bf'
+        })
+
+      await request
+        .get('/panda.txt')
+        .expect('Content-Type', /text\/plain/)
+        .expect(200, 'pandas !')
+
+      await request
+        .delete('/___fixtures/d8a1f72e9cd206c612847a7089e8c9460648c4bf')
+        .expect(204)
+
+      await request.get('/panda.txt').expect(404)
+    })
+  })
+
+  describe('conflicts fixtures', () => {
     test.each([
       // Conflicts
       [
@@ -190,8 +375,48 @@ describe('createServer.js', () => {
       ],
       [
         null,
-        { method: 'get', path: '/products', headers: { a: 'a', b: 'b' } },
-        { method: 'get', path: '/products', headers: { b: 'b', a: 'a' } },
+        {
+          method: 'get',
+          path: '/products',
+          headers: { a: 'a' },
+          cookies: { a: 'a' }
+        },
+        {
+          method: 'get',
+          path: '/products',
+          cookies: { a: 'a' },
+          headers: { a: 'a' }
+        },
+        true
+      ],
+      [
+        null,
+        {
+          method: 'get',
+          path: '/products',
+          headers: [],
+          cookies: [],
+          query: []
+        },
+        { method: 'get', path: '/products' },
+        true
+      ],
+      [
+        null,
+        {
+          method: 'get',
+          path: '/products',
+          headers: { a: 'a', b: 'b' },
+          cookies: { a: 'a', b: 'b' },
+          query: { a: 'a', b: 'b' }
+        },
+        {
+          method: 'get',
+          path: '/products',
+          headers: { b: 'b', a: 'a' },
+          cookies: { a: 'a', b: 'b' },
+          query: { a: 'a', b: 'b' }
+        },
         true
       ],
       // No conflicts
@@ -272,77 +497,6 @@ describe('createServer.js', () => {
         }
       }
     )
-
-    test('create and remove all fixtures', async () => {
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/octopus',
-            method: 'get'
-          },
-          response: {
-            body: []
-          }
-        })
-        .expect(201, {
-          id: 'eb05231114f144acb7bca60806ac25ad7f43c973'
-        })
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/giraffes',
-            method: 'get'
-          },
-          response: {
-            body: []
-          }
-        })
-        .expect(201, {
-          id: '66474236616bc5a68c6498b497b2ce9a43484892'
-        })
-
-      await request.delete('/___fixtures').expect(204)
-
-      await request.get('/octopus').expect(404, {})
-
-      await request.get('/giraffes').expect(404, {})
-    })
-
-    test('create and remove filepath fixture', async () => {
-      const fs = require('fs')
-      const file = '/tmp/panda.txt'
-
-      fs.mkdirSync(dirname(file))
-      fs.writeFileSync(file, 'pandas !')
-
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/panda.txt',
-            method: 'get'
-          },
-          response: {
-            filepath: file
-          }
-        })
-        .expect(201, {
-          id: 'd8a1f72e9cd206c612847a7089e8c9460648c4bf'
-        })
-
-      await request
-        .get('/panda.txt')
-        .expect('Content-Type', /text\/plain/)
-        .expect(200, 'pandas !')
-
-      await request
-        .delete('/___fixtures/d8a1f72e9cd206c612847a7089e8c9460648c4bf')
-        .expect(204)
-
-      await request.get('/panda.txt').expect(404)
-    })
   })
 
   describe('matching headers', () => {
@@ -517,8 +671,13 @@ describe('createServer.js', () => {
       [null, '/test', { x: '1' }, '/test?x=1', null, true],
       [null, '/test', { x: '1' }, '/test?x=1', { strict: true }, true],
       [null, '/test', { x: '1' }, '/test?x=2', null, false],
+      [null, '/test?x=1', undefined, '/test?x=1', null, true],
+      [null, '/test?x=1&y=2', undefined, '/test?x=1&y=2', null, true],
+      [null, '/test?y=2&&x=1', undefined, '/test?x=1&y=2', null, true],
       [null, '/test', { x: '1', y: '2' }, '/test?x=1', null, false],
       [null, '/test', { x: '1', y: '2' }, '/test?x=1&y=2', null, true],
+      [null, '/test?y=2', { x: '1' }, '/test?x=1', null, false],
+      [null, '/test?y=2', { x: '1' }, '/test?x=1&y=2', null, true],
       [null, '/test', { x: '1', y: '2' }, '/test?y=2&x=1', null, true],
       [null, '/test', { x: '1' }, '/test?x=1&y=2', null, true],
       [null, '/test', { x: '1' }, '/test?x=1&y=2', { strict: true }, false],
@@ -614,7 +773,11 @@ describe('createServer.js', () => {
       [null, {}, { x: 'x' }, true],
       [null, { x: 'x' }, { x: 'x' }, true],
       [null, { x: 'x' }, { x: 'x', other: 'other' }, true],
-      [null, { x: 'x', other: 'other' }, { x: 'x' }, false]
+      [null, { x: 'x', other: 'other' }, { x: 'x' }, false],
+      [null, { a: { b: 'b' } }, { a: { b: 'b', c: 'c' } }, true],
+      [null, { a: { b: 'b', c: [] } }, { a: { b: 'b', c: [] } }, true],
+      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b', c: [] } }, false],
+      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b' } }, false]
     ])(
       'match body config="%o" match="%s" request="%o" result=%s',
       async (configuration, matchValues, values, shouldMatch) => {
@@ -770,5 +933,111 @@ describe('createServer.js', () => {
       // expect(setTimeout).toHaveBeenCalledTimes(1)
       // expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000)
     })
+  })
+
+  describe('reponses', () => {
+    test.each([[undefined, 200], [200, 200], [204, 204], [301, 301]])(
+      'response status status="%n"',
+      async (status, expectedStatus) => {
+        await request.post('/___fixtures').send({
+          request: {
+            path: '/',
+            method: 'get'
+          },
+          response: {
+            status,
+            body: ''
+          }
+        })
+
+        await request.get('/').expect(expectedStatus)
+      }
+    )
+
+    test.each([
+      ['headers', null, {}, {}],
+      ['headers', null, { a: 'a' }, { a: 'a' }],
+      ['headers', null, { a: 'a', b: 'b' }, { a: 'a', b: 'b' }],
+      ['headers', null, [{ a: 'a' }], { a: 'a' }],
+      ['headers', null, [{ a: 'a' }, { b: 'b' }], { a: 'a', b: 'b' }],
+      ['headers', { A: { a: 'a' } }, ['A'], { a: 'a' }],
+      ['headers', { A: { a: 'a' } }, ['A', { a: 'a' }], { a: 'a' }],
+      ['headers', { A: { a: 'a' } }, ['A', { b: 'b' }], { a: 'a', b: 'b' }],
+      [
+        'headers',
+        { A: { a: 'a' }, B: { b: 'b' } },
+        ['A', 'B'],
+        { a: 'a', b: 'b' }
+      ],
+      [
+        'headers',
+        { A: { a: 'a' }, C: { c: 'c' } },
+        ['A', { b: 'b' }, 'C'],
+        { a: 'a', b: 'b', c: 'c' }
+      ],
+      ['cookies', null, {}, {}],
+      ['cookies', undefined, { a: 'a' }, { a: 'a' }],
+      ['cookies', undefined, { a: 'a', b: 'b' }, { a: 'a', b: 'b' }],
+      ['cookies', undefined, [{ a: 'a' }], { a: 'a' }],
+      ['cookies', undefined, [{ a: 'a' }, { b: 'b' }], { a: 'a', b: 'b' }],
+      ['cookies', { A: { a: 'a' } }, ['A'], { a: 'a' }],
+      ['cookies', { A: { a: 'a' } }, ['A', { a: 'a' }], { a: 'a' }],
+      ['cookies', { A: { a: 'a' } }, ['A', { b: 'b' }], { a: 'a', b: 'b' }],
+      [
+        'cookies',
+        { A: { a: 'a' }, B: { b: 'b' } },
+        ['A', 'B'],
+        { a: 'a', b: 'b' }
+      ],
+      [
+        'cookies',
+        { A: { a: 'a' }, C: { c: 'c' } },
+        ['A', { b: 'b' }, 'C'],
+        { a: 'a', b: 'b', c: 'c' }
+      ]
+    ])(
+      'response %s configHeaders="%o" propertyValue="%o" expectedPropertyValue="%o"',
+      async (property, configuration, propertyValue, expectedPropertyValue) => {
+        if (configuration) {
+          await request
+            .put('/___config')
+            .send({
+              [property]: configuration
+            })
+            .expect(200)
+        }
+
+        await request.post('/___fixtures').send({
+          request: {
+            path: '/',
+            method: 'get'
+          },
+          response: {
+            [property]: propertyValue,
+            body: ''
+          }
+        })
+
+        const r = request.get('/').expect(200)
+
+        if (property === 'headers') {
+          for (const key in expectedPropertyValue) {
+            r.expect(key, expectedPropertyValue[key])
+          }
+        } else {
+          const cookieValue = []
+
+          for (const key in expectedPropertyValue) {
+            cookieValue.push(`${key}=${expectedPropertyValue[key]}; Path=/`)
+          }
+
+          if (cookieValue.length) {
+            r.expect('set-cookie', cookieValue.join(','))
+          }
+        }
+
+        await r
+      }
+    )
   })
 })

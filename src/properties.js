@@ -39,8 +39,9 @@ exports.useResponseProperties = {
   },
   headers: (req, res, value) => res.set(value),
   body: (req, res, value) => res.send(value),
-  cookies: (req, res, value) =>
-    Object.entries(value).forEach((r, pair) => {
-      res.cookie(...pair)
-    })
+  cookies: (req, res, cookies) => {
+    for (const key in cookies) {
+      res.cookie(key, cookies[key])
+    }
+  }
 }

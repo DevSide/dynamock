@@ -24,10 +24,6 @@ exports.isIncluded = function isIncluded (object, base) {
       const baseValue = base[key]
 
       if (isObject(value) && value !== null) {
-        if (isObjectEmpty(value)) {
-          continue
-        }
-
         if (isObject(baseValue) && _isIncluded(value, baseValue)) {
           continue
         }

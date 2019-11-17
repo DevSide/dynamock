@@ -147,10 +147,9 @@ function normalizeFixture (fixture, configuration) {
         propertyValue,
         configuration
       )
-    } else if (
-      typeof propertyValue === 'object' &&
-      isObjectEmpty(propertyValue)
-    ) {
+    }
+
+    if (typeof propertyValue === 'object' && isObjectEmpty(propertyValue)) {
       delete request[property]
     }
   }
