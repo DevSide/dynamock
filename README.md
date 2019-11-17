@@ -2,15 +2,18 @@
 
 # dynamock
 
+[![npm version](https://badge.fury.io/js/dynamock.svg)](https://badge.fury.io/js/dynamock)
+![David](https://img.shields.io/david/devside/dynamock)
+![node](https://img.shields.io/node/v/dynamock)
 [![Build Status](https://travis-ci.com/DevSide/dynamock.svg?branch=master)](https://travis-ci.com/DevSide/dynamock)
 [![Coverage Status](https://coveralls.io/repos/github/DevSide/dynamock/badge.svg?branch=master)](https://coveralls.io/github/DevSide/dynamock?branch=master)
 
 ## Install
 
 ```bash
-yarn add dynamock
+yarn add dynamock -D
 # or NPM
-npm install dynamock
+npm install dynamock --save-dev
 ```
 
 ## Usage
@@ -226,6 +229,11 @@ Examples:
     "body": {
       "name": "po",
       "type": "panda"
+    },
+    "options": {
+      "body": {
+        "strict": true
+      }
     }
   },
   "response": {
@@ -233,13 +241,6 @@ Examples:
       "id": "1",
       "name": "po",
       "type": "panda"
-    }
-  },
-  "options": {
-    "request": {
-      "body": {
-        "strict": true
-      }
     }
   }
 }

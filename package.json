@@ -1,7 +1,7 @@
 {
   "name": "dynamock",
   "version": "1.0.0-beta.5",
-  "description": "",
+  "description": "Dynamic mock server which serves fixtures based on property matching",
   "repository": "https://github.com/DevSide/dynamock",
   "bin": "bin/dynamock.js",
   "main": "src/createServer.js",
@@ -9,6 +9,9 @@
     "format": "prettier-eslint --write '**/*.js' '**/*.md'",
     "lint": "eslint '**/*.js'",
     "test": "jest src"
+  },
+  "engines": {
+    "node": ">=8"
   },
   "keywords": [],
   "author": "DevSide",
