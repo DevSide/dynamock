@@ -8,6 +8,8 @@
 [![Build Status](https://travis-ci.com/DevSide/dynamock.svg?branch=master)](https://travis-ci.com/DevSide/dynamock)
 [![Coverage Status](https://coveralls.io/repos/github/DevSide/dynamock/badge.svg?branch=master)](https://coveralls.io/github/DevSide/dynamock?branch=master)
 
+`dynamock` is a dynamic mock/fixture server designed for functional testing.
+
 ## Install
 
 ```bash
@@ -17,6 +19,19 @@ npm install dynamock --save-dev
 ```
 
 ## Usage
+
+### Run the server (NodeJS required)
+
+```bash
+# dynamock PORT [HOST]
+dynamock 3001
+```
+
+### Inject fixtures
+
+WIP
+
+### Consume fixtures
 
 WIP
 
@@ -367,6 +382,8 @@ Examples:
   }
 ]
 ```
+
+**Responses**
 
 - Status 200 - OK
 

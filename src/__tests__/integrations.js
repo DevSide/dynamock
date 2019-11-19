@@ -1,14 +1,12 @@
-describe('createServer.js', () => {
-  jest.useFakeTimers()
+jest.useFakeTimers()
 
-  const supertest = require('supertest')
+describe('integrations.js', () => {
   const { dirname } = require('path')
 
-  let app
   let server
   let request
 
-  beforeEach(function (done) {
+  beforeAll(function (done) {
     jest.mock('fs', () => {
       const mockFs = new (require('metro-memory-fs'))()
       mockFs.ReadStream = class {} // This fix an error with destroy package
@@ -16,12 +14,18 @@ describe('createServer.js', () => {
     })
     require('fs').reset()
 
-    app = require('../createServer')()
+    const supertest = require('supertest')
+    const app = require('../createServer')()
+
     server = app.listen(done)
     request = supertest.agent(server)
   })
 
-  afterEach(function (done) {
+  afterEach(async function () {
+    return Promise.all([request.delete('/___config'), request.delete('/___fixtures')])
+  })
+
+  afterAll(function (done) {
     server.close(done)
     server = null
   })
@@ -87,15 +91,12 @@ describe('createServer.js', () => {
       [[], false],
       [{ unknown: 'unknown' }, false],
       [{ headers: [] }, false]
-    ])(
-      'validate config="%o" response="%o" options="%o" isValid=%s',
-      (config, isValid) => {
-        return request
-          .put('/___config')
-          .send(config)
-          .expect(isValid ? 200 : 400)
-      }
-    )
+    ])('validate config="%o" response="%o" options="%o" isValid=%s', (config, isValid) => {
+      return request
+        .put('/___config')
+        .send(config)
+        .expect(isValid ? 200 : 400)
+    })
   })
 
   describe('validation fixture', () => {
@@ -124,62 +125,26 @@ describe('createServer.js', () => {
       [{ method: 'get', path: '/', body: [] }, { body: '' }, undefined, true],
 
       // request headers
-      [
-        { method: 'get', path: '/', headers: {} },
-        { body: '' },
-        undefined,
-        true
-      ],
-      [
-        { method: 'get', path: '/', headers: null },
-        { body: '' },
-        undefined,
-        false
-      ],
-      [
-        { method: 'get', path: '/', headers: { a: 'b' } },
-        { body: '' },
-        undefined,
-        true
-      ],
-      [
-        { method: 'get', path: '/', headers: [] },
-        { body: '' },
-        undefined,
-        true
-      ],
-      [
-        { method: 'get', path: '/', headers: [1] },
-        { body: '' },
-        undefined,
-        false
-      ],
-      [
-        { method: 'get', path: '/', headers: ['not-in-configuration'] },
-        { body: '' },
-        undefined,
-        false
-      ]
-    ])(
-      'validate request="%o" response="%o" options="%o" isValid=%s',
-      async (req, resp, options, isValid) => {
-        await request
-          .post('/___fixtures')
-          .send({ request: req, response: resp, options })
-          .expect(isValid ? 201 : 400)
+      [{ method: 'get', path: '/', headers: {} }, { body: '' }, undefined, true],
+      [{ method: 'get', path: '/', headers: null }, { body: '' }, undefined, false],
+      [{ method: 'get', path: '/', headers: { a: 'b' } }, { body: '' }, undefined, true],
+      [{ method: 'get', path: '/', headers: [] }, { body: '' }, undefined, true],
+      [{ method: 'get', path: '/', headers: [1] }, { body: '' }, undefined, false],
+      [{ method: 'get', path: '/', headers: ['not-in-configuration'] }, { body: '' }, undefined, false]
+    ])('validate request="%o" response="%o" options="%o" isValid=%s', async (req, resp, options, isValid) => {
+      await request
+        .post('/___fixtures')
+        .send({ request: req, response: resp, options })
+        .expect(isValid ? 201 : 400)
 
-        // Same error in bulk
-        if (!isValid) {
-          await request
-            .post('/___fixtures/bulk')
-            .send([
-              { request: { method: 'get', path: '/' } },
-              { request: req, response: resp, options }
-            ])
-            .expect(400)
-        }
+      // Same error in bulk
+      if (!isValid) {
+        await request
+          .post('/___fixtures/bulk')
+          .send([{ request: { method: 'get', path: '/' } }, { request: req, response: resp, options }])
+          .expect(400)
       }
-    )
+    })
   })
 
   describe('create and delete fixtures', () => {
@@ -207,9 +172,7 @@ describe('createServer.js', () => {
 
       await request.get('/products').expect(418, products)
 
-      await request
-        .delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf')
-        .expect(204)
+      await request.delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf').expect(204)
 
       await request.get('/products').expect(404)
     })
@@ -246,29 +209,16 @@ describe('createServer.js', () => {
             }
           }
         ])
-        .expect(201, [
-          { id: '6a68271761e4729581283c2b40b7e428c25513cf' },
-          { id: '1b8b0bca022acacfd5955c510e06e1ff671a823c' }
-        ])
+        .expect(201, [{ id: '6a68271761e4729581283c2b40b7e428c25513cf' }, { id: '1b8b0bca022acacfd5955c510e06e1ff671a823c' }])
+
+      await Promise.all([request.get('/products').expect(200, products), request.get('/categories').expect(200, categories)])
 
       await Promise.all([
-        request.get('/products').expect(200, products),
-        request.get('/categories').expect(200, categories)
+        request.delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf').expect(204),
+        request.delete('/___fixtures/1b8b0bca022acacfd5955c510e06e1ff671a823c').expect(204)
       ])
 
-      await Promise.all([
-        request
-          .delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf')
-          .expect(204),
-        request
-          .delete('/___fixtures/1b8b0bca022acacfd5955c510e06e1ff671a823c')
-          .expect(204)
-      ])
-
-      await Promise.all([
-        request.get('/products').expect(404),
-        request.get('/categories').expect(404)
-      ])
+      await Promise.all([request.get('/products').expect(404), request.get('/categories').expect(404)])
     })
 
     test('create and remove all fixtures', async () => {
@@ -335,9 +285,7 @@ describe('createServer.js', () => {
         .expect('Content-Type', /text\/plain/)
         .expect(200, 'pandas !')
 
-      await request
-        .delete('/___fixtures/d8a1f72e9cd206c612847a7089e8c9460648c4bf')
-        .expect(204)
+      await request.delete('/___fixtures/d8a1f72e9cd206c612847a7089e8c9460648c4bf').expect(204)
 
       await request.get('/panda.txt').expect(404)
     })
@@ -346,109 +294,40 @@ describe('createServer.js', () => {
   describe('conflicts fixtures', () => {
     test.each([
       // Conflicts
+      [null, { method: 'get', path: '/products' }, { method: 'get', path: '/products' }, true],
+      [null, { method: 'get', path: '/products', headers: {}, cookies: {}, query: {} }, { method: 'get', path: '/products' }, true],
       [
         null,
-        { method: 'get', path: '/products' },
-        { method: 'get', path: '/products' },
+        { method: 'get', path: '/products', headers: { a: 'a' }, cookies: { a: 'a' } },
+        { method: 'get', path: '/products', cookies: { a: 'a' }, headers: { a: 'a' } },
         true
       ],
+      [null, { method: 'get', path: '/products', headers: [], cookies: [], query: [] }, { method: 'get', path: '/products' }, true],
       [
         null,
-        {
-          method: 'get',
-          path: '/products',
-          headers: {},
-          cookies: {},
-          query: {}
-        },
-        { method: 'get', path: '/products' },
-        true
-      ],
-      [
-        null,
-        {
-          method: 'get',
-          path: '/products',
-          headers: { a: 'a' },
-          cookies: { a: 'a' }
-        },
-        {
-          method: 'get',
-          path: '/products',
-          cookies: { a: 'a' },
-          headers: { a: 'a' }
-        },
-        true
-      ],
-      [
-        null,
-        {
-          method: 'get',
-          path: '/products',
-          headers: [],
-          cookies: [],
-          query: []
-        },
-        { method: 'get', path: '/products' },
-        true
-      ],
-      [
-        null,
-        {
-          method: 'get',
-          path: '/products',
-          headers: { a: 'a', b: 'b' },
-          cookies: { a: 'a', b: 'b' },
-          query: { a: 'a', b: 'b' }
-        },
-        {
-          method: 'get',
-          path: '/products',
-          headers: { b: 'b', a: 'a' },
-          cookies: { a: 'a', b: 'b' },
-          query: { a: 'a', b: 'b' }
-        },
+        { method: 'get', path: '/products', headers: { a: 'a', b: 'b' }, cookies: { a: 'a', b: 'b' }, query: { a: 'a', b: 'b' } },
+        { method: 'get', path: '/products', headers: { b: 'b', a: 'a' }, cookies: { a: 'a', b: 'b' }, query: { a: 'a', b: 'b' } },
         true
       ],
       // No conflicts
-      [
-        null,
-        { method: 'get', path: '/products' },
-        { method: 'post', path: '/products' },
-        false
-      ],
-      [
-        null,
-        { method: 'post', path: '/products' },
-        { method: 'get', path: '/products' },
-        false
-      ],
-      [
-        null,
-        { method: 'get', path: '/products' },
-        { method: 'get', path: '/categories' },
-        false
-      ],
-      [
-        null,
-        { method: 'get', path: '/categories' },
-        { method: 'get', path: '/products' },
-        false
-      ]
-    ])(
-      'conflict situation config="%o" requestA="%o" requestB="%o" shouldConflict=%s',
-      async (configuration, requestA, requestB, shouldConflict) => {
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              headers: configuration
-            })
-            .expect(200)
-        }
+      [null, { method: 'get', path: '/products' }, { method: 'post', path: '/products' }, false],
+      [null, { method: 'post', path: '/products' }, { method: 'get', path: '/products' }, false],
+      [null, { method: 'get', path: '/products' }, { method: 'get', path: '/categories' }, false],
+      [null, { method: 'get', path: '/categories' }, { method: 'get', path: '/products' }, false]
+    ])('conflict situation config="%o" requestA="%o" requestB="%o" shouldConflict=%s', async (configuration, requestA, requestB, shouldConflict) => {
+      if (configuration) {
+        await request
+          .put('/___config')
+          .send({
+            headers: configuration
+          })
+          .expect(200)
+      }
 
-        // Check if combining fixtures in a single request also failed
-        const r1 = request.post('/___fixtures/bulk').send(
+      // Check if combining fixtures in a single request also failed
+      await request
+        .post('/___fixtures/bulk')
+        .send(
           [requestA, requestB].map(request => ({
             request: request,
             response: {
@@ -456,38 +335,32 @@ describe('createServer.js', () => {
             }
           }))
         )
+        .expect(shouldConflict ? 409 : 201)
 
-        if (shouldConflict) {
-          await r1.expect(409)
-        } else {
-          await r1.expect(201)
-          await request.delete('/___fixtures')
-        }
+      if (!shouldConflict) {
+        await request.delete('/___fixtures')
+      }
 
-        await request
-          .post('/___fixtures')
-          .send({
-            request: requestA,
-            response: {
-              body: {}
-            }
-          })
-          .expect(201)
+      await request
+        .post('/___fixtures')
+        .send({
+          request: requestA,
+          response: {
+            body: {}
+          }
+        })
+        .expect(201)
 
-        const r2 = request.post('/___fixtures').send({
+      await request
+        .post('/___fixtures')
+        .send({
           request: requestB,
           response: {
             body: {}
           }
         })
-
-        if (shouldConflict) {
-          await r2.expect(409)
-        } else {
-          await r2.expect(201)
-        }
-      }
-    )
+        .expect(shouldConflict ? 409 : 201)
+    })
   })
 
   describe('matching headers', () => {
@@ -501,54 +374,39 @@ describe('createServer.js', () => {
       [{ custom: { a: 'a', b: 'b' } }, ['custom'], { a: 'a', b: 'b' }, true],
       [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], { a: 'a' }, false],
       [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], { a: 'a', b: 'b' }, true]
-    ])(
-      'match headers config="%o" match="%o" request="%o" result=%s',
-      async (configuration, matchValues, values, shouldMatch) => {
-        const path = '/test'
-        const method = 'get'
+    ])('match headers config="%o" match="%o" request="%o" result=%s', async (configuration, matchValues, values, shouldMatch) => {
+      const path = '/test'
+      const method = 'get'
 
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              headers: configuration
-            })
-            .expect(200)
-        }
-
+      if (configuration) {
         await request
-          .post('/___fixtures')
+          .put('/___config')
           .send({
-            request: {
-              path,
-              method,
-              headers: matchValues
-            },
-            response: {
-              body: {}
-            }
+            headers: configuration
           })
-          .expect(201)
-
-        if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request
-            // eslint-disable-next-line no-unexpected-multiline
-            [method](path)
-            .expect(404)
-        }
-
-        const r = request
-          // eslint-disable-next-line no-unexpected-multiline
-          [method](path)
-          .set(values)
-
-        if (shouldMatch) {
-          await r.expect(200, {})
-        } else {
-          await r.expect(404)
-        }
+          .expect(200)
       }
-    )
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path,
+            method,
+            headers: matchValues
+          },
+          response: {
+            body: ''
+          }
+        })
+        .expect(201)
+
+      await request
+        // eslint-disable-next-line no-unexpected-multiline
+        [method](path)
+        .set(values)
+        .expect(shouldMatch ? 200 : 404)
+    })
   })
 
   describe('matching cookies', () => {
@@ -562,97 +420,55 @@ describe('createServer.js', () => {
       [{ xOnly: { x: 'x' } }, ['xOnly'], { x: 'x' }, null, true],
       [{ xOnly: { x: 'x' } }, ['xOnly'], { x: 'x' }, { strict: true }, true],
       [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x' }, null, false],
-      [
-        { xAndY: { x: 'x', y: 'y' } },
-        ['xAndY'],
-        { x: 'x', y: 'y' },
-        null,
-        true
-      ],
-      [
-        { xOnly: { x: 'x' }, yOnly: { y: 'y' } },
-        ['xOnly', 'yOnly'],
-        { x: 'x' },
-        null,
-        false
-      ],
-      [
-        { xOnly: { x: 'x' }, yOnly: { y: 'y' } },
-        ['xOnly', 'yOnly'],
-        { x: 'x', y: 'y' },
-        null,
-        true
-      ],
-      [
-        { xOnly: { x: 'x' } },
-        ['xOnly', { y: 'y' }],
-        { x: 'x', y: 'y' },
-        null,
-        true
-      ]
-    ])(
-      'match cookies config="%o" match="%s %o" request="%s %o" result=%s',
-      async (configuration, matchValues, values, options, shouldMatch) => {
-        const path = '/test'
-        const method = 'get'
+      [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x', y: 'y' }, null, true],
+      [{ xOnly: { x: 'x' }, yOnly: { y: 'y' } }, ['xOnly', 'yOnly'], { x: 'x' }, null, false],
+      [{ xOnly: { x: 'x' }, yOnly: { y: 'y' } }, ['xOnly', 'yOnly'], { x: 'x', y: 'y' }, null, true],
+      [{ xOnly: { x: 'x' } }, ['xOnly', { y: 'y' }], { x: 'x', y: 'y' }, null, true]
+    ])('match cookies config="%o" match="%s %o" request="%s %o" result=%s', async (configuration, matchValues, values, options, shouldMatch) => {
+      const path = '/test'
+      const method = 'get'
 
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              cookies: configuration
-            })
-            .expect(200)
-        }
-
+      if (configuration) {
         await request
-          .post('/___fixtures')
+          .put('/___config')
           .send({
-            request: {
-              path,
-              method,
-              cookies: matchValues,
-              ...(options
-                ? {
-                  options: {
-                    cookies: options
-                  }
-                }
-                : {})
-            },
-            response: {
-              body: {}
-            }
+            cookies: configuration
           })
-          .expect(201)
-
-        if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request
-            // eslint-disable-next-line no-unexpected-multiline
-            [method](path)
-            .expect(404)
-        }
-
-        const cookies = Object.entries(values)
-          .reduce((acc, [key, value]) => {
-            acc.push(`${key}=${value}`)
-            return acc
-          }, [])
-          .join(';')
-
-        const r = request[method](path)
-
-        if (cookies) {
-          r.set('Cookie', [cookies])
-        }
-
-        if (shouldMatch) {
-          await r.expect(200, {})
-        } else {
-          await r.expect(404)
-        }
+          .expect(200)
       }
-    )
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path,
+            method,
+            cookies: matchValues,
+            ...(options
+              ? {
+                options: {
+                  cookies: options
+                }
+              }
+              : {})
+          },
+          response: {
+            body: ''
+          }
+        })
+        .expect(201)
+
+      const cookies = Object.entries(values)
+        .reduce((acc, [key, value]) => {
+          acc.push(`${key}=${value}`)
+          return acc
+        }, [])
+        .join(';')
+
+      await request[method](path)
+        .set('Cookie', cookies)
+        .expect(shouldMatch ? 200 : 404)
+    })
   })
 
   describe('matching query', () => {
@@ -674,81 +490,44 @@ describe('createServer.js', () => {
       [null, '/test', { x: '1' }, '/test?x=1&y=2', { strict: true }, false],
       [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', null, true],
       [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=2', null, false],
-      [
-        { xAndY: { x: '1', y: '2' } },
-        '/test',
-        ['xAndY'],
-        '/test?x=1&y=2',
-        null,
-        true
-      ],
-      [
-        { xOnly: { x: '1' }, yOnly: { y: '2' } },
-        '/test',
-        ['xOnly', 'yOnly'],
-        '/test?x=1&y=2',
-        null,
-        true
-      ],
-      [
-        { xOnly: { x: '1' } },
-        '/test',
-        ['xOnly', { y: '2' }],
-        '/test?x=1&y=2',
-        null,
-        true
-      ]
-    ])(
-      'match query config="%o" match="%s %o" request="%s %o" result=%s',
-      async (
-        configuration,
-        matchPath,
-        matchValues,
-        path,
-        options,
-        shouldMatch
-      ) => {
-        const method = 'get'
+      [{ xAndY: { x: '1', y: '2' } }, '/test', ['xAndY'], '/test?x=1&y=2', null, true],
+      [{ xOnly: { x: '1' }, yOnly: { y: '2' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', null, true],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly', { y: '2' }], '/test?x=1&y=2', null, true]
+    ])('match query config="%o" match="%s %o" request="%s %o" result=%s', async (configuration, matchPath, matchValues, path, options, shouldMatch) => {
+      const method = 'get'
 
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              query: configuration
-            })
-            .expect(200)
-        }
-
+      if (configuration) {
         await request
-          .post('/___fixtures')
+          .put('/___config')
           .send({
-            request: {
-              path: matchPath,
-              method,
-              query: matchValues,
-              ...(options
-                ? {
-                  options: {
-                    query: options
-                  }
-                }
-                : {})
-            },
-            response: {
-              body: {}
-            }
+            query: configuration
           })
-          .expect(201)
-
-        const r = request[method](path)
-
-        if (shouldMatch) {
-          await r.expect(200, {})
-        } else {
-          await r.expect(404)
-        }
+          .expect(200)
       }
-    )
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: matchPath,
+            method,
+            query: matchValues,
+            ...(options
+              ? {
+                options: {
+                  query: options
+                }
+              }
+              : {})
+          },
+          response: {
+            body: {}
+          }
+        })
+        .expect(201)
+
+      await request[method](path).expect(shouldMatch ? 200 : 404)
+    })
   })
 
   describe('matching body', () => {
@@ -769,54 +548,39 @@ describe('createServer.js', () => {
       [null, { a: { b: 'b', c: [] } }, { a: { b: 'b', c: [] } }, true],
       [null, { a: { b: 'b', c: {} } }, { a: { b: 'b', c: [] } }, false],
       [null, { a: { b: 'b', c: {} } }, { a: { b: 'b' } }, false]
-    ])(
-      'match body config="%o" match="%s" request="%o" result=%s',
-      async (configuration, matchValues, values, shouldMatch) => {
-        const path = '/test'
-        const method = 'post'
+    ])('match body config="%o" match="%s" request="%o" result=%s', async (configuration, matchValues, values, shouldMatch) => {
+      const path = '/test'
+      const method = 'post'
 
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              body: configuration
-            })
-            .expect(200)
-        }
-
+      if (configuration) {
         await request
-          .post('/___fixtures')
+          .put('/___config')
           .send({
-            request: {
-              path,
-              method,
-              body: matchValues
-            },
-            response: {
-              body: {}
-            }
+            body: configuration
           })
-          .expect(201)
-
-        if (shouldMatch && Object.keys(matchValues).length !== 0) {
-          await request
-            // eslint-disable-next-line no-unexpected-multiline
-            [method](path)
-            .expect(404)
-        }
-
-        const r = request
-          // eslint-disable-next-line no-unexpected-multiline
-          [method](path)
-          .send(values)
-
-        if (shouldMatch) {
-          await r.expect(200, {})
-        } else {
-          await r.expect(404)
-        }
+          .expect(200)
       }
-    )
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path,
+            method,
+            body: matchValues
+          },
+          response: {
+            body: {}
+          }
+        })
+        .expect(201)
+
+      await request
+        // eslint-disable-next-line no-unexpected-multiline
+        [method](path)
+        .send(values)
+        .expect(shouldMatch ? 200 : 404)
+    })
   })
 
   describe('lifetime option', () => {
@@ -908,7 +672,7 @@ describe('createServer.js', () => {
         .post('/___fixtures')
         .send({
           request: {
-            path: '/products',
+            path: '/',
             method: 'get'
           },
           response: {
@@ -927,23 +691,20 @@ describe('createServer.js', () => {
   })
 
   describe('reponses', () => {
-    test.each([[undefined, 200], [200, 200], [204, 204], [301, 301]])(
-      'response status status="%n"',
-      async (status, expectedStatus) => {
-        await request.post('/___fixtures').send({
-          request: {
-            path: '/',
-            method: 'get'
-          },
-          response: {
-            status,
-            body: ''
-          }
-        })
+    test.each([[undefined, 200], [200, 200], [204, 204], [301, 301]])('response status status="%n"', async (status, expectedStatus) => {
+      await request.post('/___fixtures').send({
+        request: {
+          path: '/',
+          method: 'get'
+        },
+        response: {
+          status,
+          body: ''
+        }
+      })
 
-        await request.get('/').expect(expectedStatus)
-      }
-    )
+      await request.get('/').expect(expectedStatus)
+    })
 
     test.each([
       ['headers', null, {}, {}],
@@ -954,18 +715,8 @@ describe('createServer.js', () => {
       ['headers', { A: { a: 'a' } }, ['A'], { a: 'a' }],
       ['headers', { A: { a: 'a' } }, ['A', { a: 'a' }], { a: 'a' }],
       ['headers', { A: { a: 'a' } }, ['A', { b: 'b' }], { a: 'a', b: 'b' }],
-      [
-        'headers',
-        { A: { a: 'a' }, B: { b: 'b' } },
-        ['A', 'B'],
-        { a: 'a', b: 'b' }
-      ],
-      [
-        'headers',
-        { A: { a: 'a' }, C: { c: 'c' } },
-        ['A', { b: 'b' }, 'C'],
-        { a: 'a', b: 'b', c: 'c' }
-      ],
+      ['headers', { A: { a: 'a' }, B: { b: 'b' } }, ['A', 'B'], { a: 'a', b: 'b' }],
+      ['headers', { A: { a: 'a' }, C: { c: 'c' } }, ['A', { b: 'b' }, 'C'], { a: 'a', b: 'b', c: 'c' }],
       ['cookies', null, {}, {}],
       ['cookies', undefined, { a: 'a' }, { a: 'a' }],
       ['cookies', undefined, { a: 'a', b: 'b' }, { a: 'a', b: 'b' }],
@@ -974,18 +725,8 @@ describe('createServer.js', () => {
       ['cookies', { A: { a: 'a' } }, ['A'], { a: 'a' }],
       ['cookies', { A: { a: 'a' } }, ['A', { a: 'a' }], { a: 'a' }],
       ['cookies', { A: { a: 'a' } }, ['A', { b: 'b' }], { a: 'a', b: 'b' }],
-      [
-        'cookies',
-        { A: { a: 'a' }, B: { b: 'b' } },
-        ['A', 'B'],
-        { a: 'a', b: 'b' }
-      ],
-      [
-        'cookies',
-        { A: { a: 'a' }, C: { c: 'c' } },
-        ['A', { b: 'b' }, 'C'],
-        { a: 'a', b: 'b', c: 'c' }
-      ]
+      ['cookies', { A: { a: 'a' }, B: { b: 'b' } }, ['A', 'B'], { a: 'a', b: 'b' }],
+      ['cookies', { A: { a: 'a' }, C: { c: 'c' } }, ['A', { b: 'b' }, 'C'], { a: 'a', b: 'b', c: 'c' }]
     ])(
       'response %s configHeaders="%o" propertyValue="%o" expectedPropertyValue="%o"',
       async (property, configuration, propertyValue, expectedPropertyValue) => {
