@@ -199,7 +199,7 @@ The fixtures are composed of:
     "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
     "options": {
       "delay": "{number} [default=0] - Delay the response with a number of milliseconds",
-      "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
+      "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed, use 0 for unlimited consumption"
     }
   },
   "responses": "{array} [default=[]] - Array of responses"
@@ -277,6 +277,23 @@ Examples:
 }
 ```
 
+```json
+{
+  "request": {
+    "path": "/",
+    "method": "get"
+  },
+  "responses": [
+    {
+      "body": "first return"
+    },
+    {
+      "body": "second return"
+    }
+  ]
+}
+```
+
 **Responses**
 
 - Status 200 - OK
@@ -348,10 +365,10 @@ It is meant to setup multiple fixtures at once.
       "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
       "options": {
         "delay": "{number} [default=0] - Delay the response with a number of milliseconds",
-        "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
+        "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed, use 0 for unlimited consumption"
       }
     },
-    "options": {}
+    "responses": "{array} [default=[]] - Array of responses"
   }
 ]
 ```
