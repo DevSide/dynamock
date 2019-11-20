@@ -27,55 +27,57 @@ exports.validateFixture = function validateFixture (
     Joi.object()
   ])
 
-  // TODO: move schema outside the func
-  const schema = Joi.object({
-    request: Joi.object({
-      body: Joi.any(),
-      path: Joi.string().required(),
-      method: Joi.string()
-        .regex(/^(head|delete|put|post|get|options|patch)$/i)
-        .required(),
-      headers: schemaProperty,
-      cookies: schemaProperty,
-      query: schemaProperty,
-      options: Joi.object({
-        headers: Joi.object({
-          strict: Joi.bool()
-        }),
-        cookies: Joi.object({
-          strict: Joi.bool()
-        }),
-        query: Joi.object({
-          strict: Joi.bool()
-        }),
-        body: Joi.object({
-          strict: Joi.bool()
-        })
-      })
-    }).required(),
-    response: Joi.object({
-      status: Joi.number()
-        .integer()
-        .min(200)
-        .max(600),
-      body: Joi.any(),
-      filepath: Joi.string(),
-      headers: schemaProperty,
-      cookies: schemaProperty,
-      options: Joi.object({
-        delay: Joi.number()
-          .integer()
-          .min(0)
+  const requestSchema = Joi.object({
+    body: Joi.any(),
+    path: Joi.string().required(),
+    method: Joi.string()
+      .regex(/^(head|delete|put|post|get|options|patch)$/i)
+      .required(),
+    headers: schemaProperty,
+    cookies: schemaProperty,
+    query: schemaProperty,
+    options: Joi.object({
+      headers: Joi.object({
+        strict: Joi.bool()
+      }),
+      cookies: Joi.object({
+        strict: Joi.bool()
+      }),
+      query: Joi.object({
+        strict: Joi.bool()
+      }),
+      body: Joi.object({
+        strict: Joi.bool()
       })
     })
-      .or('body', 'filepath')
-      .required(),
+  })
+
+  const responseSchema = Joi.object({
+    status: Joi.number()
+      .integer()
+      .min(200)
+      .max(600),
+    body: Joi.any(),
+    filepath: Joi.string(),
+    headers: schemaProperty,
+    cookies: schemaProperty,
     options: Joi.object({
+      delay: Joi.number()
+        .integer()
+        .min(0),
       lifetime: Joi.number()
         .integer()
         .min(0)
     })
-  }).required()
+  }).or('body', 'filepath')
+
+  const schema = Joi.object({
+    request: requestSchema.required(),
+    response: responseSchema,
+    responses: Joi.array().items(responseSchema)
+  })
+    .or('response', 'responses')
+    .required()
 
   const error = schema.validate(unsafeFixture).error
 
@@ -123,8 +125,9 @@ function normalizePath (request) {
 
 function normalizeFixture (fixture, configuration) {
   const request = sortObjectKeysRecurs(fixture.request)
-  const response = sortObjectKeysRecurs(fixture.response)
-  const options = fixture.options
+  const responses = sortObjectKeysRecurs(
+    fixture.responses || [fixture.response]
+  )
 
   for (const property in request) {
     if (property === 'body') {
@@ -156,27 +159,25 @@ function normalizeFixture (fixture, configuration) {
     }
   }
 
-  for (const property in response) {
-    if (property === 'body' || property === 'filepath') {
-      continue
-    }
+  for (const response of responses) {
+    for (const property in response) {
+      if (property === 'body' || property === 'filepath') {
+        continue
+      }
 
-    const propertyValue = response[property]
+      const propertyValue = response[property]
 
-    if (Array.isArray(propertyValue)) {
-      response[property] = normalizeArrayMatcher(
-        property,
-        propertyValue,
-        configuration
-      )
+      if (Array.isArray(propertyValue)) {
+        response[property] = normalizeArrayMatcher(
+          property,
+          propertyValue,
+          configuration
+        )
+      }
     }
   }
 
-  if (options) {
-    return { request, response, options }
-  }
-
-  return { request, response }
+  return { request, responses }
 }
 
 function createFixtureId (fixture) {

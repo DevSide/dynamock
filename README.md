@@ -198,12 +198,11 @@ The fixtures are composed of:
     "body": "{string|object|array} [default=``] - Body to response",
     "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
     "options": {
-      "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
+      "delay": "{number} [default=0] - Delay the response with a number of milliseconds",
+      "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
     }
   },
-  "options": {
-    "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
-  }
+  "responses": "{array} [default=[]] - Array of responses"
 }
 ```
 
@@ -348,12 +347,11 @@ It is meant to setup multiple fixtures at once.
       "body": "{string|object|array} [default=``] - Body response",
       "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
       "options": {
-        "delay": "{number} [default=0] - Delay the response with a number of milliseconds"
+        "delay": "{number} [default=0] - Delay the response with a number of milliseconds",
+        "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
       }
     },
-    "options": {
-      "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed"
-    }
+    "options": {}
   }
 ]
 ```

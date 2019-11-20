@@ -102,46 +102,46 @@ describe('integrations.js', () => {
   describe('validation fixture', () => {
     test.each([
       // request path / method
-      [{}, { body: '' }, undefined, false],
-      [{ unknown: 'unknown' }, { body: '' }, undefined, false],
-      [{ method: 'get' }, { body: '' }, undefined, false],
-      [{ path: '/' }, { body: '' }, undefined, false],
-      [{ path: '/' }, { body: '' }, undefined, false],
+      [{}, { body: '' }, false],
+      [{ unknown: 'unknown' }, { body: '' }, false],
+      [{ method: 'get' }, { body: '' }, false],
+      [{ path: '/' }, { body: '' }, false],
+      [{ path: '/' }, { body: '' }, false],
 
-      [{ path: '/', method: 'unknown' }, { body: '' }, undefined, false],
-      [{ path: '/', method: 'head' }, { body: '' }, undefined, true],
-      [{ path: '/', method: 'HEAD' }, { body: '' }, undefined, true],
-      [{ path: '/', method: 'delete' }, { body: '' }, undefined, true],
-      [{ path: '/', method: 'put' }, { body: '' }, undefined, true],
-      [{ path: '/', method: 'post' }, { body: '' }, undefined, true],
-      [{ path: '/', method: 'get' }, { body: '' }, undefined, true],
-      [{ path: '/', method: 'options' }, { body: '' }, undefined, true],
-      [{ path: '/', method: 'patch' }, { body: '' }, undefined, true],
+      [{ path: '/', method: 'unknown' }, { body: '' }, false],
+      [{ path: '/', method: 'head' }, { body: '' }, true],
+      [{ path: '/', method: 'HEAD' }, { body: '' }, true],
+      [{ path: '/', method: 'delete' }, { body: '' }, true],
+      [{ path: '/', method: 'put' }, { body: '' }, true],
+      [{ path: '/', method: 'post' }, { body: '' }, true],
+      [{ path: '/', method: 'get' }, { body: '' }, true],
+      [{ path: '/', method: 'options' }, { body: '' }, true],
+      [{ path: '/', method: 'patch' }, { body: '' }, true],
 
       // request body
-      [{ method: 'get', path: '/', body: '' }, { body: '' }, undefined, true],
-      [{ method: 'get', path: '/', body: {} }, { body: '' }, undefined, true],
-      [{ method: 'get', path: '/', body: 1 }, { body: '' }, undefined, true],
-      [{ method: 'get', path: '/', body: [] }, { body: '' }, undefined, true],
+      [{ method: 'get', path: '/', body: '' }, { body: '' }, true],
+      [{ method: 'get', path: '/', body: {} }, { body: '' }, true],
+      [{ method: 'get', path: '/', body: 1 }, { body: '' }, true],
+      [{ method: 'get', path: '/', body: [] }, { body: '' }, true],
 
       // request headers
-      [{ method: 'get', path: '/', headers: {} }, { body: '' }, undefined, true],
-      [{ method: 'get', path: '/', headers: null }, { body: '' }, undefined, false],
-      [{ method: 'get', path: '/', headers: { a: 'b' } }, { body: '' }, undefined, true],
-      [{ method: 'get', path: '/', headers: [] }, { body: '' }, undefined, true],
-      [{ method: 'get', path: '/', headers: [1] }, { body: '' }, undefined, false],
-      [{ method: 'get', path: '/', headers: ['not-in-configuration'] }, { body: '' }, undefined, false]
-    ])('validate request="%o" response="%o" options="%o" isValid=%s', async (req, resp, options, isValid) => {
+      [{ method: 'get', path: '/', headers: {} }, { body: '' }, true],
+      [{ method: 'get', path: '/', headers: null }, { body: '' }, false],
+      [{ method: 'get', path: '/', headers: { a: 'b' } }, { body: '' }, true],
+      [{ method: 'get', path: '/', headers: [] }, { body: '' }, true],
+      [{ method: 'get', path: '/', headers: [1] }, { body: '' }, false],
+      [{ method: 'get', path: '/', headers: ['not-in-configuration'] }, { body: '' }, false]
+    ])('validate request="%o" response="%o" isValid=%s', async (req, resp, isValid) => {
       await request
         .post('/___fixtures')
-        .send({ request: req, response: resp, options })
+        .send({ request: req, response: resp })
         .expect(isValid ? 201 : 400)
 
       // Same error in bulk
       if (!isValid) {
         await request
           .post('/___fixtures/bulk')
-          .send([{ request: { method: 'get', path: '/' } }, { request: req, response: resp, options }])
+          .send([{ request: { method: 'get', path: '/' } }, { request: req, response: resp }])
           .expect(400)
       }
     })
@@ -160,10 +160,10 @@ describe('integrations.js', () => {
           },
           response: {
             status: 418,
-            body: products
-          },
-          options: {
-            lifetime: 2
+            body: products,
+            options: {
+              lifetime: 2
+            }
           }
         })
         .expect(201, {
@@ -190,10 +190,10 @@ describe('integrations.js', () => {
               method: 'get'
             },
             response: {
-              body: products
-            },
-            options: {
-              lifetime: 2
+              body: products,
+              options: {
+                lifetime: 2
+              }
             }
           },
           {
@@ -202,10 +202,10 @@ describe('integrations.js', () => {
               method: 'get'
             },
             response: {
-              body: categories
-            },
-            options: {
-              lifetime: 2
+              body: categories,
+              options: {
+                lifetime: 2
+              }
             }
           }
         ])
@@ -584,84 +584,34 @@ describe('integrations.js', () => {
   })
 
   describe('lifetime option', () => {
-    test('the fixture should be consumed once', async () => {
+    test.each([
+      [[1], [[0, 200], 404]],
+      [[2], [[0, 200], [0, 200], 404]],
+      [[0], [[0, 200], [0, 200], [0, 200]]],
+      [[1, 1], [[0, 200], [1, 200], 404]],
+      [[2, 1], [[0, 200], [0, 200], [1, 200], 404]],
+      [[1, 2], [[0, 200], [1, 200], [1, 200], 404]],
+      [[1, 1, 1], [[0, 200], [1, 200], [2, 200], 404]]
+    ])('Option lifetime should match responses length, responseLifetimes=%j expectResponses=%j', async (responseLifetimes, expectResponses) => {
       await request
         .post('/___fixtures')
         .send({
           request: {
-            path: '/products',
+            path: '/',
             method: 'get'
           },
-          response: {
-            body: ''
-          }
+          responses: responseLifetimes.map((lifetime, i) => ({ body: `response-${i}`, options: { lifetime } }))
         })
         .expect(201)
 
-      await request.get('/products').expect(200)
-      await request.get('/products').expect(404)
+      for (const expectResponse of expectResponses) {
+        const r = request.get('/')
 
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/products',
-            method: 'get'
-          },
-          response: {
-            body: ''
-          },
-          options: {
-            lifetime: 1
-          }
-        })
-        .expect(201)
-
-      await request.get('/products').expect(200)
-      await request.get('/products').expect(404)
-    })
-
-    test('the fixture should be consumed twice', async () => {
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/products',
-            method: 'get'
-          },
-          response: {
-            body: ''
-          },
-          options: {
-            lifetime: 2
-          }
-        })
-        .expect(201)
-
-      await request.get('/products').expect(200)
-      await request.get('/products').expect(200)
-      await request.get('/products').expect(404)
-    })
-
-    test('the fixture can be consumed in unlimited', async () => {
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/products',
-            method: 'get'
-          },
-          response: {
-            body: ''
-          },
-          options: {
-            lifetime: 0
-          }
-        })
-        .expect(201)
-
-      for (let i = 0; i < 10; i++) {
-        await request.get('/products').expect(200)
+        if (Array.isArray(expectResponse)) {
+          await r.expect(expectResponse[1], `response-${expectResponse[0]}`)
+        } else {
+          await r.expect(expectResponse)
+        }
       }
     })
   })

@@ -135,7 +135,7 @@ function createServer () {
   app.use(function fixtureHandler (req, res, next) {
     // eslint-disable-next-line no-labels
     fixtureLoop: for (const [fixtureId, fixture] of getFixtureIterator()) {
-      const { request, response, options = {} } = fixture
+      const { request, responses } = fixture
 
       if (
         (req.path !== request.path && request.path !== '*') ||
@@ -151,6 +151,9 @@ function createServer () {
         }
       }
 
+      const response = responses[0]
+      const options = response.options || {}
+
       const send = () => {
         res.status(response.status || 200)
 
@@ -161,19 +164,24 @@ function createServer () {
             useResponseProperties[property](req, res, response[property])
           }
         }
-
-        // The fixture has been consumed
-        if (options.lifetime === undefined || options.lifetime === 1) {
-          removeFixture(fixtureId)
-        } else if (options.lifetime > 0) {
-          options.lifetime--
-        }
       }
 
       if (response.options && response.options.delay) {
         setTimeout(send, response.options.delay)
       } else {
         send()
+      }
+
+      // The fixture has been or will be consumed
+      // When the response is delayed, we need to remove it before it returns
+      if (options.lifetime === undefined || options.lifetime === 1) {
+        if (responses.length > 1) {
+          responses.shift()
+        } else {
+          removeFixture(fixtureId)
+        }
+      } else if (options.lifetime > 0) {
+        options.lifetime--
       }
 
       return
