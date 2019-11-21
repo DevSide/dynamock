@@ -196,7 +196,7 @@ The fixtures are composed of:
     "headers": "{object|array} [default={}] - Response headers",
     "cookies": "{object|array} [default={}] - Response cookies",
     "body": "{string|object|array} [default=``] - Body to response",
-    "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
+    "filepath": "{string} [default=``] - Absolute filepath to serve with auto mime-types",
     "options": {
       "delay": "{number} [default=0] - Delay the response with a number of milliseconds",
       "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed, use 0 for unlimited consumption"
@@ -362,7 +362,7 @@ It is meant to setup multiple fixtures at once.
       "headers": "{object|array} [default={}] - Response headers",
       "cookies": "{object|array} [default={}] - Response cookies",
       "body": "{string|object|array} [default=``] - Body response",
-      "filepath": "{string} [default=``] - Filepath to serve with auto mime-types",
+      "filepath": "{string} [default=``] - Absolute filepath to serve with auto mime-types",
       "options": {
         "delay": "{number} [default=0] - Delay the response with a number of milliseconds",
         "lifetime": "{number} [default=1] - Number of times the fixture can be consumed before getting removed, use 0 for unlimited consumption"
