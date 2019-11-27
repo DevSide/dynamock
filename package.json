@@ -6,6 +6,7 @@
   "bin": "bin/dynamock.js",
   "main": "src/createServer.js",
   "scripts": {
+    "check-git": "git status -uno --porcelain && [ -z \"$(git status -uno --porcelain)\" ] || (echo 'Git working directory not clean'; false)",
     "format": "prettier-eslint --write '**/*.js' '**/*.md'",
     "lint": "eslint '**/*.js'",
     "test": "jest src"

@@ -8,5 +8,6 @@ script:
   - yarn format
   - yarn lint
   - yarn test --coverage
+  - yarn check-git
 after_script:
   - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
