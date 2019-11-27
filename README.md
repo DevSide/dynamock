@@ -154,10 +154,10 @@ Wrong configuration format
 
 ### Fixtures
 
-The fixtures are composed of:
+A fixture is composed of:
 
 - request data to match the incoming requests
-- response data when a match occurred
+- response data to define the result(s) of the requests
 
 <br/>
 
@@ -170,24 +170,34 @@ The fixtures are composed of:
 ```json
 {
   "request": {
-    "path": "{string} - Http path to match requests, use wildcard '*' to match all",
     "method": "{string} - Http method to match requests, case insensitive, use wildcard '*' to match all",
+    "path": "{string} - Http path to match requests, use wildcard '*' to match all",
     "headers": "{object|array} [default={}] - Headers to match requests",
     "query": "{object|array} [default={}] - Query to match requests",
     "cookies": "{object|array} [default={}] - Cookies to match requests",
     "body": "{object} [default=``] - Body to match requests",
     "options": {
+      "path": {
+        "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
+      },
+      "method": {
+        "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
+      },
       "headers": {
-        "strict": "{boolean} [default=false] - Strictly match headers"
+        "strict": "{boolean} [default=false] - Strictly match headers",
+        "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
       },
       "cookies": {
-        "strict": "{boolean} [default=false] - Strictly match cookies"
+        "strict": "{boolean} [default=false] - Strictly match cookies",
+        "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
       },
       "query": {
-        "strict": "{boolean} [default=false] - Strictly match query"
+        "strict": "{boolean} [default=false] - Strictly match query",
+        "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
       },
       "body": {
-        "strict": "{boolean} [default=false] - Strictly match body"
+        "strict": "{boolean} [default=false] - Strictly match body",
+        "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
       }
     }
   },
@@ -211,8 +221,8 @@ Examples:
 ```json
 {
   "request": {
-    "path": "/pandas",
-    "method": "get"
+    "method": "GET",
+    "path": "/pandas"
   },
   "response": {
     "body": [{ "id": "1" }, { "id": "2" }]
@@ -223,8 +233,8 @@ Examples:
 ```json
 {
   "request": {
-    "path": "/cdn/images/fennec.jpg",
-    "method": "get"
+    "method": "GET",
+    "path": "/cdn/images/fennec.jpg"
   },
   "response": {
     "filepath": "/absolute/path/tofennec.jpg",
@@ -238,8 +248,8 @@ Examples:
 ```json
 {
   "request": {
-    "path": "/heros",
     "method": "POST",
+    "path": "/heros",
     "body": {
       "name": "po",
       "type": "panda"
@@ -263,8 +273,8 @@ Examples:
 ```json
 {
   "request": {
-    "path": "*",
-    "method": "OPTIONS"
+    "method": "OPTIONS",
+    "path": "*"
   },
   "response": {
     "headers": {
@@ -280,8 +290,8 @@ Examples:
 ```json
 {
   "request": {
-    "path": "/",
-    "method": "get"
+    "method": "get",
+    "path": "/"
   },
   "responses": [
     {
@@ -291,6 +301,26 @@ Examples:
       "body": "second return"
     }
   ]
+}
+```
+
+```json
+{
+  "request": {
+    "method": "GET",
+    "path": "/",
+    "headers": {
+      "user-agent": "/firefox/70$/i"
+    },
+    "options": {
+      "headers": {
+        "allowRegex": true
+      }
+    }
+  },
+  "response": {
+    "body": "Only for Firefox 70 users !"
+  }
 }
 ```
 
@@ -336,24 +366,34 @@ It is meant to setup multiple fixtures at once.
 [
   {
     "request": {
-      "path": "{string} - Http path to match requests, use wildcard '*' to match all",
       "method": "{string} - Http method to match requests, case insensitive, use wildcard '*' to match all",
+      "path": "{string} - Http path to match requests, use wildcard '*' to match all",
       "headers": "{object|array} [default={}] - Headers to match requests",
       "query": "{object|array} [default={}] - Query to match requests",
       "cookies": "{object|array} [default={}] - Cookies to match requests",
       "body": "{object} [default=``] - Body to match requests",
       "options": {
+        "path": {
+          "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
+        },
+        "method": {
+          "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
+        },
         "headers": {
-          "strict": "{boolean} [default=false] - Strictly match headers"
+          "strict": "{boolean} [default=false] - Strictly match headers",
+          "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
         },
         "cookies": {
-          "strict": "{boolean} [default=false] - Strictly match cookies"
+          "strict": "{boolean} [default=false] - Strictly match cookies",
+          "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
         },
         "query": {
-          "strict": "{boolean} [default=false] - Strictly match query"
+          "strict": "{boolean} [default=false] - Strictly match query",
+          "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
         },
         "body": {
-          "strict": "{boolean} [default=false] - Strictly match body"
+          "strict": "{boolean} [default=false] - Strictly match body",
+          "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
         }
       }
     },
@@ -379,8 +419,8 @@ Examples:
 [
   {
     "request": {
-      "path": "/pandas",
-      "method": "get"
+      "method": "GET",
+      "path": "/pandas"
     },
     "response": {
       "body": [{ "id": "1" }, { "id": "2" }]
@@ -388,8 +428,8 @@ Examples:
   },
   {
     "request": {
-      "path": "/cdn/images/fennec.jpg",
-      "method": "get"
+      "method": "GET",
+      "path": "/cdn/images/fennec.jpg"
     },
     "response": {
       "filepath": "/absolute/path/tofennec.jpg"

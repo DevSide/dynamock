@@ -13,7 +13,9 @@ function isObject (object) {
   return typeof object === 'object' && !Array.isArray(object)
 }
 
-exports.isIncluded = function isIncluded (object, base) {
+const stringRegexp = /\/(.*)\/([gimuys]*)/
+
+exports.isIncluded = function isIncluded (object, base, allowRegex) {
   function _isIncluded (object, base) {
     for (const key in object) {
       if (!Object.prototype.hasOwnProperty.call(object, key)) {
@@ -24,8 +26,24 @@ exports.isIncluded = function isIncluded (object, base) {
       const baseValue = base[key]
 
       if (isObject(value) && value !== null) {
-        if (isObject(baseValue) && _isIncluded(value, baseValue)) {
+        if (isObject(baseValue) && _isIncluded(value, baseValue, allowRegex)) {
           continue
+        }
+      }
+
+      if (
+        allowRegex &&
+        typeof value === 'string' &&
+        typeof baseValue === 'string'
+      ) {
+        const matchRegExp = value.match(stringRegexp)
+
+        if (matchRegExp) {
+          const [, regexp, flags] = matchRegExp
+
+          if (new RegExp(regexp, flags).test(baseValue)) {
+            continue
+          }
         }
       }
 

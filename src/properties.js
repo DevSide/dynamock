@@ -11,12 +11,9 @@ exports.requestPropertyMatch = function requestPropertyMatch (
 ) {
   let requestProperty = request[property]
   let matchProperty = match[property]
+  const optionsProperty = (match.options && match.options[property]) || {}
 
-  if (
-    match.options &&
-    match.options[property] &&
-    match.options[property].strict
-  ) {
+  if (optionsProperty.strict) {
     if (property !== 'body') {
       matchProperty = matchProperty || {}
       requestProperty = requestProperty || {}
@@ -29,14 +26,15 @@ exports.requestPropertyMatch = function requestPropertyMatch (
     return true
   }
 
-  return isIncluded(matchProperty, requestProperty)
+  return isIncluded(
+    matchProperty,
+    requestProperty,
+    !!optionsProperty.allowRegex
+  )
 }
 
 exports.useResponseProperties = {
-  filepath: (req, res, value) => {
-    res.sendFile(value)
-    // send(req, value).pipe(res)
-  },
+  filepath: (req, res, value) => res.sendFile(value),
   headers: (req, res, value) => res.set(value),
   body: (req, res, value) => res.send(value),
   cookies: (req, res, cookies) => {

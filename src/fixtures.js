@@ -27,6 +27,11 @@ exports.validateFixture = function validateFixture (
     Joi.object()
   ])
 
+  const optionsStrictOrAllowRegex = Joi.object({
+    strict: Joi.bool(),
+    allowRegex: Joi.bool()
+  }).invalid({ strict: true, allowRegex: true })
+
   const requestSchema = Joi.object({
     body: Joi.any(),
     path: Joi.string().required(),
@@ -37,18 +42,16 @@ exports.validateFixture = function validateFixture (
     cookies: schemaProperty,
     query: schemaProperty,
     options: Joi.object({
-      headers: Joi.object({
-        strict: Joi.bool()
+      path: Joi.object({
+        allowRegex: Joi.bool()
       }),
-      cookies: Joi.object({
-        strict: Joi.bool()
+      method: Joi.object({
+        allowRegex: Joi.bool()
       }),
-      query: Joi.object({
-        strict: Joi.bool()
-      }),
-      body: Joi.object({
-        strict: Joi.bool()
-      })
+      headers: optionsStrictOrAllowRegex,
+      cookies: optionsStrictOrAllowRegex,
+      query: optionsStrictOrAllowRegex,
+      body: optionsStrictOrAllowRegex
     })
   })
 

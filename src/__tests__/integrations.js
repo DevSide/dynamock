@@ -130,7 +130,23 @@ describe('integrations.js', () => {
       [{ method: 'get', path: '/', headers: { a: 'b' } }, { body: '' }, true],
       [{ method: 'get', path: '/', headers: [] }, { body: '' }, true],
       [{ method: 'get', path: '/', headers: [1] }, { body: '' }, false],
-      [{ method: 'get', path: '/', headers: ['not-in-configuration'] }, { body: '' }, false]
+      [{ method: 'get', path: '/', headers: ['not-in-configuration'] }, { body: '' }, false],
+
+      // request options path
+      [{ path: '/', method: 'get', options: { path: { allowRegex: true } } }, { body: '' }, true],
+      [{ path: '/', method: 'get', options: { path: { strict: true } } }, { body: '' }, false],
+
+      // request options method
+      [{ path: '/', method: 'get', options: { method: { allowRegex: true } } }, { body: '' }, true],
+      [{ path: '/', method: 'get', options: { method: { strict: true } } }, { body: '' }, false],
+
+      // request options headers
+      [{ path: '/', method: 'get', options: { headers: { strict: true, allowRegex: true } } }, { body: '' }, false],
+      [{ path: '/', method: 'get', options: { headers: { strict: true, allowRegex: false } } }, { body: '' }, true],
+      [{ path: '/', method: 'get', options: { headers: { strict: false, allowRegex: false } } }, { body: '' }, true],
+      [{ path: '/', method: 'get', options: { headers: { strict: true } } }, { body: '' }, true],
+      [{ path: '/', method: 'get', options: { headers: { strict: false, allowRegex: true } } }, { body: '' }, true],
+      [{ path: '/', method: 'get', options: { headers: { allowRegex: true } } }, { body: '' }, true]
     ])('validate request="%o" response="%o" isValid=%s', async (req, resp, isValid) => {
       await request
         .post('/___fixtures')
@@ -365,16 +381,25 @@ describe('integrations.js', () => {
 
   describe('matching headers', () => {
     test.each([
-      [null, { x: 'y' }, { x: 'y' }, true],
-      [null, { x: 'y' }, { x: 'y', other: 'other' }, true],
-      [null, { x: 'y', other: 'other' }, { x: 'y' }, false],
-      [{ custom: { a: 'a' } }, ['custom'], {}, false],
-      [{ custom: { a: 'a' } }, ['custom'], { a: 'a' }, true],
-      [{ custom: { a: 'a', b: 'b' } }, ['custom'], { a: 'a' }, false],
-      [{ custom: { a: 'a', b: 'b' } }, ['custom'], { a: 'a', b: 'b' }, true],
-      [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], { a: 'a' }, false],
-      [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], { a: 'a', b: 'b' }, true]
-    ])('match headers config="%o" match="%o" request="%o" result=%s', async (configuration, matchValues, values, shouldMatch) => {
+      [null, { a: 'a' }, null, { a: 'a' }, true],
+      [null, { a: 'a' }, { allowRegex: true }, { a: 'a' }, true],
+      [null, { a: '/a/' }, { allowRegex: true }, { a: 'a' }, true],
+      [null, { a: '/A/' }, { allowRegex: true }, { a: 'a' }, false],
+      [null, { a: '/A/ig' }, { allowRegex: true }, { a: 'a' }, true],
+      [null, { a: 'a' }, null, { a: 'a', b: 'b' }, true],
+      [null, { a: '/a/' }, { allowRegex: true }, { a: 'a', b: 'b' }, true],
+      [null, { a: 'a', b: 'b' }, null, { a: 'a' }, false],
+      [null, { a: '/a/', b: 'b' }, { allowRegex: true }, { a: 'a' }, false],
+      [{ custom: { a: 'a' } }, ['custom'], null, {}, false],
+      [{ custom: { a: '/a/' } }, ['custom'], { allowRegex: true }, {}, false],
+      [{ custom: { a: 'a' } }, ['custom'], null, { a: 'a' }, true],
+      [{ custom: { a: '/a/' } }, ['custom'], { allowRegex: true }, { a: 'a' }, true],
+      [{ custom: { a: 'a', b: 'b' } }, ['custom'], null, { a: 'a' }, false],
+      [{ custom: { a: '/a/', b: '/b/' } }, ['custom'], { allowRegex: true }, { a: 'a' }, false],
+      [{ custom: { a: 'a', b: 'b' } }, ['custom'], null, { a: 'a', b: 'b' }, true],
+      [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], null, { a: 'a' }, false],
+      [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], null, { a: 'a', b: 'b' }, true]
+    ])('match headers config="%o" match="%o" options="%o" result=%s', async (configuration, matchValues, options, values, shouldMatch) => {
       const path = '/test'
       const method = 'get'
 
@@ -393,7 +418,14 @@ describe('integrations.js', () => {
           request: {
             path,
             method,
-            headers: matchValues
+            headers: matchValues,
+            ...(options
+              ? {
+                options: {
+                  headers: options
+                }
+              }
+              : {})
           },
           response: {
             body: ''
@@ -412,19 +444,27 @@ describe('integrations.js', () => {
   describe('matching cookies', () => {
     test.each([
       [null, { x: 'x' }, { x: 'x' }, null, true],
+      [null, { x: 'x' }, { x: 'x' }, { allowRegex: true }, true],
+      [null, { x: '/x/' }, { x: 'x' }, { allowRegex: true }, true],
       [null, { x: 'x' }, { x: 'x' }, { strict: true }, true],
       [null, { x: 'x' }, { x: 'x', other: 'other' }, null, true],
+      [null, { x: '/x/' }, { x: 'x', other: 'other' }, { allowRegex: true }, true],
       [null, { x: 'x' }, { x: 'x', other: 'other' }, { strict: true }, false],
       [null, { x: 'x', other: 'other' }, { x: 'x' }, null, false],
+      [null, { x: '/x/', other: 'other' }, { x: 'x' }, { allowRegex: true }, false],
       [{ xOnly: { x: 'x' } }, ['xOnly'], {}, null, false],
+      [{ xOnly: { x: '/x/' } }, ['xOnly'], {}, { allowRegex: true }, false],
       [{ xOnly: { x: 'x' } }, ['xOnly'], { x: 'x' }, null, true],
+      [{ xOnly: { x: '/X/i' } }, ['xOnly'], { x: 'x' }, { allowRegex: true }, true],
       [{ xOnly: { x: 'x' } }, ['xOnly'], { x: 'x' }, { strict: true }, true],
       [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x' }, null, false],
       [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x', y: 'y' }, null, true],
+      [{ xAndY: { x: '/X/ig', y: '/Y/ig' } }, ['xAndY'], { x: 'x', y: 'y' }, { allowRegex: true }, true],
+      [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x', y: 'y' }, { strict: true }, true],
       [{ xOnly: { x: 'x' }, yOnly: { y: 'y' } }, ['xOnly', 'yOnly'], { x: 'x' }, null, false],
       [{ xOnly: { x: 'x' }, yOnly: { y: 'y' } }, ['xOnly', 'yOnly'], { x: 'x', y: 'y' }, null, true],
       [{ xOnly: { x: 'x' } }, ['xOnly', { y: 'y' }], { x: 'x', y: 'y' }, null, true]
-    ])('match cookies config="%o" match="%s %o" request="%s %o" result=%s', async (configuration, matchValues, values, options, shouldMatch) => {
+    ])('match cookies config=%o match=%o request=%o result=%s', async (configuration, matchValues, values, options, shouldMatch) => {
       const path = '/test'
       const method = 'get'
 
@@ -474,14 +514,24 @@ describe('integrations.js', () => {
   describe('matching query', () => {
     test.each([
       [null, '/test', { x: '1' }, '/test', null, false],
+      [null, '/test', { x: '1' }, '/test', { allowRegex: true }, false],
       [null, '/test', { x: '1' }, '/test', { strict: true }, false],
       [null, '/test', { x: '1' }, '/test?x=1', null, true],
       [null, '/test', { x: '1' }, '/test?x=1', { strict: true }, true],
+      [null, '/test', { x: '1' }, '/test?x=1', { allowRegex: true }, true],
+      [null, '/test', { x: '/\\d+/' }, '/test?x=1', { allowRegex: true }, true],
+      [null, '/test', { x: '/\\d+/' }, '/test?x=1', null, false],
       [null, '/test', { x: '1' }, '/test?x=2', null, false],
+      [null, '/test', { x: '1' }, '/test?x=2', { allowRegex: true }, false],
+      [null, '/test', { x: '1' }, '/test?x=2', { strict: true }, false],
       [null, '/test?x=1', undefined, '/test?x=1', null, true],
+      [null, '/test?x=1', undefined, '/test?x=1', { allowRegex: true }, true],
+      [null, '/test?x=1', undefined, '/test?x=1', { strict: true }, true],
       [null, '/test?x=1&y=2', undefined, '/test?x=1&y=2', null, true],
       [null, '/test?y=2&&x=1', undefined, '/test?x=1&y=2', null, true],
       [null, '/test', { x: '1', y: '2' }, '/test?x=1', null, false],
+      [null, '/test', { x: '/\\d+/', y: '2' }, '/test?x=1', { allowRegex: true }, false],
+      [null, '/test', { x: '1', y: '2' }, '/test?x=1', { strict: true }, false],
       [null, '/test', { x: '1', y: '2' }, '/test?x=1&y=2', null, true],
       [null, '/test?y=2', { x: '1' }, '/test?x=1', null, false],
       [null, '/test?y=2', { x: '1' }, '/test?x=1&y=2', null, true],
@@ -489,9 +539,13 @@ describe('integrations.js', () => {
       [null, '/test', { x: '1' }, '/test?x=1&y=2', null, true],
       [null, '/test', { x: '1' }, '/test?x=1&y=2', { strict: true }, false],
       [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', null, true],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', { allowRegex: true }, true],
+      [{ xOnly: { x: '/\\d+/' } }, '/test', ['xOnly'], '/test?x=1', { allowRegex: true }, true],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', { strict: true }, true],
       [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=2', null, false],
       [{ xAndY: { x: '1', y: '2' } }, '/test', ['xAndY'], '/test?x=1&y=2', null, true],
       [{ xOnly: { x: '1' }, yOnly: { y: '2' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', null, true],
+      [{ xOnly: { x: '/\\d+/' }, yOnly: { y: '/\\d+/' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', { allowRegex: true }, true],
       [{ xOnly: { x: '1' } }, '/test', ['xOnly', { y: '2' }], '/test?x=1&y=2', null, true]
     ])('match query config="%o" match="%s %o" request="%s %o" result=%s', async (configuration, matchPath, matchValues, path, options, shouldMatch) => {
       const method = 'get'
@@ -532,23 +586,38 @@ describe('integrations.js', () => {
 
   describe('matching body', () => {
     test.each([
-      [null, {}, {}, true],
-      [null, [], {}, true],
-      [null, {}, [], true],
-      [null, [], [], true],
-      [null, '', '', true],
-      [null, { x: null }, { x: null }, true],
-      [null, ['a', 'b'], ['a', 'b'], true],
-      [null, ['a', 'b'], ['b', 'a'], false],
-      [null, {}, { x: 'x' }, true],
-      [null, { x: 'x' }, { x: 'x' }, true],
-      [null, { x: 'x' }, { x: 'x', other: 'other' }, true],
-      [null, { x: 'x', other: 'other' }, { x: 'x' }, false],
-      [null, { a: { b: 'b' } }, { a: { b: 'b', c: 'c' } }, true],
-      [null, { a: { b: 'b', c: [] } }, { a: { b: 'b', c: [] } }, true],
-      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b', c: [] } }, false],
-      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b' } }, false]
-    ])('match body config="%o" match="%s" request="%o" result=%s', async (configuration, matchValues, values, shouldMatch) => {
+      [null, {}, {}, null, true],
+      [null, [], {}, null, true],
+      [null, {}, [], null, true],
+      [null, [], [], null, true],
+      [null, '', '', null, true],
+      [null, { x: null }, { x: null }, null, true],
+      [null, ['a', 'b'], ['a', 'b'], null, true],
+      [null, ['a', 'b'], ['a', 'b'], { strict: true }, true],
+      [null, ['a', 'b'], ['a', 'b'], { allowRegex: true }, true],
+      [null, ['a', 'b'], ['b', 'a'], null, false],
+      [null, ['a', 'b'], ['b', 'a'], { allowRegex: true }, false],
+      [null, ['a', 'b'], ['b', 'a'], { strict: true }, false],
+      [null, {}, { x: 'x' }, null, true],
+      [null, {}, { x: 'x' }, { allowRegex: true }, true],
+      [null, {}, { x: 'x' }, { strict: true }, false],
+      [null, { x: 'x' }, { x: 'x' }, null, true],
+      [null, { x: 'x' }, { x: 'x' }, { allowRegex: true }, true],
+      [null, { x: '/x/' }, { x: 'x' }, { allowRegex: true }, true],
+      [null, { x: 'x' }, { x: 'x' }, { strict: true }, true],
+      [null, { x: 'x' }, { x: 'x', other: 'other' }, null, true],
+      [null, { x: 'x' }, { x: 'x', other: 'other' }, { allowRegex: true }, true],
+      [null, { x: '/X/i' }, { x: 'x', other: 'other' }, { allowRegex: true }, true],
+      [null, { x: 'x' }, { x: 'x', other: 'other' }, { strict: true }, false],
+      [null, { x: 'x', other: 'other' }, { x: 'x' }, null, false],
+      [null, { a: { b: 'b' } }, { a: { b: 'b', c: 'c' } }, null, true],
+      [null, { a: { b: 'b', c: [] } }, { a: { b: 'b', c: [] } }, null, true],
+      [null, { a: { b: 'b', c: [] } }, { a: { b: 'b', c: [] } }, { allowRegex: true }, true],
+      [null, { a: { b: '/B/i', c: [] } }, { a: { b: 'b', c: [] } }, { allowRegex: true }, true],
+      [null, { a: { b: 'b', c: [] } }, { a: { b: 'b', c: [] } }, { strict: true }, true],
+      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b', c: [] } }, null, false],
+      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b' } }, null, false]
+    ])('match body config="%o" matchValues="%s" values="%o" options="%o" shouldMatch=%s', async (configuration, matchValues, values, options, shouldMatch) => {
       const path = '/test'
       const method = 'post'
 
@@ -567,7 +636,14 @@ describe('integrations.js', () => {
           request: {
             path,
             method,
-            body: matchValues
+            body: matchValues,
+            ...(options
+              ? {
+                options: {
+                  body: options
+                }
+              }
+              : {})
           },
           response: {
             body: {}
