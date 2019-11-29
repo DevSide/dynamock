@@ -524,11 +524,11 @@ describe('integrations.js', () => {
       [null, '/test', { x: '1' }, '/test?x=2', null, false],
       [null, '/test', { x: '1' }, '/test?x=2', { allowRegex: true }, false],
       [null, '/test', { x: '1' }, '/test?x=2', { strict: true }, false],
-      [null, '/test?x=1', undefined, '/test?x=1', null, true],
-      [null, '/test?x=1', undefined, '/test?x=1', { allowRegex: true }, true],
-      [null, '/test?x=1', undefined, '/test?x=1', { strict: true }, true],
-      [null, '/test?x=1&y=2', undefined, '/test?x=1&y=2', null, true],
-      [null, '/test?y=2&&x=1', undefined, '/test?x=1&y=2', null, true],
+      [null, '/test?x=1', {}, '/test?x=1', null, true],
+      [null, '/test?x=1', {}, '/test?x=1', { allowRegex: true }, true],
+      [null, '/test?x=1', {}, '/test?x=1', { strict: true }, true],
+      [null, '/test?x=1&y=2', {}, '/test?x=1&y=2', null, true],
+      [null, '/test?y=2&&x=1', {}, '/test?x=1&y=2', null, true],
       [null, '/test', { x: '1', y: '2' }, '/test?x=1', null, false],
       [null, '/test', { x: '/\\d+/', y: '2' }, '/test?x=1', { allowRegex: true }, false],
       [null, '/test', { x: '1', y: '2' }, '/test?x=1', { strict: true }, false],
@@ -547,41 +547,44 @@ describe('integrations.js', () => {
       [{ xOnly: { x: '1' }, yOnly: { y: '2' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', null, true],
       [{ xOnly: { x: '/\\d+/' }, yOnly: { y: '/\\d+/' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', { allowRegex: true }, true],
       [{ xOnly: { x: '1' } }, '/test', ['xOnly', { y: '2' }], '/test?x=1&y=2', null, true]
-    ])('match query config="%o" match="%s %o" request="%s %o" result=%s', async (configuration, matchPath, matchValues, path, options, shouldMatch) => {
-      const method = 'get'
+    ])(
+      'match query config="%o" matchPath="%s" matchValues="%o" path="%s" options="%o" result=%s',
+      async (configuration, matchPath, matchValues, path, options, shouldMatch) => {
+        const method = 'get'
 
-      if (configuration) {
+        if (configuration) {
+          await request
+            .put('/___config')
+            .send({
+              query: configuration
+            })
+            .expect(200)
+        }
+
         await request
-          .put('/___config')
+          .post('/___fixtures')
           .send({
-            query: configuration
-          })
-          .expect(200)
-      }
-
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: matchPath,
-            method,
-            query: matchValues,
-            ...(options
-              ? {
-                options: {
-                  query: options
+            request: {
+              path: matchPath,
+              method,
+              query: matchValues,
+              ...(options
+                ? {
+                  options: {
+                    query: options
+                  }
                 }
-              }
-              : {})
-          },
-          response: {
-            body: {}
-          }
-        })
-        .expect(201)
+                : {})
+            },
+            response: {
+              body: {}
+            }
+          })
+          .expect(201)
 
-      await request[method](path).expect(shouldMatch ? 200 : 404)
-    })
+        await request[method](path).expect(shouldMatch ? 200 : 404)
+      }
+    )
   })
 
   describe('matching body', () => {

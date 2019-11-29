@@ -1,4 +1,4 @@
-const _isEqual = require('lodash/isEqual')
+const { deepStrictEqual } = require('assert')
 const { isIncluded } = require('./utils')
 
 exports.REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
@@ -19,7 +19,12 @@ exports.requestPropertyMatch = function requestPropertyMatch (
       requestProperty = requestProperty || {}
     }
 
-    return _isEqual(matchProperty, requestProperty)
+    try {
+      deepStrictEqual(matchProperty, requestProperty)
+      return true
+    } catch (_) {
+      return false
+    }
   }
 
   if (!matchProperty && property !== 'body') {

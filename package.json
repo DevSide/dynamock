@@ -21,8 +21,7 @@
     "@hapi/joi": "16.1.7",
     "body-parser": "1.19.0",
     "cookie-parser": "1.4.4",
-    "express": "4.17.1",
-    "lodash": "4.17.15"
+    "express": "4.17.1"
   },
   "devDependencies": {
     "@semantic-release/commit-analyzer": "^6.3.3",

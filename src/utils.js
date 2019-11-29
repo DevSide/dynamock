@@ -1,5 +1,5 @@
 const crypto = require('crypto')
-const _isEqual = require('lodash/isEqual')
+const { deepStrictEqual } = require('assert')
 
 exports.isObjectEmpty = isObjectEmpty
 function isObjectEmpty (object) {
@@ -47,9 +47,10 @@ exports.isIncluded = function isIncluded (object, base, allowRegex) {
         }
       }
 
-      if (_isEqual(value, baseValue)) {
+      try {
+        deepStrictEqual(value, baseValue)
         continue
-      }
+      } catch (_) {}
 
       return false
     }
