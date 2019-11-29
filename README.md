@@ -1,5 +1,3 @@
-⚠️ NOT PRODUCTION READY ⚠️
-
 # dynamock
 
 [![npm version](https://badge.fury.io/js/dynamock.svg)](https://badge.fury.io/js/dynamock)
@@ -8,7 +6,7 @@
 [![Build Status](https://travis-ci.com/DevSide/dynamock.svg?branch=master)](https://travis-ci.com/DevSide/dynamock)
 [![Coverage Status](https://coveralls.io/repos/github/DevSide/dynamock/badge.svg?branch=master)](https://coveralls.io/github/DevSide/dynamock?branch=master)
 
-`dynamock` is a dynamic mock/fixture server designed for functional testing.
+`dynamock` is a dynamic mock/fixture HTTP server designed for functional testing.
 
 ## Install
 
@@ -29,15 +27,41 @@ dynamock 3001
 
 ### Inject fixtures
 
-WIP
+```js
+fetch('http://localhost:3001/___fixtures', {
+  method: 'POST',
+  body: {
+    request: {
+      method: 'GET',
+      path: '/products/1'
+    },
+    response: {
+      body: {
+        id: 1
+      }
+    }
+  }
+})
+```
 
 ### Consume fixtures
 
-WIP
+```js
+fetch('http://localhost:3001/products/1', { method: 'GET' })
+  .then(response => response.json())
+  .then(response => assert.equal(response, { id: 1 }))
+```
+
+Dynamock is designed to remove the fixture once consumed, see options.lifetime to adapt this behavior.
+
+```js
+fetch('http://localhost:3001/products/1', { method: 'GET' })
+.then(response => assert.equal(response.status, 404)
+```
 
 ## Property response matching
 
-WIP
+By default, dynamock uses partial matching for
 
 ## Api
 
