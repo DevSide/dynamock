@@ -1,5 +1,5 @@
 const { deepStrictEqual } = require('assert')
-const { isIncluded } = require('./utils')
+const { isIncluded, matchRegex } = require('./utils')
 
 exports.REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
 exports.RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']
@@ -12,6 +12,18 @@ exports.requestPropertyMatch = function requestPropertyMatch (
   let requestProperty = request[property]
   let matchProperty = match[property]
   const optionsProperty = (match.options && match.options[property]) || {}
+
+  if (property === 'path' || property === 'method') {
+    if (matchProperty === '*') {
+      return true
+    }
+
+    if (optionsProperty.allowRegex) {
+      return matchRegex(matchProperty, requestProperty)
+    }
+
+    return matchProperty === requestProperty
+  }
 
   if (optionsProperty.strict) {
     if (property !== 'body') {

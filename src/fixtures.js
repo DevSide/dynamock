@@ -35,9 +35,23 @@ exports.validateFixture = function validateFixture (
   const requestSchema = Joi.object({
     body: Joi.any(),
     path: Joi.string().required(),
-    method: Joi.string()
-      .regex(/^(head|delete|put|post|get|options|patch)$/i)
-      .required(),
+    method: Joi.alternatives([
+      Joi.string().regex(/^(head|delete|put|post|get|options|patch|\*)$/i),
+      Joi.custom((value, helpers) => {
+        const options = helpers.state.ancestors[0].options || {}
+        const allowMethodRegex = (options.method || {}).allowRegex
+
+        if (!allowMethodRegex) {
+          throw new Error(`Method ${value} is not a valid method`)
+        }
+
+        if (typeof value !== 'string') {
+          return helpers.error('string.invalid')
+        }
+
+        return value
+      })
+    ]).required(),
     headers: schemaProperty,
     cookies: schemaProperty,
     query: schemaProperty,
