@@ -2,3 +2,9 @@
 .eslintrc.json
 .releaserc
 .travis.yml
+.idea
+coverage
+*.log
+*.iml
+**/__tests__
+**/__mocks__
