@@ -138,8 +138,8 @@ function createServer () {
       const { request, responses } = fixture
 
       if (
-        (req.path !== request.path && request.path !== '*') ||
-        (req.method !== request.method && request.method !== '*')
+        !requestPropertyMatch(req, request, 'path') ||
+        !requestPropertyMatch(req, request, 'method')
       ) {
         continue
       }

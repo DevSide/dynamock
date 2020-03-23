@@ -379,6 +379,91 @@ describe('integrations.js', () => {
     })
   })
 
+  describe('matching path', () => {
+    test.each([
+      ['/a', null, '/a', true],
+      ['*', null, '/a', true],
+      ['*', null, '/a/b', true],
+      ['/a', null, '/a/', false],
+      ['/a/', null, '/a', false],
+      ['/a/b', null, '/a/b', true],
+      ['/a/b', null, '/a', false],
+      ['/a/b', null, '/b', false],
+      ['/a/b', null, '/a/', false],
+      ['/a/b', null, '/b/', false],
+      ['//a/', { allowRegex: true }, '/a', true],
+      ['//a/', { allowRegex: true }, '/a/b', true],
+      ['/^/a/', { allowRegex: true }, '/a/b', true],
+      ['/^/a$/', { allowRegex: true }, '/a/b', false],
+      ['/^(/(a|b))+$/', { allowRegex: true }, '/a/b', true]
+    ])('matching path match="%s" options="%o" test="%s" result=%s', async (matchPath, options, path, shouldMatch) => {
+      const method = 'get'
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: matchPath,
+            method,
+            ...(options
+              ? {
+                options: {
+                  path: options
+                }
+              }
+              : {})
+          },
+          response: {
+            body: ''
+          }
+        })
+        .expect(201)
+
+      await request
+        // eslint-disable-next-line no-unexpected-multiline
+        [method](path)
+        .expect(shouldMatch ? 200 : 404)
+    })
+  })
+
+  describe('matching method', () => {
+    test.each([
+      ['get', null, 'get', true],
+      ['post', null, 'post', true],
+      ['*', null, 'get', true],
+      ['*', null, 'post', true],
+      ['/(get|post)/', { allowRegex: true }, 'get', true],
+      ['/(get|post)/', { allowRegex: true }, 'post', true]
+    ])('matching method match="%s" options="%o" test="%s" result=%s', async (matchMethod, options, method, shouldMatch) => {
+      const path = '/test'
+
+      await request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path,
+            method: matchMethod,
+            ...(options
+              ? {
+                options: {
+                  method: options
+                }
+              }
+              : {})
+          },
+          response: {
+            body: ''
+          }
+        })
+        .expect(201)
+
+      await request
+        // eslint-disable-next-line no-unexpected-multiline
+        [method](path)
+        .expect(shouldMatch ? 200 : 404)
+    })
+  })
+
   describe('matching headers', () => {
     test.each([
       [null, { a: 'a' }, null, { a: 'a' }, true],
@@ -444,9 +529,12 @@ describe('integrations.js', () => {
   describe('matching cookies', () => {
     test.each([
       [null, { x: 'x' }, { x: 'x' }, null, true],
+      [null, { x: 'x' }, { x: 'x' }, { strict: false }, true],
       [null, { x: 'x' }, { x: 'x' }, { allowRegex: true }, true],
       [null, { x: '/x/' }, { x: 'x' }, { allowRegex: true }, true],
       [null, { x: 'x' }, { x: 'x' }, { strict: true }, true],
+      [null, { x: 'x' }, { x: 'x', y: 'y' }, { strict: true }, false],
+      [null, { x: 'x', y: 'y' }, { x: 'x' }, { strict: true }, false],
       [null, { x: 'x' }, { x: 'x', other: 'other' }, null, true],
       [null, { x: '/x/' }, { x: 'x', other: 'other' }, { allowRegex: true }, true],
       [null, { x: 'x' }, { x: 'x', other: 'other' }, { strict: true }, false],
@@ -514,6 +602,7 @@ describe('integrations.js', () => {
   describe('matching query', () => {
     test.each([
       [null, '/test', { x: '1' }, '/test', null, false],
+      [null, '/test', { x: '1' }, '/test', { strict: false }, false],
       [null, '/test', { x: '1' }, '/test', { allowRegex: true }, false],
       [null, '/test', { x: '1' }, '/test', { strict: true }, false],
       [null, '/test', { x: '1' }, '/test?x=1', null, true],
@@ -666,11 +755,30 @@ describe('integrations.js', () => {
     test.each([
       [[1], [[0, 200], 404]],
       [[2], [[0, 200], [0, 200], 404]],
-      [[0], [[0, 200], [0, 200], [0, 200]]],
-      [[1, 1], [[0, 200], [1, 200], 404]],
-      [[2, 1], [[0, 200], [0, 200], [1, 200], 404]],
-      [[1, 2], [[0, 200], [1, 200], [1, 200], 404]],
-      [[1, 1, 1], [[0, 200], [1, 200], [2, 200], 404]]
+      [
+        [0],
+        [
+          [0, 200],
+          [0, 200],
+          [0, 200]
+        ]
+      ],
+      [
+        [1, 1],
+        [[0, 200], [1, 200], 404]
+      ],
+      [
+        [2, 1],
+        [[0, 200], [0, 200], [1, 200], 404]
+      ],
+      [
+        [1, 2],
+        [[0, 200], [1, 200], [1, 200], 404]
+      ],
+      [
+        [1, 1, 1],
+        [[0, 200], [1, 200], [2, 200], 404]
+      ]
     ])('Option lifetime should match responses length, responseLifetimes=%j expectResponses=%j', async (responseLifetimes, expectResponses) => {
       await request
         .post('/___fixtures')
@@ -720,7 +828,12 @@ describe('integrations.js', () => {
   })
 
   describe('reponses', () => {
-    test.each([[undefined, 200], [200, 200], [204, 204], [301, 301]])('response status status="%n"', async (status, expectedStatus) => {
+    test.each([
+      [undefined, 200],
+      [200, 200],
+      [204, 204],
+      [301, 301]
+    ])('response status status="%n"', async (status, expectedStatus) => {
       await request.post('/___fixtures').send({
         request: {
           path: '/',

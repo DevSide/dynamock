@@ -15,6 +15,22 @@ function isObject (object) {
 
 const stringRegexp = /\/(.*)\/([gimuys]*)/
 
+function matchRegex (value, baseValue) {
+  const matchRegExp = value.match(stringRegexp)
+
+  if (matchRegExp) {
+    const [, regexp, flags] = matchRegExp
+
+    if (new RegExp(regexp, flags).test(baseValue)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+exports.matchRegex = matchRegex
+
 exports.isIncluded = function isIncluded (object, base, allowRegex) {
   function _isIncluded (object, base) {
     for (const key in object) {
@@ -34,17 +50,10 @@ exports.isIncluded = function isIncluded (object, base, allowRegex) {
       if (
         allowRegex &&
         typeof value === 'string' &&
-        typeof baseValue === 'string'
+        typeof baseValue === 'string' &&
+        matchRegex(value, baseValue)
       ) {
-        const matchRegExp = value.match(stringRegexp)
-
-        if (matchRegExp) {
-          const [, regexp, flags] = matchRegExp
-
-          if (new RegExp(regexp, flags).test(baseValue)) {
-            continue
-          }
-        }
+        continue
       }
 
       try {
