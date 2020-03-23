@@ -1,5 +1,5 @@
 {
-  "branch": "master",
+  "branches": "master",
   "repositoryUrl": "git@github.com:DevSide/dynamock.git",
   "debug": true,
   "dryRun": false,
