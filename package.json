@@ -9,6 +9,7 @@
     "check-git": "git status -uno --porcelain && [ -z \"$(git status -uno --porcelain)\" ] || (echo 'Git working directory not clean'; false)",
     "format": "prettier-eslint --write $PWD/'**/*.js' $PWD/'**/*.md'",
     "lint": "eslint '**/*.js'",
+    "release": "semantic-release",
     "test": "jest src"
   },
   "engines": {
