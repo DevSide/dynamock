@@ -47,12 +47,7 @@ exports.isIncluded = function isIncluded (object, base, allowRegex) {
         }
       }
 
-      if (
-        allowRegex &&
-        typeof value === 'string' &&
-        typeof baseValue === 'string' &&
-        matchRegex(value, baseValue)
-      ) {
+      if (allowRegex && typeof value === 'string' && typeof baseValue === 'string' && matchRegex(value, baseValue)) {
         continue
       }
 

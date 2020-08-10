@@ -6,10 +6,7 @@ const Joi = require('@hapi/joi')
 
 const fixtureStorage = new Map()
 
-exports.validateFixture = function validateFixture (
-  unsafeFixture,
-  configuration
-) {
+exports.validateFixture = function validateFixture (unsafeFixture, configuration) {
   const schemaProperty = Joi.alternatives([
     Joi.array().items(
       Joi.custom((value, helpers) => {
@@ -126,9 +123,7 @@ function normalizePath (request) {
 
   if (indexQueryString >= 0) {
     const path = request.path.substring(0, indexQueryString)
-    const query = querystring.parse(
-      request.path.substring(indexQueryString + 1)
-    )
+    const query = querystring.parse(request.path.substring(indexQueryString + 1))
 
     request.path = path
 
@@ -142,9 +137,7 @@ function normalizePath (request) {
 
 function normalizeFixture (fixture, configuration) {
   const request = sortObjectKeysRecurs(fixture.request)
-  const responses = sortObjectKeysRecurs(
-    fixture.responses || [fixture.response]
-  )
+  const responses = sortObjectKeysRecurs(fixture.responses || [fixture.response])
 
   for (const property in request) {
     if (property === 'body') {
@@ -164,11 +157,7 @@ function normalizeFixture (fixture, configuration) {
     const propertyValue = request[property]
 
     if (Array.isArray(propertyValue)) {
-      request[property] = normalizeArrayMatcher(
-        property,
-        propertyValue,
-        configuration
-      )
+      request[property] = normalizeArrayMatcher(property, propertyValue, configuration)
     }
 
     if (typeof propertyValue === 'object' && isObjectEmpty(propertyValue)) {
@@ -185,11 +174,7 @@ function normalizeFixture (fixture, configuration) {
       const propertyValue = response[property]
 
       if (Array.isArray(propertyValue)) {
-        response[property] = normalizeArrayMatcher(
-          property,
-          propertyValue,
-          configuration
-        )
+        response[property] = normalizeArrayMatcher(property, propertyValue, configuration)
       }
     }
   }
