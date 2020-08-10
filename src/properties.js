@@ -4,11 +4,7 @@ const { isIncluded, matchRegex } = require('./utils')
 exports.REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
 exports.RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']
 
-exports.requestPropertyMatch = function requestPropertyMatch (
-  request,
-  match,
-  property
-) {
+exports.requestPropertyMatch = function requestPropertyMatch (request, match, property) {
   let requestProperty = request[property]
   let matchProperty = match[property]
   const optionsProperty = (match.options && match.options[property]) || {}
@@ -43,11 +39,7 @@ exports.requestPropertyMatch = function requestPropertyMatch (
     return true
   }
 
-  return isIncluded(
-    matchProperty,
-    requestProperty,
-    !!optionsProperty.allowRegex
-  )
+  return isIncluded(matchProperty, requestProperty, !!optionsProperty.allowRegex)
 }
 
 exports.useResponseProperties = {

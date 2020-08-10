@@ -1,29 +1,12 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const {
-  REQUEST_PROPERTIES,
-  RESPONSE_PROPERTIES,
-  requestPropertyMatch,
-  useResponseProperties
-} = require('./properties')
-const {
-  validateFixture,
-  removeFixture,
-  removeFixtures,
-  registerFixture,
-  getFixtureIterator
-} = require('./fixtures')
-const {
-  validateConfiguration,
-  createConfiguration,
-  updateConfiguration
-} = require('./configuration')
+const { REQUEST_PROPERTIES, RESPONSE_PROPERTIES, requestPropertyMatch, useResponseProperties } = require('./properties')
+const { validateFixture, removeFixture, removeFixtures, registerFixture, getFixtureIterator } = require('./fixtures')
+const { validateConfiguration, createConfiguration, updateConfiguration } = require('./configuration')
 
 function resError (res, status, message) {
-  return res
-    .status(status)
-    .send({ message: `[FIXTURE SERVER ERROR ${status}]: ${message}` })
+  return res.status(status).send({ message: `[FIXTURE SERVER ERROR ${status}]: ${message}` })
 }
 
 function badRequest (res, message) {
@@ -52,10 +35,7 @@ function createServer () {
       return badRequest(res, validationError)
     }
 
-    const { conflictError, fixtureId } = registerFixture(
-      unsafeFixture,
-      configuration
-    )
+    const { conflictError, fixtureId } = registerFixture(unsafeFixture, configuration)
 
     if (conflictError) {
       return conflict(res, conflictError)
@@ -83,10 +63,7 @@ function createServer () {
         return badRequest(res, validationError)
       }
 
-      const { conflictError, fixtureId } = registerFixture(
-        unsafeFixture,
-        configuration
-      )
+      const { conflictError, fixtureId } = registerFixture(unsafeFixture, configuration)
 
       if (conflictError) {
         cleanUpOnError()
@@ -137,10 +114,7 @@ function createServer () {
     fixtureLoop: for (const [fixtureId, fixture] of getFixtureIterator()) {
       const { request, responses } = fixture
 
-      if (
-        !requestPropertyMatch(req, request, 'path') ||
-        !requestPropertyMatch(req, request, 'method')
-      ) {
+      if (!requestPropertyMatch(req, request, 'path') || !requestPropertyMatch(req, request, 'method')) {
         continue
       }
 

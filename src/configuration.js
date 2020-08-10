@@ -6,9 +6,7 @@ const schema = Joi.object({
   cookies: Joi.object()
 }).required()
 
-exports.validateConfiguration = function validateConfiguration (
-  unsafeConfiguration
-) {
+exports.validateConfiguration = function validateConfiguration (unsafeConfiguration) {
   return schema.validate(unsafeConfiguration).error
 }
 
@@ -20,12 +18,7 @@ exports.createConfiguration = function createConfiguration () {
   }
 }
 
-exports.updateConfiguration = function updateConfiguration (
-  configuration,
-  headers,
-  query,
-  cookies
-) {
+exports.updateConfiguration = function updateConfiguration (configuration, headers, query, cookies) {
   if (headers) {
     Object.assign(configuration.headers, headers)
   }
