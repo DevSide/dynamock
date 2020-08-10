@@ -3,6 +3,16 @@
   "version": "1.1.1",
   "description": "Dynamic mock server which serves fixtures based on property matching",
   "repository": "https://github.com/DevSide/dynamock",
+  "keywords": [
+    "fixtures",
+    "mock",
+    "server",
+    "e2e",
+    "end-to-end",
+    "functional testing"
+  ],
+  "author": "DevSide",
+  "license": "MIT",
   "bin": "bin/dynamock.js",
   "main": "src/createServer.js",
   "scripts": {
@@ -15,9 +25,6 @@
   "engines": {
     "node": ">=10"
   },
-  "keywords": [],
-  "author": "DevSide",
-  "license": "MIT",
   "dependencies": {
     "@hapi/joi": "17.1.1",
     "body-parser": "1.19.0",

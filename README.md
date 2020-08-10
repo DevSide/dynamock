@@ -6,9 +6,9 @@
 [![Build Status](https://travis-ci.com/DevSide/dynamock.svg?branch=master)](https://travis-ci.com/DevSide/dynamock)
 [![Coverage Status](https://coveralls.io/repos/github/DevSide/dynamock/badge.svg?branch=master)](https://coveralls.io/github/DevSide/dynamock?branch=master)
 
-`dynamock` is a dynamic mock/fixture HTTP server designed for functional testing.
+`dynamock` is a dynamic mock/fixture HTTP server designed for functional testing.<br>
 
-## Install
+## Installation
 
 ```bash
 yarn add dynamock -D
@@ -55,21 +55,18 @@ fetch('http://localhost:3001/products/1', { method: 'GET' })
 Dynamock is designed to remove the fixture once consumed, see options.lifetime to adapt this behavior.
 
 ```js
-fetch('http://localhost:3001/products/1', { method: 'GET' })
-.then(response => assert.equal(response.status, 404)
+fetch('http://localhost:3001/products/1', { method: 'GET' }).then(response => assert.equal(response.status, 404))
 ```
 
 ## Property response matching
 
-By default, dynamock uses partial matching for
+By default, dynamock uses partial matching for `headers`, `query` and `cookies`.
 
-## Api
+## Configuration api
 
-### Configuration
+Using the configuration is optional. However, it gives the ability of reusing redundant data across requests and simplifying fixtures setup.
 
-Using the configuration is optional. However it gives the ability of reusing redundant data across requests and simplifying fixtures setup.
-
-#### <img src="https://img.shields.io/badge/GET-61affe.svg" alt="GET" /> /\_\_\_config - **Retrieve configuration**
+### <img src="https://img.shields.io/badge/GET-61affe.svg" alt="GET" /> /\_\_\_config - **Retrieve configuration**
 
 **Responses**
 
@@ -93,7 +90,7 @@ Example:
 }
 ```
 
-#### <img src="https://img.shields.io/badge/PUT-fca130.svg" alt="PUT" /> /\_\_\_config - **Update configuration**
+### <img src="https://img.shields.io/badge/PUT-fca130.svg" alt="PUT" /> /\_\_\_config - **Update configuration**
 
 **Request**
 
@@ -170,13 +167,15 @@ Wrong configuration format
 
 <br/>
 
-#### <img src="https://img.shields.io/badge/DELETE-f93e3e.svg" alt="DELETE" /> /\_\_\_config - **Reset configuration**
+### <img src="https://img.shields.io/badge/DELETE-f93e3e.svg" alt="DELETE" /> /\_\_\_config - **Reset configuration**
 
 **Responses**
 
 - Status 204 - NO CONTENT
 
-### Fixtures
+<br>
+
+## Fixtures api
 
 A fixture is composed of:
 
@@ -185,7 +184,7 @@ A fixture is composed of:
 
 <br/>
 
-#### <img src="https://img.shields.io/badge/POST-49cc90.svg" alt="POST" /> /\_\_\_fixtures - **Add fixture**
+### <img src="https://img.shields.io/badge/POST-49cc90.svg" alt="POST" /> /\_\_\_fixtures - **Add fixture**
 
 **Request**
 
@@ -378,7 +377,7 @@ Route {METHOD} ${PATH} is already registered.
 
 <br/>
 
-#### <img src="https://img.shields.io/badge/POST-49cc90.svg" alt="POST" /> /\_\_\_fixtures/bulk - **Bulk add fixtures**
+### <img src="https://img.shields.io/badge/POST-49cc90.svg" alt="POST" /> /\_\_\_fixtures/bulk - **Bulk add fixtures**
 
 It is meant to setup multiple fixtures at once.
 
@@ -497,7 +496,7 @@ Another fixture with the same request is already registered
 
 <br/>
 
-#### <img src="https://img.shields.io/badge/DELETE-f93e3e.svg" alt="DELETE" /> /\_\_\_fixtures/:id - **Delete a fixture**
+### <img src="https://img.shields.io/badge/DELETE-f93e3e.svg" alt="DELETE" /> /\_\_\_fixtures/:id - **Delete a fixture**
 
 **Request**
 
@@ -521,8 +520,13 @@ Example:
 
 <br/>
 
-#### <img src="https://img.shields.io/badge/DELETE-f93e3e.svg" alt="DELETE" /> /\_\_\_fixtures - **Delete all fixtures**
+### <img src="https://img.shields.io/badge/DELETE-f93e3e.svg" alt="DELETE" /> /\_\_\_fixtures - **Delete all fixtures**
 
 **Responses**
 
 - Status 204 - NO CONTENT
+
+## Next features
+
+- Handle other web protocols like https or websocket
+- Security tokens for public environments
