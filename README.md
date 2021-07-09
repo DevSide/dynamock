@@ -18,6 +18,11 @@ npm install dynamock --save-dev
 
 ## Usage
 
+### ⚠️ Security
+
+Be aware of running your dynamock server in a CLOSED network, there is no authentication required to configure it.<br>
+It is highly recommended using dynamock for dev/testing purpose ONLY.
+
 ### Run the server (NodeJS required)
 
 ```bash
