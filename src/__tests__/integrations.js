@@ -33,6 +33,7 @@ describe('integrations.js', () => {
   describe('manipulate configuration', () => {
     test('default configuration', () =>
       request.get('/___config').expect(200, {
+        cors: null,
         headers: {},
         query: {},
         cookies: {}
@@ -43,9 +44,9 @@ describe('integrations.js', () => {
         .put('/___config')
         .send({
           headers: {
-            serverCors: {
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Methods': '*'
+            commonHeaders: {
+              'x-header-1': '1',
+              'x-header-2': '2'
             }
           }
         })
@@ -54,6 +55,7 @@ describe('integrations.js', () => {
       await request
         .put('/___config')
         .send({
+          cors: '*',
           headers: {
             clientToken: {
               authorization: 'Bearer client-token'
@@ -64,10 +66,11 @@ describe('integrations.js', () => {
         .expect(200)
 
       return request.get('/___config').expect(200, {
+        cors: '*',
         headers: {
-          serverCors: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': '*'
+          commonHeaders: {
+            'x-header-1': '1',
+            'x-header-2': '2'
           },
           clientToken: {
             authorization: 'Bearer client-token'
@@ -85,7 +88,8 @@ describe('integrations.js', () => {
     test.each([
       // valid
       [{}, true],
-      [{ headers: {}, cookies: {}, query: {} }, true],
+      [{ cors: '*', headers: {}, cookies: {}, query: {} }, true],
+      [{ cors: null, headers: {}, cookies: {}, query: {} }, true],
 
       // invalid
       [[], false],
@@ -376,6 +380,44 @@ describe('integrations.js', () => {
           }
         })
         .expect(shouldConflict ? 409 : 201)
+    })
+  })
+
+  describe('CORS', () => {
+    test.only('allow all', async () => {
+      await request
+        .put('/___config')
+        .send({ cors: '*' })
+        .expect(200)
+
+      const pathMethods = [
+        ['/', 'options'],
+        ['/', 'get'],
+        ['/toto', 'post']
+      ]
+
+      for (const [path, method] of pathMethods) {
+        await request
+          .post('/___fixtures')
+          .send({
+            request: {
+              path,
+              method
+            },
+            response: {
+              body: ''
+            }
+          })
+          .expect(201)
+
+        await request[method](path)
+          .set({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*',
+            'Access-Control-Allow-Headers': '*'
+          })
+          .expect(200)
+      }
     })
   })
 

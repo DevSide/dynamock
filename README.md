@@ -74,6 +74,7 @@ Using the configuration is optional. However, it gives the ability of reusing re
 
 ```json
 {
+  "cors": "{null|'*'} - '*' allows all requests via cors headers, this creates a global route OPTIONS",
   "headers": "{object} - Dictionary of headers (object) by name (string)",
   "query": "{object} - Dictionary of query (object) by name (string)",
   "cookies": "{object} - Dictionary of cookies (object) by name (string)"
@@ -84,6 +85,7 @@ Example:
 
 ```json
 {
+  "cors": null,
   "headers": {},
   "query": {},
   "cookies": {}
@@ -98,6 +100,7 @@ Example:
 
 ```json
 {
+  "cors": "{null|'*'} [default=null] - '*' allows all requests via cors headers, this creates a global route OPTIONS",
   "headers": "{object} [default={}] - Dictionary of headers (object) by name (string)",
   "query": "{object} [default={}] - Dictionary of query (object) by name (string)",
   "cookies": "{object} [default={}] - Dictionary of cookies (object) by name (string)"
@@ -108,6 +111,7 @@ Example:
 
 ```json
 {
+  "cors": "*",
   "headers": {
     "apiBearer": {
       "Authorization": "Bearer xyz"
@@ -122,6 +126,7 @@ Example:
 
 ```json
 {
+  "cors": "{null|'*'}",
   "headers": "{object}",
   "query": "{object}",
   "cookies": "{object}"
@@ -132,6 +137,7 @@ Example:
 
 ```json
 {
+  "cors": null,
   "headers": {
     "captcha": {
       "X-CAPTCHA-TOKEN": "fake"

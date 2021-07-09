@@ -20,6 +20,11 @@ function conflict (res, message) {
 function createServer () {
   const app = express()
   const server = require('http').createServer(app)
+  const corsAllowAllHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': '*',
+    'Access-Control-Allow-Headers': '*'
+  }
 
   app.use(bodyParser.json())
   app.use(cookieParser())
@@ -98,8 +103,8 @@ function createServer () {
       return badRequest(res, error.message)
     }
 
-    const { headers, query, cookies } = req.body
-    updateConfiguration(configuration, headers, query, cookies)
+    const { cors, headers, query, cookies } = req.body
+    updateConfiguration(configuration, cors, headers, query, cookies)
 
     res.status(200).send(configuration)
   })
@@ -110,6 +115,13 @@ function createServer () {
   })
 
   app.use(function fixtureHandler (req, res, next) {
+    if (req.method === 'OPTIONS' && configuration.cors === '*') {
+      return res
+        .set(corsAllowAllHeaders)
+        .status(200)
+        .send()
+    }
+
     // eslint-disable-next-line no-labels
     fixtureLoop: for (const [fixtureId, fixture] of getFixtureIterator()) {
       const { request, responses } = fixture
@@ -137,6 +149,10 @@ function createServer () {
           if (response[property] !== undefined) {
             useResponseProperties[property](req, res, response[property])
           }
+        }
+
+        if (configuration.cors === '*') {
+          res.set(corsAllowAllHeaders)
         }
       }
 
