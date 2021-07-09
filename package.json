@@ -23,7 +23,7 @@
     "test": "jest src"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "dependencies": {
     "@hapi/joi": "17.1.1",
