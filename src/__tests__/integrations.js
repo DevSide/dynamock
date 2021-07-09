@@ -384,7 +384,7 @@ describe('integrations.js', () => {
   })
 
   describe('CORS', () => {
-    test.only('allow all', async () => {
+    test('allow all', async () => {
       await request
         .put('/___config')
         .send({ cors: '*' })
