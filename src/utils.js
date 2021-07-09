@@ -32,37 +32,33 @@ function matchRegex (value, baseValue) {
 exports.matchRegex = matchRegex
 
 exports.isIncluded = function isIncluded (object, base, allowRegex) {
-  function _isIncluded (object, base) {
-    for (const key in object) {
-      if (!Object.prototype.hasOwnProperty.call(object, key)) {
-        continue
-      }
-
-      const value = object[key]
-      const baseValue = base[key]
-
-      if (isObject(value) && value !== null) {
-        if (isObject(baseValue) && _isIncluded(value, baseValue, allowRegex)) {
-          continue
-        }
-      }
-
-      if (allowRegex && typeof value === 'string' && typeof baseValue === 'string' && matchRegex(value, baseValue)) {
-        continue
-      }
-
-      try {
-        deepStrictEqual(value, baseValue)
-        continue
-      } catch (_) {}
-
-      return false
+  for (const key in object) {
+    if (!Object.prototype.hasOwnProperty.call(object, key)) {
+      continue
     }
 
-    return true
+    const value = object[key]
+    const baseValue = base[key]
+
+    if (isObject(value) && value !== null) {
+      if (isObject(baseValue) && isIncluded(value, baseValue, allowRegex)) {
+        continue
+      }
+    }
+
+    if (allowRegex && typeof value === 'string' && typeof baseValue === 'string' && matchRegex(value, baseValue)) {
+      continue
+    }
+
+    try {
+      deepStrictEqual(value, baseValue)
+      continue
+    } catch (_) {}
+
+    return false
   }
 
-  return _isIncluded(object, base)
+  return true
 }
 
 exports.sortObjectKeysRecurs = function sortObjectKeysRecurs (src) {
