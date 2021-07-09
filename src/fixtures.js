@@ -163,6 +163,17 @@ function normalizeFixture (fixture, configuration) {
     if (typeof propertyValue === 'object' && isObjectEmpty(propertyValue)) {
       delete request[property]
     }
+
+    // Some properties only manipulates string values
+    if (property === 'headers' || property === 'cookies' || property === 'query') {
+      const requestProperty = request[property]
+
+      for (const key in requestProperty) {
+        if (typeof requestProperty[key] !== 'string') {
+          requestProperty[key] = JSON.stringify(requestProperty[key])
+        }
+      }
+    }
   }
 
   for (const response of responses) {

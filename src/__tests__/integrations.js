@@ -509,6 +509,10 @@ describe('integrations.js', () => {
   describe('matching headers', () => {
     test.each([
       [null, { a: 'a' }, null, { a: 'a' }, true],
+      [null, { a: 1 }, null, { a: '1' }, true],
+      [null, { a: [] }, null, { a: '[]' }, true],
+      [null, { a: { b: 'b' } }, null, { a: '{"b":"b"}' }, true],
+      [null, { a: null }, null, { a: 'null' }, true],
       [null, { a: 'a' }, { allowRegex: true }, { a: 'a' }, true],
       [null, { a: '/a/' }, { allowRegex: true }, { a: 'a' }, true],
       [null, { a: '/A/' }, { allowRegex: true }, { a: 'a' }, false],
@@ -571,6 +575,9 @@ describe('integrations.js', () => {
   describe('matching cookies', () => {
     test.each([
       [null, { x: 'x' }, { x: 'x' }, null, true],
+      [null, { x: 1 }, { x: '1' }, null, true],
+      [null, { x: [] }, { x: '[]' }, null, true],
+      [null, { x: { y: 'y' } }, { x: '{"y":"y"}' }, null, true],
       [null, { x: 'x' }, { x: 'x' }, { strict: false }, true],
       [null, { x: 'x' }, { x: 'x' }, { allowRegex: true }, true],
       [null, { x: '/x/' }, { x: 'x' }, { allowRegex: true }, true],
@@ -648,6 +655,9 @@ describe('integrations.js', () => {
       [null, '/test', { x: '1' }, '/test', { allowRegex: true }, false],
       [null, '/test', { x: '1' }, '/test', { strict: true }, false],
       [null, '/test', { x: '1' }, '/test?x=1', null, true],
+      [null, '/test', { x: 1 }, '/test?x=1', null, true],
+      [null, '/test', { x: [] }, '/test?x=[]', null, true],
+      [null, '/test', { x: { y: 'y' } }, '/test?x={"y":"y"}', null, true],
       [null, '/test', { x: '1' }, '/test?x=1', { strict: true }, true],
       [null, '/test', { x: '1' }, '/test?x=1', { allowRegex: true }, true],
       [null, '/test', { x: '/\\d+/' }, '/test?x=1', { allowRegex: true }, true],
