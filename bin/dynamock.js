@@ -4,7 +4,7 @@ const createServer = require('../src/createServer')
 
 const [, , port, host = '127.0.0.1'] = process.argv
 
-const server = createServer()
+const [, server] = createServer()
 
 server.listen(port, host, () => {
   console.log(`dynamock is running on port ${port}...`)

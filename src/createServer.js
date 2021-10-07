@@ -184,7 +184,7 @@ function createServer () {
     removeFixtures()
   })
 
-  return server
+  return [app, server]
 }
 
 module.exports = createServer
