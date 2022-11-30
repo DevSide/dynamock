@@ -1,6 +1,6 @@
 {
   "name": "dynamock",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Dynamic mock server which serves fixtures based on property matching",
   "repository": "https://github.com/DevSide/dynamock",
   "keywords": [
