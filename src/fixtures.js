@@ -164,6 +164,20 @@ function normalizeFixture (fixture, configuration) {
       delete request[property]
     }
 
+    // RFC 2616
+    if (property === 'headers') {
+      const headers = request[property]
+
+      for (const key in headers) {
+        const lowerCaseKey = key.toLowerCase()
+
+        if (key !== lowerCaseKey) {
+          headers[lowerCaseKey] = headers[key]
+          delete headers[key]
+        }
+      }
+    }
+
     // Some properties only manipulates string values
     if (property === 'headers' || property === 'cookies' || property === 'query') {
       const requestProperty = request[property]
