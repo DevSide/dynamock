@@ -509,6 +509,8 @@ describe('integrations.js', () => {
   describe('matching headers', () => {
     test.each([
       [null, { a: 'a' }, null, { a: 'a' }, true],
+      [null, { a: 'a' }, null, { A: 'a' }, true],
+      [null, { A: 'a' }, null, { a: 'a' }, true],
       [null, { a: 1 }, null, { a: '1' }, true],
       [null, { a: [] }, null, { a: '[]' }, true],
       [null, { a: { b: 'b' } }, null, { a: '{"b":"b"}' }, true],
@@ -879,7 +881,7 @@ describe('integrations.js', () => {
     })
   })
 
-  describe('reponses', () => {
+  describe('responses', () => {
     test.each([
       [undefined, 200],
       [200, 200],
