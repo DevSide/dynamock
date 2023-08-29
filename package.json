@@ -47,7 +47,7 @@
     "jest": "^26.2.2",
     "metro-memory-fs": "^0.66.1",
     "prettier-eslint-cli": "^5.0.1",
-    "semantic-release": "^17.4.4",
+    "semantic-release": "^19.0.3",
     "supertest": "^6.1.3"
   }
 }
