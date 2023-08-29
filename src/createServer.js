@@ -26,7 +26,7 @@ function createServer () {
     'Access-Control-Allow-Headers': '*'
   }
 
-  app.use(bodyParser.json())
+  app.use(bodyParser.json({ limit: '10mb' }))
   app.use(cookieParser())
 
   let configuration = createConfiguration()
