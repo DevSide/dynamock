@@ -168,6 +168,22 @@ describe('integrations.js', () => {
   })
 
   describe('create and delete fixtures', () => {
+    test.only('cannot create >10mb fixture', () => {
+      return request
+        .post('/___fixtures')
+        .send({
+          request: {
+            path: '/products',
+            method: 'post'
+          },
+          response: {
+            status: 201,
+            body: '0'.repeat(10500000)
+          }
+        })
+        .expect(413)
+    })
+
     test('create and remove simple fixture', async () => {
       const products = [{ id: 1 }, { id: 2 }]
 
