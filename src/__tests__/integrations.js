@@ -168,7 +168,7 @@ describe('integrations.js', () => {
   })
 
   describe('create and delete fixtures', () => {
-    test.only('cannot create >10mb fixture', () => {
+    test('cannot create >10mb fixture', () => {
       return request
         .post('/___fixtures')
         .send({
