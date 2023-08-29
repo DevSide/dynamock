@@ -1,0 +1,189 @@
+swagger: "2.0"
+info:
+  description: "Dynamock"
+  version: "1.0.0"
+  title: "Swagger Dynamock"
+#  termsOfService: "http://swagger.io/terms/"
+#  contact:
+#    email: "apiteam@swagger.io"
+#  license:
+#    name: "MIT"
+#    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost"
+basePath: "/v2"
+schemes:
+  #  - "https"
+  - "http"
+paths:
+  /___config:
+    get:
+      summary: "Get configuration"
+      tags:
+        - "Config"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Configuration"
+        "400":
+          description: "Bad request"
+    put:
+      summary: "Update configuration"
+      tags:
+        - "Config"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Configuration state"
+          required: true
+          schema:
+            $ref: "#/definitions/Configuration"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Configuration"
+        "400":
+          description: "Bad request"
+    delete:
+      summary: "Delete configuration"
+      tags:
+        - "Config"
+      produces:
+        - "application/json"
+      responses:
+        "204":
+          description: "No content"
+  /___fixtures:
+    post:
+      summary: "Add fixture"
+      tags:
+        - "Fixture"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Fixture"
+          required: true
+          schema:
+            $ref: "#/definitions/Fixture"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Fixture"
+        "400":
+          description: "Bad request"
+    delete:
+      summary: "Delete all fixtures"
+      tags:
+        - "Fixture"
+      produces:
+        - "application/json"
+      responses:
+        "204":
+          description: "No content"
+  /___fixtures/{fixtureId}:
+    delete:
+      summary: "Delete fixture"
+      tags:
+        - "Fixture"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fixtureId"
+          in: "path"
+          description: "ID of fixture to return"
+          required: true
+          type: "string"
+      responses:
+        "204":
+          description: "No content"
+  /___fixtures/bulk:
+    post:
+      summary: "Add fixtures"
+      tags:
+        - "Fixture"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Fixture"
+          required: true
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Fixture"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/Fixture"
+        "400":
+          description: "Bad request"
+definitions:
+  Configuration:
+    type: "object"
+    properties:
+      cors:
+        type: "string"
+        default: null
+      headers:
+        type: "object"
+        default: {}
+      query:
+        type: "object"
+        default: {}
+      cookies:
+        type: "object"
+        default: {}
+  Fixture:
+    type: "object"
+    properties:
+      method:
+        type: "string"
+        default: null
+      path:
+        type: "string"
+        default: {}
+      headers:
+        type: "object"
+        default: {}
+      query:
+        type: "object"
+        default: {}
+      cookies:
+        type: "object"
+        default: {}
+      body:
+        type: "object"
+        default: ""
+      options:
+        type: "object"
+        properties:
+          path:
+            type: "object"
+            default: {}
+          method:
+            type: "object"
+            default: {}
+          headers:
+            type: "object"
+            default: {}
+          query:
+            type: "object"
+            default: {}
+          cookies:
+            type: "object"
+            default: {}
+          body:
+            type: "object"
+            default: ""

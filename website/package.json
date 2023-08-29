@@ -1,0 +1,22 @@
+{
+  "name": "dynamock-website",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "DevSide",
+  "license": "MIT",
+  "description": "Dynamock website",
+  "repository": "https://github.com/DevSide/dynamock",
+  "scripts": {
+    "build:data": "rm -rf public/swagger && cp -r swagger public/swagger",
+    "build:html": "node ./scripts/build-html.js",
+    "build:js": "rm -rf public/app-* && esbuild src/app.js src/express-sw.js --bundle --loader:.js=jsx --outdir=public --minify --entry-names=[dir]/[name]-[hash].min --metafile=app.json",
+    "build": "yarn build:data && yarn build:js && yarn build:html"
+  },
+  "dependencies": {
+    "express-service": "1.7.0",
+    "swagger-ui": "3.51.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.12.15"
+  }
+}
