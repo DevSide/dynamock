@@ -1,18 +1,18 @@
 jest.useFakeTimers()
 
 describe('integrations.js', () => {
-  const { dirname } = require('path')
+  const { dirname } = require('node:path')
 
   let server
   let request
 
-  beforeAll(function (done) {
+  beforeAll((done) => {
     jest.mock('fs', () => {
       const mockFs = new (require('metro-memory-fs'))()
       mockFs.ReadStream = class {} // This fix an error with destroy package
       return mockFs
     })
-    require('fs').reset()
+    require('node:fs').reset()
 
     const supertest = require('supertest')
     const app = require('../createServer')()
@@ -21,11 +21,9 @@ describe('integrations.js', () => {
     request = supertest.agent(server)
   })
 
-  afterEach(async function () {
-    return Promise.all([request.delete('/___config'), request.delete('/___fixtures')])
-  })
+  afterEach(async () => Promise.all([request.delete('/___config'), request.delete('/___fixtures')]))
 
-  afterAll(function (done) {
+  afterAll((done) => {
     server.close(done)
     server = null
   })
@@ -36,7 +34,7 @@ describe('integrations.js', () => {
         cors: null,
         headers: {},
         query: {},
-        cookies: {}
+        cookies: {},
       }))
 
     test('update configuration', async () => {
@@ -46,9 +44,9 @@ describe('integrations.js', () => {
           headers: {
             commonHeaders: {
               'x-header-1': '1',
-              'x-header-2': '2'
-            }
-          }
+              'x-header-2': '2',
+            },
+          },
         })
         .expect(200)
 
@@ -58,10 +56,10 @@ describe('integrations.js', () => {
           cors: '*',
           headers: {
             clientToken: {
-              authorization: 'Bearer client-token'
-            }
+              authorization: 'Bearer client-token',
+            },
           },
-          cookies: {}
+          cookies: {},
         })
         .expect(200)
 
@@ -70,14 +68,14 @@ describe('integrations.js', () => {
         headers: {
           commonHeaders: {
             'x-header-1': '1',
-            'x-header-2': '2'
+            'x-header-2': '2',
           },
           clientToken: {
-            authorization: 'Bearer client-token'
-          }
+            authorization: 'Bearer client-token',
+          },
         },
         query: {},
-        cookies: {}
+        cookies: {},
       })
     })
 
@@ -94,7 +92,7 @@ describe('integrations.js', () => {
       // invalid
       [[], false],
       [{ unknown: 'unknown' }, false],
-      [{ headers: [] }, false]
+      [{ headers: [] }, false],
     ])('validate config="%o" response="%o" options="%o" isValid=%s', (config, isValid) => {
       return request
         .put('/___config')
@@ -150,7 +148,7 @@ describe('integrations.js', () => {
       [{ path: '/', method: 'get', options: { headers: { strict: false, allowRegex: false } } }, { body: '' }, true],
       [{ path: '/', method: 'get', options: { headers: { strict: true } } }, { body: '' }, true],
       [{ path: '/', method: 'get', options: { headers: { strict: false, allowRegex: true } } }, { body: '' }, true],
-      [{ path: '/', method: 'get', options: { headers: { allowRegex: true } } }, { body: '' }, true]
+      [{ path: '/', method: 'get', options: { headers: { allowRegex: true } } }, { body: '' }, true],
     ])('validate request="%o" response="%o" isValid=%s', async (req, resp, isValid) => {
       await request
         .post('/___fixtures')
@@ -174,12 +172,12 @@ describe('integrations.js', () => {
         .send({
           request: {
             path: '/products',
-            method: 'post'
+            method: 'post',
           },
           response: {
             status: 201,
-            body: '0'.repeat(10500000)
-          }
+            body: '0'.repeat(10500000),
+          },
         })
         .expect(413)
     })
@@ -192,18 +190,18 @@ describe('integrations.js', () => {
         .send({
           request: {
             path: '/products',
-            method: 'get'
+            method: 'get',
           },
           response: {
             status: 418,
             body: products,
             options: {
-              lifetime: 2
-            }
-          }
+              lifetime: 2,
+            },
+          },
         })
         .expect(201, {
-          id: '6a68271761e4729581283c2b40b7e428c25513cf'
+          id: '6a68271761e4729581283c2b40b7e428c25513cf',
         })
 
       await request.get('/products').expect(418, products)
@@ -223,35 +221,41 @@ describe('integrations.js', () => {
           {
             request: {
               path: '/products',
-              method: 'get'
+              method: 'get',
             },
             response: {
               body: products,
               options: {
-                lifetime: 2
-              }
-            }
+                lifetime: 2,
+              },
+            },
           },
           {
             request: {
               path: '/categories',
-              method: 'get'
+              method: 'get',
             },
             response: {
               body: categories,
               options: {
-                lifetime: 2
-              }
-            }
-          }
+                lifetime: 2,
+              },
+            },
+          },
         ])
-        .expect(201, [{ id: '6a68271761e4729581283c2b40b7e428c25513cf' }, { id: '1b8b0bca022acacfd5955c510e06e1ff671a823c' }])
+        .expect(201, [
+          { id: '6a68271761e4729581283c2b40b7e428c25513cf' },
+          { id: '1b8b0bca022acacfd5955c510e06e1ff671a823c' },
+        ])
 
-      await Promise.all([request.get('/products').expect(200, products), request.get('/categories').expect(200, categories)])
+      await Promise.all([
+        request.get('/products').expect(200, products),
+        request.get('/categories').expect(200, categories),
+      ])
 
       await Promise.all([
         request.delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf').expect(204),
-        request.delete('/___fixtures/1b8b0bca022acacfd5955c510e06e1ff671a823c').expect(204)
+        request.delete('/___fixtures/1b8b0bca022acacfd5955c510e06e1ff671a823c').expect(204),
       ])
 
       await Promise.all([request.get('/products').expect(404), request.get('/categories').expect(404)])
@@ -263,28 +267,28 @@ describe('integrations.js', () => {
         .send({
           request: {
             path: '/octopus',
-            method: 'get'
+            method: 'get',
           },
           response: {
-            body: []
-          }
+            body: [],
+          },
         })
         .expect(201, {
-          id: 'eb05231114f144acb7bca60806ac25ad7f43c973'
+          id: 'eb05231114f144acb7bca60806ac25ad7f43c973',
         })
       await request
         .post('/___fixtures')
         .send({
           request: {
             path: '/giraffes',
-            method: 'get'
+            method: 'get',
           },
           response: {
-            body: []
-          }
+            body: [],
+          },
         })
         .expect(201, {
-          id: '66474236616bc5a68c6498b497b2ce9a43484892'
+          id: '66474236616bc5a68c6498b497b2ce9a43484892',
         })
 
       await request.delete('/___fixtures').expect(204)
@@ -295,7 +299,7 @@ describe('integrations.js', () => {
     })
 
     test('create and remove filepath fixture', async () => {
-      const fs = require('fs')
+      const fs = require('node:fs')
       const file = '/tmp/panda.txt'
 
       fs.mkdirSync(dirname(file))
@@ -306,14 +310,14 @@ describe('integrations.js', () => {
         .send({
           request: {
             path: '/panda.txt',
-            method: 'get'
+            method: 'get',
           },
           response: {
-            filepath: file
-          }
+            filepath: file,
+          },
         })
         .expect(201, {
-          id: 'd8a1f72e9cd206c612847a7089e8c9460648c4bf'
+          id: 'd8a1f72e9cd206c612847a7089e8c9460648c4bf',
         })
 
       await request
@@ -331,85 +335,107 @@ describe('integrations.js', () => {
     test.each([
       // Conflicts
       [null, { method: 'get', path: '/products' }, { method: 'get', path: '/products' }, true],
-      [null, { method: 'get', path: '/products', headers: {}, cookies: {}, query: {} }, { method: 'get', path: '/products' }, true],
+      [
+        null,
+        { method: 'get', path: '/products', headers: {}, cookies: {}, query: {} },
+        { method: 'get', path: '/products' },
+        true,
+      ],
       [
         null,
         { method: 'get', path: '/products', headers: { a: 'a' }, cookies: { a: 'a' } },
         { method: 'get', path: '/products', cookies: { a: 'a' }, headers: { a: 'a' } },
-        true
+        true,
       ],
-      [null, { method: 'get', path: '/products', headers: [], cookies: [], query: [] }, { method: 'get', path: '/products' }, true],
       [
         null,
-        { method: 'get', path: '/products', headers: { a: 'a', b: 'b' }, cookies: { a: 'a', b: 'b' }, query: { a: 'a', b: 'b' } },
-        { method: 'get', path: '/products', headers: { b: 'b', a: 'a' }, cookies: { a: 'a', b: 'b' }, query: { a: 'a', b: 'b' } },
-        true
+        { method: 'get', path: '/products', headers: [], cookies: [], query: [] },
+        { method: 'get', path: '/products' },
+        true,
+      ],
+      [
+        null,
+        {
+          method: 'get',
+          path: '/products',
+          headers: { a: 'a', b: 'b' },
+          cookies: { a: 'a', b: 'b' },
+          query: { a: 'a', b: 'b' },
+        },
+        {
+          method: 'get',
+          path: '/products',
+          headers: { b: 'b', a: 'a' },
+          cookies: { a: 'a', b: 'b' },
+          query: { a: 'a', b: 'b' },
+        },
+        true,
       ],
       // No conflicts
       [null, { method: 'get', path: '/products' }, { method: 'post', path: '/products' }, false],
       [null, { method: 'post', path: '/products' }, { method: 'get', path: '/products' }, false],
       [null, { method: 'get', path: '/products' }, { method: 'get', path: '/categories' }, false],
-      [null, { method: 'get', path: '/categories' }, { method: 'get', path: '/products' }, false]
-    ])('conflict situation config="%o" requestA="%o" requestB="%o" shouldConflict=%s', async (configuration, requestA, requestB, shouldConflict) => {
-      if (configuration) {
+      [null, { method: 'get', path: '/categories' }, { method: 'get', path: '/products' }, false],
+    ])(
+      'conflict situation config="%o" requestA="%o" requestB="%o" shouldConflict=%s',
+      async (configuration, requestA, requestB, shouldConflict) => {
+        if (configuration) {
+          await request
+            .put('/___config')
+            .send({
+              headers: configuration,
+            })
+            .expect(200)
+        }
+
+        // Check if combining fixtures in a single request also failed
         await request
-          .put('/___config')
+          .post('/___fixtures/bulk')
+          .send(
+            [requestA, requestB].map((request) => ({
+              request: request,
+              response: {
+                body: {},
+              },
+            })),
+          )
+          .expect(shouldConflict ? 409 : 201)
+
+        if (!shouldConflict) {
+          await request.delete('/___fixtures')
+        }
+
+        await request
+          .post('/___fixtures')
           .send({
-            headers: configuration
-          })
-          .expect(200)
-      }
-
-      // Check if combining fixtures in a single request also failed
-      await request
-        .post('/___fixtures/bulk')
-        .send(
-          [requestA, requestB].map(request => ({
-            request: request,
+            request: requestA,
             response: {
-              body: {}
-            }
-          }))
-        )
-        .expect(shouldConflict ? 409 : 201)
+              body: {},
+            },
+          })
+          .expect(201)
 
-      if (!shouldConflict) {
-        await request.delete('/___fixtures')
-      }
-
-      await request
-        .post('/___fixtures')
-        .send({
-          request: requestA,
-          response: {
-            body: {}
-          }
-        })
-        .expect(201)
-
-      await request
-        .post('/___fixtures')
-        .send({
-          request: requestB,
-          response: {
-            body: {}
-          }
-        })
-        .expect(shouldConflict ? 409 : 201)
-    })
+        await request
+          .post('/___fixtures')
+          .send({
+            request: requestB,
+            response: {
+              body: {},
+            },
+          })
+          .expect(shouldConflict ? 409 : 201)
+      },
+    )
   })
 
   describe('CORS', () => {
     test('allow all', async () => {
-      await request
-        .put('/___config')
-        .send({ cors: '*' })
-        .expect(200)
+      await request.put('/___config').send({ cors: '*' }).expect(200)
 
       const pathMethods = [
         ['/', 'options'],
         ['/', 'get'],
-        ['/toto', 'post']
+        ['/toto', 'post'],
       ]
 
       for (const [path, method] of pathMethods) {
@@ -418,11 +444,11 @@ describe('integrations.js', () => {
           .send({
             request: {
               path,
-              method
+              method,
             },
             response: {
-              body: ''
-            }
+              body: '',
+            },
           })
           .expect(201)
 
@@ -430,7 +456,7 @@ describe('integrations.js', () => {
           .set({
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': '*',
-            'Access-Control-Allow-Headers': '*'
+            'Access-Control-Allow-Headers': '*',
           })
           .expect(200)
       }
@@ -453,7 +479,7 @@ describe('integrations.js', () => {
       ['//a/', { allowRegex: true }, '/a/b', true],
       ['/^/a/', { allowRegex: true }, '/a/b', true],
       ['/^/a$/', { allowRegex: true }, '/a/b', false],
-      ['/^(/(a|b))+$/', { allowRegex: true }, '/a/b', true]
+      ['/^(/(a|b))+$/', { allowRegex: true }, '/a/b', true],
     ])('matching path match="%s" options="%o" test="%s" result=%s', async (matchPath, options, path, shouldMatch) => {
       const method = 'get'
 
@@ -465,15 +491,15 @@ describe('integrations.js', () => {
             method,
             ...(options
               ? {
-                options: {
-                  path: options
+                  options: {
+                    path: options,
+                  },
                 }
-              }
-              : {})
+              : {}),
           },
           response: {
-            body: ''
-          }
+            body: '',
+          },
         })
         .expect(201)
 
@@ -491,35 +517,38 @@ describe('integrations.js', () => {
       ['*', null, 'get', true],
       ['*', null, 'post', true],
       ['/(get|post)/', { allowRegex: true }, 'get', true],
-      ['/(get|post)/', { allowRegex: true }, 'post', true]
-    ])('matching method match="%s" options="%o" test="%s" result=%s', async (matchMethod, options, method, shouldMatch) => {
-      const path = '/test'
+      ['/(get|post)/', { allowRegex: true }, 'post', true],
+    ])(
+      'matching method match="%s" options="%o" test="%s" result=%s',
+      async (matchMethod, options, method, shouldMatch) => {
+        const path = '/test'
 
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path,
-            method: matchMethod,
-            ...(options
-              ? {
-                options: {
-                  method: options
-                }
-              }
-              : {})
-          },
-          response: {
-            body: ''
-          }
-        })
-        .expect(201)
+        await request
+          .post('/___fixtures')
+          .send({
+            request: {
+              path,
+              method: matchMethod,
+              ...(options
+                ? {
+                    options: {
+                      method: options,
+                    },
+                  }
+                : {}),
+            },
+            response: {
+              body: '',
+            },
+          })
+          .expect(201)
 
-      await request
-        // eslint-disable-next-line no-unexpected-multiline
-        [method](path)
-        .expect(shouldMatch ? 200 : 404)
-    })
+        await request
+          // eslint-disable-next-line no-unexpected-multiline
+          [method](path)
+          .expect(shouldMatch ? 200 : 404)
+      },
+    )
   })
 
   describe('matching headers', () => {
@@ -547,47 +576,50 @@ describe('integrations.js', () => {
       [{ custom: { a: '/a/', b: '/b/' } }, ['custom'], { allowRegex: true }, { a: 'a' }, false],
       [{ custom: { a: 'a', b: 'b' } }, ['custom'], null, { a: 'a', b: 'b' }, true],
       [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], null, { a: 'a' }, false],
-      [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], null, { a: 'a', b: 'b' }, true]
-    ])('match headers config="%o" match="%o" options="%o" result=%s', async (configuration, matchValues, options, values, shouldMatch) => {
-      const path = '/test'
-      const method = 'get'
+      [{ a: { a: 'a' }, b: { b: 'b' } }, ['a', 'b'], null, { a: 'a', b: 'b' }, true],
+    ])(
+      'match headers config="%o" match="%o" options="%o" result=%s',
+      async (configuration, matchValues, options, values, shouldMatch) => {
+        const path = '/test'
+        const method = 'get'
 
-      if (configuration) {
+        if (configuration) {
+          await request
+            .put('/___config')
+            .send({
+              headers: configuration,
+            })
+            .expect(200)
+        }
+
         await request
-          .put('/___config')
+          .post('/___fixtures')
           .send({
-            headers: configuration
+            request: {
+              path,
+              method,
+              headers: matchValues,
+              ...(options
+                ? {
+                    options: {
+                      headers: options,
+                    },
+                  }
+                : {}),
+            },
+            response: {
+              body: '',
+            },
           })
-          .expect(200)
-      }
+          .expect(201)
 
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path,
-            method,
-            headers: matchValues,
-            ...(options
-              ? {
-                options: {
-                  headers: options
-                }
-              }
-              : {})
-          },
-          response: {
-            body: ''
-          }
-        })
-        .expect(201)
-
-      await request
-        // eslint-disable-next-line no-unexpected-multiline
-        [method](path)
-        .set(values)
-        .expect(shouldMatch ? 200 : 404)
-    })
+        await request
+          // eslint-disable-next-line no-unexpected-multiline
+          [method](path)
+          .set(values)
+          .expect(shouldMatch ? 200 : 404)
+      },
+    )
   })
 
   describe('matching cookies', () => {
@@ -618,52 +650,55 @@ describe('integrations.js', () => {
       [{ xAndY: { x: 'x', y: 'y' } }, ['xAndY'], { x: 'x', y: 'y' }, { strict: true }, true],
       [{ xOnly: { x: 'x' }, yOnly: { y: 'y' } }, ['xOnly', 'yOnly'], { x: 'x' }, null, false],
       [{ xOnly: { x: 'x' }, yOnly: { y: 'y' } }, ['xOnly', 'yOnly'], { x: 'x', y: 'y' }, null, true],
-      [{ xOnly: { x: 'x' } }, ['xOnly', { y: 'y' }], { x: 'x', y: 'y' }, null, true]
-    ])('match cookies config=%o match=%o request=%o result=%s', async (configuration, matchValues, values, options, shouldMatch) => {
-      const path = '/test'
-      const method = 'get'
+      [{ xOnly: { x: 'x' } }, ['xOnly', { y: 'y' }], { x: 'x', y: 'y' }, null, true],
+    ])(
+      'match cookies config=%o match=%o request=%o result=%s',
+      async (configuration, matchValues, values, options, shouldMatch) => {
+        const path = '/test'
+        const method = 'get'
 
-      if (configuration) {
+        if (configuration) {
+          await request
+            .put('/___config')
+            .send({
+              cookies: configuration,
+            })
+            .expect(200)
+        }
+
         await request
-          .put('/___config')
+          .post('/___fixtures')
           .send({
-            cookies: configuration
+            request: {
+              path,
+              method,
+              cookies: matchValues,
+              ...(options
+                ? {
+                    options: {
+                      cookies: options,
+                    },
+                  }
+                : {}),
+            },
+            response: {
+              body: '',
+            },
           })
-          .expect(200)
-      }
+          .expect(201)
 
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path,
-            method,
-            cookies: matchValues,
-            ...(options
-              ? {
-                options: {
-                  cookies: options
-                }
-              }
-              : {})
-          },
-          response: {
-            body: ''
-          }
-        })
-        .expect(201)
+        const cookies = Object.entries(values)
+          .reduce((acc, [key, value]) => {
+            acc.push(`${key}=${value}`)
+            return acc
+          }, [])
+          .join(';')
 
-      const cookies = Object.entries(values)
-        .reduce((acc, [key, value]) => {
-          acc.push(`${key}=${value}`)
-          return acc
-        }, [])
-        .join(';')
-
-      await request[method](path)
-        .set('Cookie', cookies)
-        .expect(shouldMatch ? 200 : 404)
-    })
+        await request[method](path)
+          .set('Cookie', cookies)
+          .expect(shouldMatch ? 200 : 404)
+      },
+    )
   })
 
   describe('matching query', () => {
@@ -704,8 +739,15 @@ describe('integrations.js', () => {
       [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=2', null, false],
       [{ xAndY: { x: '1', y: '2' } }, '/test', ['xAndY'], '/test?x=1&y=2', null, true],
       [{ xOnly: { x: '1' }, yOnly: { y: '2' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', null, true],
-      [{ xOnly: { x: '/\\d+/' }, yOnly: { y: '/\\d+/' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', { allowRegex: true }, true],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly', { y: '2' }], '/test?x=1&y=2', null, true]
+      [
+        { xOnly: { x: '/\\d+/' }, yOnly: { y: '/\\d+/' } },
+        '/test',
+        ['xOnly', 'yOnly'],
+        '/test?x=1&y=2',
+        { allowRegex: true },
+        true,
+      ],
+      [{ xOnly: { x: '1' } }, '/test', ['xOnly', { y: '2' }], '/test?x=1&y=2', null, true],
     ])(
       'match query config="%o" matchPath="%s" matchValues="%o" path="%s" options="%o" result=%s',
       async (configuration, matchPath, matchValues, path, options, shouldMatch) => {
@@ -715,7 +757,7 @@ describe('integrations.js', () => {
           await request
             .put('/___config')
             .send({
-              query: configuration
+              query: configuration,
             })
             .expect(200)
         }
@@ -729,20 +771,20 @@ describe('integrations.js', () => {
               query: matchValues,
               ...(options
                 ? {
-                  options: {
-                    query: options
+                    options: {
+                      query: options,
+                    },
                   }
-                }
-                : {})
+                : {}),
             },
             response: {
-              body: {}
-            }
+              body: {},
+            },
           })
           .expect(201)
 
         await request[method](path).expect(shouldMatch ? 200 : 404)
-      }
+      },
     )
   })
 
@@ -778,47 +820,50 @@ describe('integrations.js', () => {
       [null, { a: { b: '/B/i', c: [] } }, { a: { b: 'b', c: [] } }, { allowRegex: true }, true],
       [null, { a: { b: 'b', c: [] } }, { a: { b: 'b', c: [] } }, { strict: true }, true],
       [null, { a: { b: 'b', c: {} } }, { a: { b: 'b', c: [] } }, null, false],
-      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b' } }, null, false]
-    ])('match body config="%o" matchValues="%s" values="%o" options="%o" shouldMatch=%s', async (configuration, matchValues, values, options, shouldMatch) => {
-      const path = '/test'
-      const method = 'post'
+      [null, { a: { b: 'b', c: {} } }, { a: { b: 'b' } }, null, false],
+    ])(
+      'match body config="%o" matchValues="%s" values="%o" options="%o" shouldMatch=%s',
+      async (configuration, matchValues, values, options, shouldMatch) => {
+        const path = '/test'
+        const method = 'post'
 
-      if (configuration) {
+        if (configuration) {
+          await request
+            .put('/___config')
+            .send({
+              body: configuration,
+            })
+            .expect(200)
+        }
+
         await request
-          .put('/___config')
+          .post('/___fixtures')
           .send({
-            body: configuration
+            request: {
+              path,
+              method,
+              body: matchValues,
+              ...(options
+                ? {
+                    options: {
+                      body: options,
+                    },
+                  }
+                : {}),
+            },
+            response: {
+              body: {},
+            },
           })
-          .expect(200)
-      }
+          .expect(201)
 
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path,
-            method,
-            body: matchValues,
-            ...(options
-              ? {
-                options: {
-                  body: options
-                }
-              }
-              : {})
-          },
-          response: {
-            body: {}
-          }
-        })
-        .expect(201)
-
-      await request
-        // eslint-disable-next-line no-unexpected-multiline
-        [method](path)
-        .send(values)
-        .expect(shouldMatch ? 200 : 404)
-    })
+        await request
+          // eslint-disable-next-line no-unexpected-multiline
+          [method](path)
+          .send(values)
+          .expect(shouldMatch ? 200 : 404)
+      },
+    )
   })
 
   describe('lifetime option', () => {
@@ -830,47 +875,50 @@ describe('integrations.js', () => {
         [
           [0, 200],
           [0, 200],
-          [0, 200]
-        ]
+          [0, 200],
+        ],
       ],
       [
         [1, 1],
-        [[0, 200], [1, 200], 404]
+        [[0, 200], [1, 200], 404],
       ],
       [
         [2, 1],
-        [[0, 200], [0, 200], [1, 200], 404]
+        [[0, 200], [0, 200], [1, 200], 404],
       ],
       [
         [1, 2],
-        [[0, 200], [1, 200], [1, 200], 404]
+        [[0, 200], [1, 200], [1, 200], 404],
       ],
       [
         [1, 1, 1],
-        [[0, 200], [1, 200], [2, 200], 404]
-      ]
-    ])('Option lifetime should match responses length, responseLifetimes=%j expectResponses=%j', async (responseLifetimes, expectResponses) => {
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/',
-            method: 'get'
-          },
-          responses: responseLifetimes.map((lifetime, i) => ({ body: `response-${i}`, options: { lifetime } }))
-        })
-        .expect(201)
+        [[0, 200], [1, 200], [2, 200], 404],
+      ],
+    ])(
+      'Option lifetime should match responses length, responseLifetimes=%j expectResponses=%j',
+      async (responseLifetimes, expectResponses) => {
+        await request
+          .post('/___fixtures')
+          .send({
+            request: {
+              path: '/',
+              method: 'get',
+            },
+            responses: responseLifetimes.map((lifetime, i) => ({ body: `response-${i}`, options: { lifetime } })),
+          })
+          .expect(201)
 
-      for (const expectResponse of expectResponses) {
-        const r = request.get('/')
+        for (const expectResponse of expectResponses) {
+          const r = request.get('/')
 
-        if (Array.isArray(expectResponse)) {
-          await r.expect(expectResponse[1], `response-${expectResponse[0]}`)
-        } else {
-          await r.expect(expectResponse)
+          if (Array.isArray(expectResponse)) {
+            await r.expect(expectResponse[1], `response-${expectResponse[0]}`)
+          } else {
+            await r.expect(expectResponse)
+          }
         }
-      }
-    })
+      },
+    )
   })
 
   describe('delay option', () => {
@@ -880,14 +928,14 @@ describe('integrations.js', () => {
         .send({
           request: {
             path: '/',
-            method: 'get'
+            method: 'get',
           },
           response: {
             body: [],
             options: {
-              delay: 1000
-            }
-          }
+              delay: 1000,
+            },
+          },
         })
         .expect(201)
 
@@ -902,17 +950,17 @@ describe('integrations.js', () => {
       [undefined, 200],
       [200, 200],
       [204, 204],
-      [301, 301]
+      [301, 301],
     ])('response status status="%n"', async (status, expectedStatus) => {
       await request.post('/___fixtures').send({
         request: {
           path: '/',
-          method: 'get'
+          method: 'get',
         },
         response: {
           status,
-          body: ''
-        }
+          body: '',
+        },
       })
 
       await request.get('/').expect(expectedStatus)
@@ -938,7 +986,7 @@ describe('integrations.js', () => {
       ['cookies', { A: { a: 'a' } }, ['A', { a: 'a' }], { a: 'a' }],
       ['cookies', { A: { a: 'a' } }, ['A', { b: 'b' }], { a: 'a', b: 'b' }],
       ['cookies', { A: { a: 'a' }, B: { b: 'b' } }, ['A', 'B'], { a: 'a', b: 'b' }],
-      ['cookies', { A: { a: 'a' }, C: { c: 'c' } }, ['A', { b: 'b' }, 'C'], { a: 'a', b: 'b', c: 'c' }]
+      ['cookies', { A: { a: 'a' }, C: { c: 'c' } }, ['A', { b: 'b' }, 'C'], { a: 'a', b: 'b', c: 'c' }],
     ])(
       'response %s configHeaders="%o" propertyValue="%o" expectedPropertyValue="%o"',
       async (property, configuration, propertyValue, expectedPropertyValue) => {
@@ -946,7 +994,7 @@ describe('integrations.js', () => {
           await request
             .put('/___config')
             .send({
-              [property]: configuration
+              [property]: configuration,
             })
             .expect(200)
         }
@@ -954,12 +1002,12 @@ describe('integrations.js', () => {
         await request.post('/___fixtures').send({
           request: {
             path: '/',
-            method: 'get'
+            method: 'get',
           },
           response: {
             [property]: propertyValue,
-            body: ''
-          }
+            body: '',
+          },
         })
 
         const r = request.get('/').expect(200)
@@ -981,7 +1029,7 @@ describe('integrations.js', () => {
         }
 
         await r
-      }
+      },
     )
   })
 })
