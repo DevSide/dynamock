@@ -54,6 +54,8 @@ async function test (port) {
     method: `GET`,
   })
 
+  assert.strictEqual(response.headers['x-powered-by'], undefined)
+  assert.strictEqual(response.headers['etag'], undefined)
   assert.strictEqual(response.status, 200)
   result = await response.json()
   assert.deepStrictEqual(result, { id: 1 })
