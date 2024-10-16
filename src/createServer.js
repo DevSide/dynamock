@@ -121,7 +121,6 @@ export function createServer() {
       return res.set(corsAllowAllHeaders).status(200).send()
     }
 
-    // eslint-disable-next-line no-labels
     fixtureLoop: for (const [fixtureId, fixture] of getFixtureIterator()) {
       const { request, responses } = fixture
 
@@ -131,7 +130,6 @@ export function createServer() {
 
       for (const property of REQUEST_PROPERTIES) {
         if (!requestPropertyMatch(req, request, property)) {
-          // eslint-disable-next-line no-labels
           continue fixtureLoop
         }
       }

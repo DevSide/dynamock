@@ -502,10 +502,7 @@ describe('integrations.js', () => {
         })
         .expect(201)
 
-      await request
-        // eslint-disable-next-line no-unexpected-multiline
-        [method](path)
-        .expect(shouldMatch ? 200 : 404)
+      await request[method](path).expect(shouldMatch ? 200 : 404)
     })
   })
 
@@ -542,10 +539,7 @@ describe('integrations.js', () => {
           })
           .expect(201)
 
-        await request
-          // eslint-disable-next-line no-unexpected-multiline
-          [method](path)
-          .expect(shouldMatch ? 200 : 404)
+        await request[method](path).expect(shouldMatch ? 200 : 404)
       },
     )
   })
@@ -612,9 +606,7 @@ describe('integrations.js', () => {
           })
           .expect(201)
 
-        await request
-          // eslint-disable-next-line no-unexpected-multiline
-          [method](path)
+        await request[method](path)
           .set(values)
           .expect(shouldMatch ? 200 : 404)
       },
@@ -859,9 +851,7 @@ describe('integrations.js', () => {
           })
           .expect(201)
 
-        await request
-          // eslint-disable-next-line no-unexpected-multiline
-          [method](path)
+        await request[method](path)
           .send(values)
           .expect(shouldMatch ? 200 : 404)
       },
