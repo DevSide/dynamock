@@ -1,10 +1,9 @@
 # dynamock
 
-[![npm version](https://badge.fury.io/js/dynamock.svg)](https://badge.fury.io/js/dynamock)
-![David](https://img.shields.io/david/devside/dynamock)
+[![npm version](https://img.shields.io/npm/v/dynamock)](https://img.shields.io/npm/v/dynamock)
 ![node](https://img.shields.io/node/v/dynamock)
-[![Build Status](https://travis-ci.com/DevSide/dynamock.svg?branch=master)](https://travis-ci.com/DevSide/dynamock)
-[![Coverage Status](https://coveralls.io/repos/github/DevSide/dynamock/badge.svg?branch=master)](https://coveralls.io/github/DevSide/dynamock?branch=master)
+[![Build Status](https://github.com/devside/dynamock/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/devside/dynamock/actions/workflows/ci.yml/badge.svg?branch=master)
+[![Coverage Status](https://img.shields.io/coverallsCoverage/github/DevSide/dynamock?branch=master)](https://img.shields.io/coverallsCoverage/github/DevSide/dynamock?branch=master)
 
 `dynamock` is a dynamic mock/fixture HTTP server designed for functional testing.<br>
 
