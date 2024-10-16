@@ -1,4 +1,4 @@
-import { hash, isObjectEmpty, sortObjectKeysRecurs } from './utils'
+import { hash, isObjectEmpty, sortObjectKeysRecurs } from './utils.js'
 import querystring from 'node:querystring'
 // TODO: remove Joi with a lightweight composable validation library
 import Joi from '@hapi/joi'
