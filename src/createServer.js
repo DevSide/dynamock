@@ -28,6 +28,8 @@ export function createServer() {
 
   app.use(express.json({ limit: '10mb' }))
   app.use(cookieParser())
+  app.disable('x-powered-by')
+  app.disable('etag')
 
   let configuration = createConfiguration()
 
