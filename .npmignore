@@ -1,7 +1,6 @@
 .editorconfig
-.eslintrc.json
+biome.json
 .releaserc
-.travis.yml
 .idea
 coverage
 *.log
