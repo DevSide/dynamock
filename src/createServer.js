@@ -1,9 +1,10 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const cookieParser = require('cookie-parser')
-const { REQUEST_PROPERTIES, RESPONSE_PROPERTIES, requestPropertyMatch, useResponseProperties } = require('./properties')
-const { validateFixture, removeFixture, removeFixtures, registerFixture, getFixtureIterator } = require('./fixtures')
-const { validateConfiguration, createConfiguration, updateConfiguration } = require('./configuration')
+import express from 'express'
+import bodyParser from 'body-parser'
+import cookieParser from 'cookie-parser'
+import { REQUEST_PROPERTIES, requestPropertyMatch, RESPONSE_PROPERTIES, useResponseProperties } from './properties'
+import { getFixtureIterator, registerFixture, removeFixture, removeFixtures, validateFixture } from './fixtures'
+import { createConfiguration, updateConfiguration, validateConfiguration } from './configuration'
+import { createServer as createHTTPServer } from 'node:http'
 
 function resError(res, status, message) {
   return res.status(status).send({ message: `[FIXTURE SERVER ERROR ${status}]: ${message}` })
@@ -17,9 +18,9 @@ function conflict(res, message) {
   return resError(res, 409, message)
 }
 
-function createServer() {
+export function createServer() {
   const app = express()
-  const server = require('node:http').createServer(app)
+  const server = createHTTPServer(app)
   const corsAllowAllHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': '*',
@@ -183,5 +184,3 @@ function createServer() {
 
   return server
 }
-
-module.exports = createServer

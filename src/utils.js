@@ -1,7 +1,8 @@
-const crypto = require('node:crypto')
-const { deepStrictEqual } = require('node:assert')
+import crypto from 'node:crypto'
+import { deepStrictEqual } from 'node:assert'
 
-exports.isObjectEmpty = isObjectEmpty
+export { isObjectEmpty }
+
 function isObjectEmpty(object) {
   for (const key in object) {
     if (Object.prototype.hasOwnProperty.call(object, key)) return false
@@ -29,9 +30,9 @@ function matchRegex(value, baseValue) {
   return false
 }
 
-exports.matchRegex = matchRegex
+export { matchRegex }
 
-exports.isIncluded = function isIncluded(object, base, allowRegex) {
+export function isIncluded(object, base, allowRegex) {
   for (const key in object) {
     if (!Object.prototype.hasOwnProperty.call(object, key)) {
       continue
@@ -61,7 +62,7 @@ exports.isIncluded = function isIncluded(object, base, allowRegex) {
   return true
 }
 
-exports.sortObjectKeysRecurs = function sortObjectKeysRecurs(src) {
+export function sortObjectKeysRecurs(src) {
   if (Array.isArray(src)) {
     const out = []
 
@@ -86,6 +87,6 @@ exports.sortObjectKeysRecurs = function sortObjectKeysRecurs(src) {
   return src
 }
 
-exports.hash = function hash(str) {
+export function hash(str) {
   return crypto.createHash('sha1').update(str).digest('hex')
 }

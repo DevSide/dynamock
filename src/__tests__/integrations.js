@@ -1,27 +1,20 @@
-jest.useFakeTimers()
+import { beforeAll, afterEach, afterAll, describe, test } from '@jest/globals'
+import { dirname } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import supertest from 'supertest'
+import { createServer } from '../createServer'
 
 describe('integrations.js', () => {
-  const { dirname } = require('node:path')
-
   let server
   let request
 
   beforeAll((done) => {
-    jest.mock('fs', () => {
-      const mockFs = new (require('metro-memory-fs'))()
-      mockFs.ReadStream = class {} // This fix an error with destroy package
-      return mockFs
-    })
-    require('node:fs').reset()
-
-    const supertest = require('supertest')
-    const app = require('../createServer')()
-
-    server = app.listen(done)
+    server = createServer()
+    server.listen(done)
     request = supertest.agent(server)
   })
 
-  afterEach(async () => Promise.all([request.delete('/___config'), request.delete('/___fixtures')]))
+  afterEach(() => Promise.all([request.delete('/___config'), request.delete('/___fixtures')]))
 
   afterAll((done) => {
     server.close(done)
@@ -299,11 +292,10 @@ describe('integrations.js', () => {
     })
 
     test('create and remove filepath fixture', async () => {
-      const fs = require('node:fs')
       const file = '/tmp/panda.txt'
 
-      fs.mkdirSync(dirname(file))
-      fs.writeFileSync(file, 'pandas !')
+      mkdirSync(dirname(file), { recursive: true })
+      writeFileSync(file, 'pandas !')
 
       await request
         .post('/___fixtures')
