@@ -17,8 +17,8 @@
   "main": "src/createServer.js",
   "scripts": {
     "check-git": "git status -uno --porcelain && [ -z \"$(git status -uno --porcelain)\" ] || (echo 'Git working directory not clean'; false)",
-    "format": "prettier-eslint --write $PWD/'**/*.js' $PWD/'**/*.md'",
-    "lint": "eslint '**/*.js'",
+    "format": "npx @biomejs/biome format --write src",
+    "lint": "npx @biomejs/biome lint --write src",
     "release": "semantic-release",
     "test": "jest src"
   },
@@ -32,21 +32,15 @@
     "express": "4.18.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.3",
     "@semantic-release/commit-analyzer": "^8.0.1",
     "@semantic-release/git": "^9.0.0",
     "@semantic-release/github": "^7.2.3",
     "@semantic-release/npm": "^7.1.3",
     "@semantic-release/release-notes-generator": "^9.0.3",
     "coveralls": "^3.1.1",
-    "eslint": "^6.8.0",
-    "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
     "jest": "^26.2.2",
     "metro-memory-fs": "^0.78.1",
-    "prettier-eslint-cli": "^5.0.1",
     "semantic-release": "^17.4.4",
     "supertest": "^6.3.3"
   }

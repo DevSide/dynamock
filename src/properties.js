@@ -1,13 +1,13 @@
-const { deepStrictEqual } = require('assert')
+const { deepStrictEqual } = require('node:assert')
 const { isIncluded, matchRegex } = require('./utils')
 
 exports.REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
 exports.RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']
 
-exports.requestPropertyMatch = function requestPropertyMatch (request, match, property) {
+exports.requestPropertyMatch = function requestPropertyMatch(request, match, property) {
   let requestProperty = request[property]
   let matchProperty = match[property]
-  const optionsProperty = (match.options && match.options[property]) || {}
+  const optionsProperty = match.options?.[property] || {}
 
   if (property === 'path' || property === 'method') {
     if (matchProperty === '*') {
@@ -50,5 +50,5 @@ exports.useResponseProperties = {
     for (const key in cookies) {
       res.cookie(key, cookies[key])
     }
-  }
+  },
 }

@@ -1,21 +1,21 @@
-const crypto = require('crypto')
-const { deepStrictEqual } = require('assert')
+const crypto = require('node:crypto')
+const { deepStrictEqual } = require('node:assert')
 
 exports.isObjectEmpty = isObjectEmpty
-function isObjectEmpty (object) {
+function isObjectEmpty(object) {
   for (const key in object) {
     if (Object.prototype.hasOwnProperty.call(object, key)) return false
   }
   return true
 }
 
-function isObject (object) {
+function isObject(object) {
   return typeof object === 'object' && !Array.isArray(object)
 }
 
 const stringRegexp = /\/(.*)\/([gimuys]*)/
 
-function matchRegex (value, baseValue) {
+function matchRegex(value, baseValue) {
   const matchRegExp = value.match(stringRegexp)
 
   if (matchRegExp) {
@@ -31,7 +31,7 @@ function matchRegex (value, baseValue) {
 
 exports.matchRegex = matchRegex
 
-exports.isIncluded = function isIncluded (object, base, allowRegex) {
+exports.isIncluded = function isIncluded(object, base, allowRegex) {
   for (const key in object) {
     if (!Object.prototype.hasOwnProperty.call(object, key)) {
       continue
@@ -61,7 +61,7 @@ exports.isIncluded = function isIncluded (object, base, allowRegex) {
   return true
 }
 
-exports.sortObjectKeysRecurs = function sortObjectKeysRecurs (src) {
+exports.sortObjectKeysRecurs = function sortObjectKeysRecurs(src) {
   if (Array.isArray(src)) {
     const out = []
 
@@ -86,9 +86,6 @@ exports.sortObjectKeysRecurs = function sortObjectKeysRecurs (src) {
   return src
 }
 
-exports.hash = function hash (str) {
-  return crypto
-    .createHash('sha1')
-    .update(str)
-    .digest('hex')
+exports.hash = function hash(str) {
+  return crypto.createHash('sha1').update(str).digest('hex')
 }

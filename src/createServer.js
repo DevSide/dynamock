@@ -5,25 +5,25 @@ const { REQUEST_PROPERTIES, RESPONSE_PROPERTIES, requestPropertyMatch, useRespon
 const { validateFixture, removeFixture, removeFixtures, registerFixture, getFixtureIterator } = require('./fixtures')
 const { validateConfiguration, createConfiguration, updateConfiguration } = require('./configuration')
 
-function resError (res, status, message) {
+function resError(res, status, message) {
   return res.status(status).send({ message: `[FIXTURE SERVER ERROR ${status}]: ${message}` })
 }
 
-function badRequest (res, message) {
+function badRequest(res, message) {
   return resError(res, 400, message)
 }
 
-function conflict (res, message) {
+function conflict(res, message) {
   return resError(res, 409, message)
 }
 
-function createServer () {
+function createServer() {
   const app = express()
-  const server = require('http').createServer(app)
+  const server = require('node:http').createServer(app)
   const corsAllowAllHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': '*',
-    'Access-Control-Allow-Headers': '*'
+    'Access-Control-Allow-Headers': '*',
   }
 
   app.use(bodyParser.json({ limit: '10mb' }))
@@ -114,12 +114,9 @@ function createServer () {
     res.status(204).send()
   })
 
-  app.use(function fixtureHandler (req, res, next) {
+  app.use(function fixtureHandler(req, res, next) {
     if (req.method === 'OPTIONS' && configuration.cors === '*') {
-      return res
-        .set(corsAllowAllHeaders)
-        .status(200)
-        .send()
+      return res.set(corsAllowAllHeaders).status(200).send()
     }
 
     // eslint-disable-next-line no-labels
@@ -156,7 +153,7 @@ function createServer () {
         }
       }
 
-      if (response.options && response.options.delay) {
+      if (response.options?.delay) {
         setTimeout(send, response.options.delay)
       } else {
         send()

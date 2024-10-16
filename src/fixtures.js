@@ -1,12 +1,12 @@
 const { hash, sortObjectKeysRecurs, isObjectEmpty } = require('./utils')
-const querystring = require('querystring')
+const querystring = require('node:querystring')
 
 // TODO: remove Joi with a lightweight composable validation library
 const Joi = require('@hapi/joi')
 
 const fixtureStorage = new Map()
 
-exports.validateFixture = function validateFixture (unsafeFixture, configuration) {
+exports.validateFixture = function validateFixture(unsafeFixture, configuration) {
   const schemaProperty = Joi.alternatives([
     Joi.array().items(
       Joi.custom((value, helpers) => {
@@ -19,14 +19,14 @@ exports.validateFixture = function validateFixture (unsafeFixture, configuration
 
         return value
       }),
-      Joi.object()
+      Joi.object(),
     ),
-    Joi.object()
+    Joi.object(),
   ])
 
   const optionsStrictOrAllowRegex = Joi.object({
     strict: Joi.bool(),
-    allowRegex: Joi.bool()
+    allowRegex: Joi.bool(),
   }).invalid({ strict: true, allowRegex: true })
 
   const requestSchema = Joi.object({
@@ -36,7 +36,7 @@ exports.validateFixture = function validateFixture (unsafeFixture, configuration
       Joi.string().regex(/^(head|delete|put|post|get|options|patch|\*)$/i),
       Joi.custom((value, helpers) => {
         const options = helpers.state.ancestors[0].options || {}
-        const allowMethodRegex = (options.method || {}).allowRegex
+        const allowMethodRegex = options.method?.allowRegex
 
         if (!allowMethodRegex) {
           throw new Error(`Method ${value} is not a valid method`)
@@ -47,48 +47,41 @@ exports.validateFixture = function validateFixture (unsafeFixture, configuration
         }
 
         return value
-      })
+      }),
     ]).required(),
     headers: schemaProperty,
     cookies: schemaProperty,
     query: schemaProperty,
     options: Joi.object({
       path: Joi.object({
-        allowRegex: Joi.bool()
+        allowRegex: Joi.bool(),
       }),
       method: Joi.object({
-        allowRegex: Joi.bool()
+        allowRegex: Joi.bool(),
       }),
       headers: optionsStrictOrAllowRegex,
       cookies: optionsStrictOrAllowRegex,
       query: optionsStrictOrAllowRegex,
-      body: optionsStrictOrAllowRegex
-    })
+      body: optionsStrictOrAllowRegex,
+    }),
   })
 
   const responseSchema = Joi.object({
-    status: Joi.number()
-      .integer()
-      .min(200)
-      .max(600),
+    status: Joi.number().integer().min(200).max(600),
     body: Joi.any(),
     filepath: Joi.string(),
     headers: schemaProperty,
     cookies: schemaProperty,
     options: Joi.object({
-      delay: Joi.number()
-        .integer()
-        .min(0),
-      lifetime: Joi.number()
-        .integer()
-        .min(0)
-    })
+      delay: Joi.number().integer().min(0),
+      lifetime: Joi.number().integer().min(0),
+    }),
   }).or('body', 'filepath')
 
   const schema = Joi.object({
     request: requestSchema.required(),
     response: responseSchema,
-    responses: Joi.array().items(responseSchema)
+    responses: Joi.array().items(responseSchema),
   })
     .or('response', 'responses')
     .required()
@@ -102,7 +95,7 @@ exports.validateFixture = function validateFixture (unsafeFixture, configuration
   return ''
 }
 
-function normalizeArrayMatcher (property, propertyValue, configuration) {
+function normalizeArrayMatcher(property, propertyValue, configuration) {
   const result = {}
 
   // Merge with configuration
@@ -117,7 +110,7 @@ function normalizeArrayMatcher (property, propertyValue, configuration) {
   return result
 }
 
-function normalizePath (request) {
+function normalizePath(request) {
   // extract query from path is needed and move it in query property
   const indexQueryString = request.path.indexOf('?')
 
@@ -135,7 +128,7 @@ function normalizePath (request) {
   }
 }
 
-function normalizeFixture (fixture, configuration) {
+function normalizeFixture(fixture, configuration) {
   const request = sortObjectKeysRecurs(fixture.request)
   const responses = sortObjectKeysRecurs(fixture.responses || [fixture.response])
 
@@ -207,18 +200,18 @@ function normalizeFixture (fixture, configuration) {
   return { request, responses }
 }
 
-function createFixtureId (fixture) {
+function createFixtureId(fixture) {
   return hash(JSON.stringify(fixture.request))
 }
 
-exports.registerFixture = function registerFixture (newFixture, configuration) {
+exports.registerFixture = function registerFixture(newFixture, configuration) {
   const fixture = normalizeFixture(newFixture, configuration)
   const fixtureId = createFixtureId(fixture)
 
   if (fixtureStorage.has(fixtureId)) {
     return {
       conflictError: `Route ${fixture.request.method} ${fixture.request.path} is already registered`,
-      fixtureId
+      fixtureId,
     }
   }
 
@@ -226,18 +219,18 @@ exports.registerFixture = function registerFixture (newFixture, configuration) {
 
   return {
     conflictError: '',
-    fixtureId
+    fixtureId,
   }
 }
 
-exports.getFixtureIterator = function getFixtureIterator () {
+exports.getFixtureIterator = function getFixtureIterator() {
   return fixtureStorage
 }
 
-exports.removeFixture = function removeFixture (fixtureId) {
+exports.removeFixture = function removeFixture(fixtureId) {
   return fixtureStorage.delete(fixtureId)
 }
 
-exports.removeFixtures = function removeFixtures () {
+exports.removeFixtures = function removeFixtures() {
   fixtureStorage.clear()
 }
