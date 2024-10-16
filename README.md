@@ -211,7 +211,8 @@ A fixture is composed of:
     "body": "{object} [default=``] - Body to match requests",
     "options": {
       "path": {
-        "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
+        "allowRegex": "{boolean} [default=false] - Allow matching RegExp",
+        "disableEncodeURI": "{boolean} [default=false] - Disable encode URI, always on when allowRegex is true"
       },
       "method": {
         "allowRegex": "{boolean} [default=false] - Allow matching RegExp"
@@ -356,6 +357,24 @@ Examples:
   }
 }
 ```
+
+```json
+{
+  "request": {
+    "method": "GET",
+    "path": "/%20a",
+    "options": {
+      "path": {
+        "disableEncodeURI": true
+      }
+    }
+  },
+  "response": {
+    "body": "This will match '/ a' or '/%20a' calls"
+  }
+}
+```
+
 
 **Responses**
 

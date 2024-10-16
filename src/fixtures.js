@@ -54,7 +54,8 @@ export function validateFixture(unsafeFixture, configuration) {
     options: Joi.object({
       path: Joi.object({
         allowRegex: Joi.bool(),
-      }),
+        disableEncodeURI: Joi.bool(),
+      }).invalid({ allowRegex: true, disableEncodeURI: true }),
       method: Joi.object({
         allowRegex: Joi.bool(),
       }),
@@ -124,6 +125,12 @@ function normalizePath(request) {
     } else {
       request.query = query
     }
+  }
+
+  const pathOptions = request.options?.path
+
+  if (!pathOptions || (!pathOptions.allowRegex && !pathOptions.disableEncodeURI)) {
+    request.path = encodeURI(request.path)
   }
 }
 
