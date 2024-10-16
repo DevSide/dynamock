@@ -1,12 +1,11 @@
-const { hash, sortObjectKeysRecurs, isObjectEmpty } = require('./utils')
-const querystring = require('node:querystring')
-
+import { hash, isObjectEmpty, sortObjectKeysRecurs } from './utils'
+import querystring from 'node:querystring'
 // TODO: remove Joi with a lightweight composable validation library
-const Joi = require('@hapi/joi')
+import Joi from '@hapi/joi'
 
 const fixtureStorage = new Map()
 
-exports.validateFixture = function validateFixture(unsafeFixture, configuration) {
+export function validateFixture(unsafeFixture, configuration) {
   const schemaProperty = Joi.alternatives([
     Joi.array().items(
       Joi.custom((value, helpers) => {
@@ -204,7 +203,7 @@ function createFixtureId(fixture) {
   return hash(JSON.stringify(fixture.request))
 }
 
-exports.registerFixture = function registerFixture(newFixture, configuration) {
+export function registerFixture(newFixture, configuration) {
   const fixture = normalizeFixture(newFixture, configuration)
   const fixtureId = createFixtureId(fixture)
 
@@ -223,14 +222,14 @@ exports.registerFixture = function registerFixture(newFixture, configuration) {
   }
 }
 
-exports.getFixtureIterator = function getFixtureIterator() {
+export function getFixtureIterator() {
   return fixtureStorage
 }
 
-exports.removeFixture = function removeFixture(fixtureId) {
+export function removeFixture(fixtureId) {
   return fixtureStorage.delete(fixtureId)
 }
 
-exports.removeFixtures = function removeFixtures() {
+export function removeFixtures() {
   fixtureStorage.clear()
 }

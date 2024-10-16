@@ -1,10 +1,10 @@
-const { deepStrictEqual } = require('node:assert')
-const { isIncluded, matchRegex } = require('./utils')
+import { deepStrictEqual } from 'node:assert'
+import { isIncluded, matchRegex } from './utils'
 
-exports.REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
-exports.RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']
+export const REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
+export const RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']
 
-exports.requestPropertyMatch = function requestPropertyMatch(request, match, property) {
+export function requestPropertyMatch(request, match, property) {
   let requestProperty = request[property]
   let matchProperty = match[property]
   const optionsProperty = match.options?.[property] || {}
@@ -42,7 +42,7 @@ exports.requestPropertyMatch = function requestPropertyMatch(request, match, pro
   return isIncluded(matchProperty, requestProperty, !!optionsProperty.allowRegex)
 }
 
-exports.useResponseProperties = {
+export const useResponseProperties = {
   filepath: (req, res, value) => res.sendFile(value),
   headers: (req, res, value) => res.set(value),
   body: (req, res, value) => res.send(value),

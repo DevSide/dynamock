@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi')
+import Joi from '@hapi/joi'
 
 const schema = Joi.object({
   cors: Joi.alternatives([Joi.string().valid('*'), Joi.object().valid(null)]),
@@ -7,11 +7,11 @@ const schema = Joi.object({
   cookies: Joi.object(),
 }).required()
 
-exports.validateConfiguration = function validateConfiguration(unsafeConfiguration) {
+export function validateConfiguration(unsafeConfiguration) {
   return schema.validate(unsafeConfiguration).error
 }
 
-exports.createConfiguration = function createConfiguration() {
+export function createConfiguration() {
   return {
     cors: null,
     headers: {},
@@ -20,7 +20,7 @@ exports.createConfiguration = function createConfiguration() {
   }
 }
 
-exports.updateConfiguration = function updateConfiguration(configuration, cors, headers, query, cookies) {
+export function updateConfiguration(configuration, cors, headers, query, cookies) {
   if (cors !== undefined) {
     configuration.cors = cors === '*' ? '*' : null
   }
