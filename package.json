@@ -21,7 +21,8 @@
     "format": "npx @biomejs/biome format --write src",
     "lint": "npx @biomejs/biome lint --write src",
     "release": "semantic-release",
-    "test": "NODE_OPTIONS='--enable-source-maps --experimental-vm-modules' jest src --coverage"
+    "test": "NODE_OPTIONS='--enable-source-maps --experimental-vm-modules' jest src --coverage",
+    "test:bin": "node test/bin.js"
   },
   "engines": {
     "node": ">=20"
@@ -31,7 +32,6 @@
   },
   "dependencies": {
     "@hapi/joi": "17.1.1",
-    "body-parser": "1.20.3",
     "cookie-parser": "1.4.7",
     "express": "4.21.1"
   },

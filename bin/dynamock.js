@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-const createServer = require('../src/createServer')
+import { createServer } from "../src/createServer.js"
 
 const [, , port, host = '127.0.0.1'] = process.argv
+
+if (!port) {
+  throw new Error('Missing argument <port>')
+}
 
 const server = createServer()
 

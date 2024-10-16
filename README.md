@@ -34,7 +34,10 @@ dynamock 3001
 ```js
 fetch('http://localhost:3001/___fixtures', {
   method: 'POST',
-  body: {
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
     request: {
       method: 'GET',
       path: '/products/1'
@@ -44,7 +47,7 @@ fetch('http://localhost:3001/___fixtures', {
         id: 1
       }
     }
-  }
+  })
 })
 ```
 

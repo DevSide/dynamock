@@ -1,5 +1,5 @@
 import { deepStrictEqual } from 'node:assert'
-import { isIncluded, matchRegex } from './utils'
+import { isIncluded, matchRegex } from './utils.js'
 
 export const REQUEST_PROPERTIES = ['headers', 'body', 'query', 'cookies']
 export const RESPONSE_PROPERTIES = ['headers', 'cookies', 'filepath', 'body']

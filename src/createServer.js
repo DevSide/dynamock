@@ -1,9 +1,8 @@
 import express from 'express'
-import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import { REQUEST_PROPERTIES, requestPropertyMatch, RESPONSE_PROPERTIES, useResponseProperties } from './properties'
-import { getFixtureIterator, registerFixture, removeFixture, removeFixtures, validateFixture } from './fixtures'
-import { createConfiguration, updateConfiguration, validateConfiguration } from './configuration'
+import { REQUEST_PROPERTIES, requestPropertyMatch, RESPONSE_PROPERTIES, useResponseProperties } from './properties.js'
+import { getFixtureIterator, registerFixture, removeFixture, removeFixtures, validateFixture } from './fixtures.js'
+import { createConfiguration, updateConfiguration, validateConfiguration } from './configuration.js'
 import { createServer as createHTTPServer } from 'node:http'
 
 function resError(res, status, message) {
@@ -27,7 +26,7 @@ export function createServer() {
     'Access-Control-Allow-Headers': '*',
   }
 
-  app.use(bodyParser.json({ limit: '10mb' }))
+  app.use(express.json({ limit: '10mb' }))
   app.use(cookieParser())
 
   let configuration = createConfiguration()
