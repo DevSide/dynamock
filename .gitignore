@@ -9,6 +9,7 @@
 **/node_modules
 **/*.log
 coverage
+dist
 
 # Other
 **/.idea

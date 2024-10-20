@@ -1,5 +1,18 @@
 import Joi from '@hapi/joi'
 
+export type ConfigurationObjectType = {
+  [key: string]: {
+    [key: string]: string
+  }
+}
+
+export type ConfigurationType = {
+  cors: null | '*'
+  headers: ConfigurationObjectType
+  query: ConfigurationObjectType
+  cookies: ConfigurationObjectType
+}
+
 const schema = Joi.object({
   cors: Joi.alternatives([Joi.string().valid('*'), Joi.object().valid(null)]),
   headers: Joi.object(),
@@ -7,11 +20,11 @@ const schema = Joi.object({
   cookies: Joi.object(),
 }).required()
 
-export function validateConfiguration(unsafeConfiguration) {
+export function validateConfiguration(unsafeConfiguration: unknown) {
   return schema.validate(unsafeConfiguration).error
 }
 
-export function createConfiguration() {
+export function createConfiguration(): ConfigurationType {
   return {
     cors: null,
     headers: {},
@@ -20,7 +33,13 @@ export function createConfiguration() {
   }
 }
 
-export function updateConfiguration(configuration, cors, headers, query, cookies) {
+export function updateConfiguration(
+  configuration: ConfigurationType,
+  cors: undefined | null | '*',
+  headers: undefined | ConfigurationObjectType,
+  query: undefined | ConfigurationObjectType,
+  cookies: undefined | ConfigurationObjectType,
+) {
   if (cors !== undefined) {
     configuration.cors = cors === '*' ? '*' : null
   }
