@@ -2,11 +2,13 @@ import { beforeAll, afterEach, afterAll, describe, test } from '@jest/globals'
 import { dirname } from 'node:path'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import supertest from 'supertest'
-import { createServer } from '../createServer'
+import { createServer } from '../createServer.js'
+
+type Method = 'options' | 'put' | 'get' | 'post' | 'head' | 'delete' | 'patch'
 
 describe('integrations.js', () => {
-  let server
-  let request
+  let server = createServer()
+  let request = supertest.agent(server)
 
   beforeAll((done) => {
     server = createServer()
@@ -18,7 +20,6 @@ describe('integrations.js', () => {
 
   afterAll((done) => {
     server.close(done)
-    server = null
   })
 
   describe('manipulate configuration', () => {
@@ -444,7 +445,7 @@ describe('integrations.js', () => {
           })
           .expect(201)
 
-        await request[method](path)
+        await request[method as Method](path)
           .set({
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': '*',
@@ -539,7 +540,7 @@ describe('integrations.js', () => {
           })
           .expect(201)
 
-        await request[method](path).expect(shouldMatch ? 200 : 404)
+        await request[method as Method](path).expect(shouldMatch ? 200 : 404)
       },
     )
   })
@@ -680,6 +681,7 @@ describe('integrations.js', () => {
 
         const cookies = Object.entries(values)
           .reduce((acc, [key, value]) => {
+            // @ts-ignore
             acc.push(`${key}=${value}`)
             return acc
           }, [])
@@ -1006,12 +1008,14 @@ describe('integrations.js', () => {
 
         if (property === 'headers') {
           for (const key in expectedPropertyValue) {
+            // @ts-ignore
             r.expect(key, expectedPropertyValue[key])
           }
         } else {
           const cookieValue = []
 
           for (const key in expectedPropertyValue) {
+            // @ts-ignore
             cookieValue.push(`${key}=${expectedPropertyValue[key]}; Path=/`)
           }
 

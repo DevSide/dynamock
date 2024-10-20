@@ -3,20 +3,20 @@ import { deepStrictEqual } from 'node:assert'
 
 export { isObjectEmpty }
 
-function isObjectEmpty(object) {
+function isObjectEmpty(object: object | null) {
   for (const key in object) {
     if (Object.prototype.hasOwnProperty.call(object, key)) return false
   }
   return true
 }
 
-function isObject(object) {
-  return typeof object === 'object' && !Array.isArray(object)
+function isObject(maybeObject: unknown): maybeObject is object {
+  return typeof maybeObject === 'object' && !Array.isArray(maybeObject)
 }
 
 const stringRegexp = /\/(.*)\/([gimuys]*)/
 
-function matchRegex(value, baseValue) {
+function matchRegex(value: string, baseValue: string) {
   const matchRegExp = value.match(stringRegexp)
 
   if (matchRegExp) {
@@ -32,7 +32,11 @@ function matchRegex(value, baseValue) {
 
 export { matchRegex }
 
-export function isIncluded(object, base, allowRegex) {
+export function isIncluded(
+  object: { [key in string]?: unknown } | undefined,
+  base: { [key in string]?: unknown },
+  allowRegex: boolean,
+) {
   for (const key in object) {
     if (!Object.prototype.hasOwnProperty.call(object, key)) {
       continue
@@ -62,7 +66,8 @@ export function isIncluded(object, base, allowRegex) {
   return true
 }
 
-export function sortObjectKeysRecurs(src) {
+// @ts-ignore
+export function sortObjectKeysRecurs(src: null | { [key: string]: unknown } | { [key: string]: unknown }[]) {
   if (Array.isArray(src)) {
     const out = []
 
@@ -74,11 +79,11 @@ export function sortObjectKeysRecurs(src) {
   }
 
   if (typeof src === 'object' && src !== null) {
-    const out = {}
+    const out = {} as { [key: string]: unknown }
     const sortedKeys = Object.keys(src).sort()
 
     for (const key of sortedKeys) {
-      out[key] = sortObjectKeysRecurs(src[key])
+      out[key] = sortObjectKeysRecurs(src[key] as null | { [key: string]: unknown } | { [key: string]: unknown }[])
     }
 
     return out
@@ -87,6 +92,8 @@ export function sortObjectKeysRecurs(src) {
   return src
 }
 
-export function hash(str) {
+export function hash(str: string) {
   return crypto.createHash('sha1').update(str).digest('hex')
 }
+
+export type NonEmptyArray<T> = [T, ...T[]] | [...T[], T] | [T, ...T[], T]

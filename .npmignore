@@ -7,3 +7,9 @@ coverage
 *.iml
 **/__tests__
 **/__mocks__
+.github
+.yarn
+.yarnrc.yml
+src
+test
+.tsconfig
