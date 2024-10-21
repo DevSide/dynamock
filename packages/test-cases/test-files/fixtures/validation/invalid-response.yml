@@ -1,0 +1,19 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        method: "GET"
+        path: "/pandas/1"
+      response:
+  expectation:
+    status: 400
+- action:
+    name: post_fixture
+    data:
+      request:
+        method: "GET"
+        path: "/pandas/1"
+      response:
+        no: "no"
+  expectation:
+    status: 400

@@ -1,0 +1,39 @@
+- action:
+    name: put_config
+    data:
+      cors: "*"
+      headers:
+        hfoo: "hfoo"
+        hbar: "hbar"
+      query:
+        qfoo: "qfoo"
+        qbar: "qbar"
+      cookies:
+        cfoo: "cfoo"
+        cbar: "cbar"
+  expectation:
+    status: 200
+    body:
+      cors: "*"
+      headers:
+        hfoo: "hfoo"
+        hbar: "hbar"
+      query:
+        qfoo: "qfoo"
+        qbar: "qbar"
+      cookies:
+        cfoo: "cfoo"
+        cbar: "cbar"
+- action:
+    name: delete_config
+  expectation:
+    status: 204
+- action:
+    name: get_config
+  expectation:
+    status: 200
+    body:
+      cors: null
+      headers: {}
+      query: {}
+      cookies: {}

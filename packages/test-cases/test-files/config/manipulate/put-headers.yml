@@ -1,0 +1,36 @@
+- action:
+    name: put_config
+    data:
+      cors: null
+      headers:
+        clientToken:
+          authorization: "Bearer client-token"
+  expectation:
+    status: 200
+    data:
+      cors: null
+      headers:
+        clientToken:
+          authorization: "Bearer client-token"
+      query: { }
+      cookies: { }
+- action:
+    name: put_config
+    data:
+      cors: null
+      headers:
+        commonHeaders:
+          x-header-1: "1"
+          x-header-2: "2"
+  expectation:
+    status: 200
+    data:
+      cors: null
+      headers:
+        clientToken:
+          authorization: "Bearer client-token"
+        commonHeaders:
+          x-header-1: "1"
+          x-header-2: "2"
+      query: { }
+      cookies: { }

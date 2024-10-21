@@ -19,6 +19,7 @@ jobs:
       - run: yarn lint
       - run: yarn build
       - run: yarn test
+      - run: yarn coverage:permissions
       - run: yarn check-git
       - uses: coverallsapp/github-action@master
         with:

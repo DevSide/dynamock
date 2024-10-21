@@ -58,7 +58,7 @@ export function updateServiceConfiguration(
   return [200, configuration]
 }
 
-export function deleteConfiguration(service: ServiceType): [number] {
+export function deleteServiceConfiguration(service: ServiceType): [number] {
   service.configuration = createConfiguration()
 
   return [204]

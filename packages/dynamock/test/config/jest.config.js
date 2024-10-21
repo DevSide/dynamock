@@ -1,7 +1,7 @@
 export default {
   preset: 'ts-jest/presets/default-esm',
   transform: {
-    '^.+\\.ts$': [
+    '^.+\\.spec.ts$': [
       'ts-jest',
       {
         useESM: true,
@@ -11,4 +11,5 @@ export default {
   moduleNameMapper: {
     '^(\\.\\.?\\/.+)\\.js$': '$1',
   },
+  rootDir: '../../',
 }

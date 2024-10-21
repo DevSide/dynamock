@@ -23,6 +23,7 @@
   "scripts": {
     "build": "yarn workspaces foreach --all run build",
     "test": "yarn workspaces foreach --all --parallel run test",
+    "coverage:permissions": "yarn workspaces foreach --all --parallel run coverage:permissions",
     "check-git": "git status -uno --porcelain && [ -z \"$(git status -uno --porcelain)\" ] || (echo 'Git working directory not clean'; false)",
     "format": "npx @biomejs/biome format --write packages/**/*.{js,ts,json}",
     "lint": "npx @biomejs/biome lint --write packages/**/*.{js,ts,json}",

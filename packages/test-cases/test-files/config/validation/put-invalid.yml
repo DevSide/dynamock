@@ -1,0 +1,24 @@
+- action:
+    name: put_config
+    data:
+      cors: "unknown"
+  expectation:
+    status: 400
+- action:
+    name: put_config
+    data:
+      unknown: "unknown"
+  expectation:
+    status: 400
+- action:
+    name: put_config
+    data:
+        headers: []
+  expectation:
+    status: 400
+- action:
+    name: put_config
+    data:
+      headers: null
+  expectation:
+    status: 400

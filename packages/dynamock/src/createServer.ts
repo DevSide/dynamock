@@ -5,7 +5,7 @@ import {
   createService,
   createServiceFixture,
   createServiceFixtures,
-  deleteConfiguration,
+  deleteServiceConfiguration,
   deleteServiceFixture,
   deleteServiceFixtures,
   getServiceConfiguration,
@@ -69,7 +69,7 @@ export function createServer() {
   })
 
   app.delete('/___config', (req, res) => {
-    const [status] = deleteConfiguration(service)
+    const [status] = deleteServiceConfiguration(service)
     res.status(status).send()
   })
 

@@ -1,0 +1,28 @@
+- action:
+    name: put_config
+    data:
+      cookies:
+        jwt: "jwt"
+  expectation:
+    status: 200
+    body:
+      cors: null
+      headers: {}
+      query: {}
+      cookies:
+        jwt: "jwt"
+- action:
+    name: put_config
+    data:
+      cookies:
+        jwt2: "jwt2"
+        jwt3: "jwt3"
+  expectation:
+    status: 200
+    cors: null
+    headers: {}
+    query: {}
+    cookies:
+      jwt: "jwt"
+      jwt2: "jwt2"
+      jwt3: "jwt3"
