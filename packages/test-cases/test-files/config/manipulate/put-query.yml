@@ -1,0 +1,31 @@
+- action:
+    name: put_config
+    data:
+      cors: null
+      query:
+        foo: "foo"
+  expectation:
+    status: 200
+    body:
+      cors: null
+      headers: { }
+      query:
+        foo: "foo"
+      cookies: { }
+- action:
+    name: put_config
+    data:
+      cors: null
+      query:
+        bar: "bar"
+        bar2: "bar2"
+  expectation:
+    status: 200
+    body:
+      cors: null
+      headers: { }
+      query:
+        foo: "foo"
+        bar: "bar"
+        bar2: "bar2"
+      cookies: { }

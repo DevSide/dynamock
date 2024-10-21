@@ -2,7 +2,7 @@ import { beforeAll, afterEach, afterAll, describe, test, beforeEach } from '@jes
 import { dirname } from 'node:path'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import supertest from 'supertest'
-import { createServer } from '../createServer.js'
+import { createServer } from '../src/createServer.js'
 
 type Method = 'options' | 'put' | 'get' | 'post' | 'head' | 'delete' | 'patch'
 

@@ -1,15 +1,15 @@
 {
-  "name": "@dynamock/core",
+  "name": "@dynamock/puppeteer",
   "version": "2.1.1",
-  "description": "Dynamic core",
+  "description": "Dynamock fixtures to intercept and mock Puppeteer's requests on a page",
   "repository": "https://github.com/DevSide/dynamock",
   "keywords": [
-    "fixtures",
+    "fixture",
     "mock",
-    "server",
     "e2e",
     "end-to-end",
-    "functional testing"
+    "functional testing",
+    "puppeteer"
   ],
   "author": "DevSide",
   "license": "MIT",
@@ -18,26 +18,25 @@
   "scripts": {
     "build": "rm -rf dist/ && tsc",
     "release": "semantic-release",
-    "test": "yarn test:ts",
-    "test:common": "NODE_OPTIONS='--enable-source-maps --experimental-vm-modules' jest",
-    "test:ts": "yarn test:common -config=./test/config/jest.config.js --coverage --passWithNoTests",
-    "coverage:permissions": "chmod -R 777 ./coverage"
+    "test": "yarn test:common --config=./test/config/jest.config.js --runInBand",
+    "test:common": "NODE_OPTIONS='--enable-source-maps --experimental-vm-modules' jest"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "@hapi/joi": "17.1.1"
+    "dynamock": "workspace:*"
   },
   "devDependencies": {
+    "@dynamock/test-cases": "workspace:*",
     "@jest/globals": "^29.7.0",
     "@semantic-release/commit-analyzer": "^13.0.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.0",
     "@semantic-release/npm": "^12.0.1",
     "@semantic-release/release-notes-generator": "^14.0.1",
-    "@types/hapi__joi": "^17.1.14",
     "jest": "^29.7.0",
+    "puppeteer": "^23.6.0",
     "semantic-release": "^24.1.2",
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"

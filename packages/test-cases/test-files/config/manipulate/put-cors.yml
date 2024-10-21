@@ -1,0 +1,23 @@
+- action:
+    name: put_config
+    data:
+      cors: null
+  expectation:
+    status: 200
+    body:
+      cors: null
+      headers: {}
+      query: {}
+      cookies: {}
+- action:
+    name: put_config
+    data:
+      cors: "*"
+  expectation:
+    status: 200
+    body:
+      cors: "*"
+      headers: {}
+      query: {}
+      cookies: {}
+
