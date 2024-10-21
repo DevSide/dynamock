@@ -9,6 +9,10 @@ export type FixtureStorageType = {
 }
 
 export type FixtureRequestOptionsType = null | {
+  // TODO: test and document this
+  origin?: {
+    allowRegex?: boolean
+  }
   path?: {
     allowRegex?: boolean
     disableEncodeURI?: boolean
@@ -35,21 +39,22 @@ export type FixtureRequestOptionsType = null | {
 }
 
 export type FixtureRequestType = {
+  origin: string
   path: string
   method: string
   headers?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
   cookies?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
   query?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  body?: null | { [key: string]: string }
+  body?: null | { [key: string]: unknown }
   options?: FixtureRequestOptionsType
 }
 
-type FixtureResponseType = {
+export type FixtureResponseType = {
   status?: number
   headers?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
   cookies?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
   query?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  body?: null | { [key: string]: string }
+  body?: null | { [key: string]: unknown }
   filepath?: string
   options?: null | {
     delay?: number
@@ -57,7 +62,7 @@ type FixtureResponseType = {
   }
 }
 
-type FixtureType =
+export type FixtureType =
   | {
       request: FixtureRequestType
       response: FixtureResponseType
@@ -68,12 +73,13 @@ type FixtureType =
     }
 
 export type NormalizedFixtureRequestType = {
+  origin: string
   path: string
   method: string
   headers?: null | { [key: string]: string }
   cookies?: null | { [key: string]: string }
   query?: null | { [key: string]: string }
-  body?: null | { [key: string]: string }
+  body?: null | { [key: string]: unknown }
   options?: FixtureRequestOptionsType
 }
 
@@ -82,7 +88,7 @@ export type NormalizedFixtureResponseType = {
   headers?: null | { [key: string]: string }
   cookies?: null | { [key: string]: string }
   query?: null | { [key: string]: string }
-  body?: null | { [key: string]: string }
+  body?: null | { [key: string]: unknown }
   filepath?: string
   options?: null | {
     delay?: number
@@ -131,6 +137,7 @@ export function validateFixture(
 
   const requestSchema = Joi.object({
     body: Joi.any(),
+    origin: Joi.string().required(),
     path: Joi.string().required(),
     method: Joi.alternatives([
       Joi.string().regex(/^(head|delete|put|post|get|options|patch|\*)$/i),
@@ -177,7 +184,7 @@ export function validateFixture(
       delay: Joi.number().integer().min(0),
       lifetime: Joi.number().integer().min(0),
     }),
-  }).or('body', 'filepath')
+  }).oxor('body', 'filepath')
 
   const schema = Joi.object({
     request: requestSchema.required(),
@@ -257,7 +264,7 @@ function normalizeFixture(fixture: FixtureType, configuration: ConfigurationType
       continue
     }
 
-    if (property === 'path') {
+    if (property === 'url' || property === 'path') {
       normalizePath(request)
       continue
     }

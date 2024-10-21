@@ -1,4 +1,4 @@
-import { beforeAll, afterEach, afterAll, describe, test } from '@jest/globals'
+import { beforeAll, afterEach, afterAll, describe, test, beforeEach } from '@jest/globals'
 import { dirname } from 'node:path'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import supertest from 'supertest'
@@ -160,6 +160,15 @@ describe('integrations.js', () => {
   })
 
   describe('create and delete fixtures', () => {
+    // Special case:
+    // We need the same supertest/server port in order to reproduce the sha1 of a fixture
+    // Because it modifies the origin of the request
+    beforeEach(async () => {
+      await new Promise((resolve) => server.close(() => resolve(true)))
+      request = supertest.agent(server)
+      await new Promise((resolve) => server.listen(1111, () => resolve(true)))
+    })
+
     test('cannot create >10mb fixture', () => {
       return request
         .post('/___fixtures')
@@ -177,6 +186,10 @@ describe('integrations.js', () => {
     })
 
     test('create and remove simple fixture', async () => {
+      await new Promise((resolve) => server.close(() => resolve(true)))
+      request = supertest.agent(server)
+      await new Promise((resolve) => server.listen(1111, () => resolve(true)))
+
       const products = [{ id: 1 }, { id: 2 }]
 
       await request
@@ -195,17 +208,21 @@ describe('integrations.js', () => {
           },
         })
         .expect(201, {
-          id: '6a68271761e4729581283c2b40b7e428c25513cf',
+          id: '52c9acef4355fe4844da764e588180318be6afde',
         })
 
       await request.get('/products').expect(418, products)
 
-      await request.delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf').expect(204)
+      await request.delete('/___fixtures/52c9acef4355fe4844da764e588180318be6afde').expect(204)
 
       await request.get('/products').expect(404)
     })
 
     test('create and remove multiple fixtures', async () => {
+      await new Promise((resolve) => server.close(() => resolve(true)))
+      request = supertest.agent(server)
+      await new Promise((resolve) => server.listen(2222, () => resolve(true)))
+
       const products = [{ id: 1 }, { id: 2 }]
       const categories = [{ id: 1 }, { id: 2 }]
 
@@ -238,8 +255,8 @@ describe('integrations.js', () => {
           },
         ])
         .expect(201, [
-          { id: '6a68271761e4729581283c2b40b7e428c25513cf' },
-          { id: '1b8b0bca022acacfd5955c510e06e1ff671a823c' },
+          { id: 'd1b3524ee44828f7bebafa57d612587f2849be4a' },
+          { id: '2651bafc31c6ffd50a7df42019fb60865b044566' },
         ])
 
       await Promise.all([
@@ -248,14 +265,18 @@ describe('integrations.js', () => {
       ])
 
       await Promise.all([
-        request.delete('/___fixtures/6a68271761e4729581283c2b40b7e428c25513cf').expect(204),
-        request.delete('/___fixtures/1b8b0bca022acacfd5955c510e06e1ff671a823c').expect(204),
+        request.delete('/___fixtures/d1b3524ee44828f7bebafa57d612587f2849be4a').expect(204),
+        request.delete('/___fixtures/2651bafc31c6ffd50a7df42019fb60865b044566').expect(204),
       ])
 
       await Promise.all([request.get('/products').expect(404), request.get('/categories').expect(404)])
     })
 
     test('create and remove all fixtures', async () => {
+      await new Promise((resolve) => server.close(() => resolve(true)))
+      request = supertest.agent(server)
+      await new Promise((resolve) => server.listen(3333, () => resolve(true)))
+
       await request
         .post('/___fixtures')
         .send({
@@ -268,7 +289,7 @@ describe('integrations.js', () => {
           },
         })
         .expect(201, {
-          id: 'eb05231114f144acb7bca60806ac25ad7f43c973',
+          id: 'dd9658b2bcf756ec362b854d823576fbf4e0e221',
         })
       await request
         .post('/___fixtures')
@@ -282,7 +303,7 @@ describe('integrations.js', () => {
           },
         })
         .expect(201, {
-          id: '66474236616bc5a68c6498b497b2ce9a43484892',
+          id: '8288f08371243d5cfad8522988c0092bed1600c2',
         })
 
       await request.delete('/___fixtures').expect(204)
@@ -293,6 +314,10 @@ describe('integrations.js', () => {
     })
 
     test('create and remove filepath fixture', async () => {
+      await new Promise((resolve) => server.close(() => resolve(true)))
+      request = supertest.agent(server)
+      await new Promise((resolve) => server.listen(4444, () => resolve(true)))
+
       const file = '/tmp/panda.txt'
 
       mkdirSync(dirname(file), { recursive: true })
@@ -310,7 +335,7 @@ describe('integrations.js', () => {
           },
         })
         .expect(201, {
-          id: 'd8a1f72e9cd206c612847a7089e8c9460648c4bf',
+          id: 'f7ef2df300684b996e537a6fbe866bbcf8cef317',
         })
 
       await request
@@ -318,7 +343,7 @@ describe('integrations.js', () => {
         .expect('Content-Type', /text\/plain/)
         .expect(200, 'pandas !')
 
-      await request.delete('/___fixtures/d8a1f72e9cd206c612847a7089e8c9460648c4bf').expect(204)
+      await request.delete('/___fixtures/f7ef2df300684b996e537a6fbe866bbcf8cef317').expect(204)
 
       await request.get('/panda.txt').expect(404)
     })
