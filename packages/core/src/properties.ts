@@ -1,22 +1,16 @@
 import { deepStrictEqual } from 'node:assert'
 import { isIncluded, matchRegex } from './utils.js'
 import type { NormalizedFixtureRequestType } from './fixtures.js'
-import type { Request, Response } from 'express'
+import type { CoreRequest } from './request.js'
 
 export const REQUEST_PROPERTIES: ['headers', 'body', 'query', 'cookies'] = ['headers', 'body', 'query', 'cookies']
-export const RESPONSE_PROPERTIES: ['headers', 'cookies', 'filepath', 'body'] = [
-  'headers',
-  'cookies',
-  'filepath',
-  'body',
-]
 
 export function requestPropertyMatch(
-  request: Request,
+  request: CoreRequest,
   match: NormalizedFixtureRequestType,
-  property: 'path' | 'method' | 'headers' | 'cookies' | 'query' | 'body',
+  property: 'origin' | 'path' | 'method' | 'headers' | 'cookies' | 'query' | 'body',
 ) {
-  if (property === 'path' || property === 'method') {
+  if (property === 'origin' || property === 'path' || property === 'method') {
     const matchProperty = match[property]
 
     if (matchProperty === '*') {
@@ -56,15 +50,4 @@ export function requestPropertyMatch(
 
   // @ts-ignore
   return isIncluded(matchProperty, requestProperty, !!optionsProperty.allowRegex)
-}
-
-export const useResponseProperties = {
-  filepath: (req: Request, res: Response, value: string) => res.sendFile(value),
-  headers: (req: Request, res: Response, value: { [key in string]: string } | null) => res.set(value),
-  body: (req: Request, res: Response, value: string | null | { [key in string]: string }) => res.send(value),
-  cookies: (req: Request, res: Response, cookies: { [key in string]: string } | null) => {
-    for (const key in cookies) {
-      res.cookie(key, cookies[key])
-    }
-  },
 }

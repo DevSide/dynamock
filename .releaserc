@@ -2,16 +2,13 @@
   "branches": "master",
   "repositoryUrl": "git@github.com:DevSide/dynamock.git",
   "debug": true,
-  "dryRun": false,
+  "dryRun": true,
   "ci": false,
   "plugins": [
-    "@semantic-release/npm",
-    ["@semantic-release/git", {
-      "assets": ["package.json"],
-      "message": "chore(release): v${nextRelease.version}"
-    }],
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
-    "@semantic-release/github"
+    "semantic-release-yarn",
+    "@semantic-release/github",
+    "@semantic-release/git"
   ]
 }

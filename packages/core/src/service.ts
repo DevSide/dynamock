@@ -1,6 +1,7 @@
 import {
   createFixtureStorage,
   type FixtureStorageType,
+  getFixtureIterator,
   registerFixture,
   removeFixture,
   removeFixtures,
@@ -12,8 +13,11 @@ import {
   updateConfiguration,
   validateConfiguration,
 } from './configuration.js'
+import { REQUEST_PROPERTIES, requestPropertyMatch } from './properties.js'
+import type { CoreRequest } from './request.js'
+import type { CoreResponse } from './response.js'
 
-function createError(status: number, message: string): [number, object] {
+function createError(status: number, message: string): [number, { message: string }] {
   return [status, { message: `[FIXTURE SERVER ERROR ${status}]: ${message}` }]
 }
 
@@ -41,7 +45,7 @@ export function getServiceConfiguration({ configuration }: ServiceType): [number
 export function updateServiceConfiguration(
   { configuration }: ServiceType,
   data: Partial<ConfigurationType>,
-): [number, object] {
+): [number, ConfigurationType | { message: string }] {
   const error = validateConfiguration(data)
 
   if (error) {
@@ -127,4 +131,89 @@ export function deleteServiceFixtures({ fixtureStorage }: ServiceType): [number,
 
 export function hasServiceCors({ configuration }: ServiceType) {
   return configuration.cors === '*'
+}
+
+const corsAllowAllHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': '*',
+  'Access-Control-Allow-Headers': '*',
+}
+
+export function matchServiceRequestAgainstFixtures(
+  service: ServiceType,
+  coreRequest: CoreRequest,
+  end: (coreResponse: CoreResponse) => void,
+): boolean {
+  if (coreRequest.method === 'OPTIONS' && service.configuration.cors === '*') {
+    end({
+      status: 200,
+      headers: corsAllowAllHeaders,
+      cookies: {},
+      query: {},
+      body: undefined,
+      filepath: '',
+    })
+
+    return true
+  }
+
+  fixtureLoop: for (const [fixtureId, fixture] of getFixtureIterator(service.fixtureStorage)) {
+    const { request: fixtureRequest, responses } = fixture
+
+    if (
+      !requestPropertyMatch(coreRequest, fixtureRequest, 'origin') ||
+      !requestPropertyMatch(coreRequest, fixtureRequest, 'path') ||
+      !requestPropertyMatch(coreRequest, fixtureRequest, 'method')
+    ) {
+      continue
+    }
+
+    for (const property of REQUEST_PROPERTIES) {
+      if (!requestPropertyMatch(coreRequest, fixtureRequest, property)) {
+        continue fixtureLoop
+      }
+    }
+
+    const response = responses[0]
+    const options = response.options || {}
+
+    const send = () => {
+      const corResponse = {
+        status: response.status || 200, // TODO not here
+        headers: response.headers ?? {},
+        cookies: response.cookies ?? {},
+        query: response.query ?? {},
+        body: response.body,
+        filepath: response.filepath ?? '',
+      }
+
+      if (service.configuration.cors === '*') {
+        Object.assign(corResponse.headers, corsAllowAllHeaders)
+      }
+
+      end(corResponse)
+    }
+
+    // The fixture has been or will be consumed
+    // When the response is delayed, we need to remove it before it returns
+    if (options.lifetime === undefined || options.lifetime === 1) {
+      if (responses.length > 1) {
+        responses.shift()
+      } else {
+        removeFixture(service.fixtureStorage, fixtureId)
+      }
+    } else if (options.lifetime > 0) {
+      options.lifetime--
+    }
+
+    if (response.options?.delay) {
+      setTimeout(send, response.options.delay)
+    } else {
+      send()
+    }
+
+    return true
+  }
+
+  return false
 }

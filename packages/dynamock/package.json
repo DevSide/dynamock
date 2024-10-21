@@ -1,0 +1,53 @@
+{
+  "name": "dynamock",
+  "version": "2.1.1",
+  "description": "Dynamic mock server which serves fixtures based on property matching",
+  "repository": "https://github.com/DevSide/dynamock",
+  "keywords": [
+    "fixtures",
+    "mock",
+    "server",
+    "e2e",
+    "end-to-end",
+    "functional testing"
+  ],
+  "author": "DevSide",
+  "license": "MIT",
+  "type": "module",
+  "bin": "./dist/bin/dynamock.js",
+  "main": "dist/createServer.js",
+  "scripts": {
+    "build": "rm -rf dist/ && tsc && chmod +x ./dist/bin/dynamock.js && yarn link",
+    "release": "semantic-release",
+    "test": "yarn test:ts && yarn test:bin",
+    "test:common": "NODE_OPTIONS='--enable-source-maps --experimental-vm-modules' jest",
+    "test:ts": "yarn test:common src/__tests__/integrations.ts --config=./jest.config.js --coverage && chmod -R 777 ./coverage",
+    "test:bin": "node test/bin.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@dynamock/core": "workspace:*",
+    "cookie-parser": "1.4.7",
+    "express": "4.21.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.0",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^5.0.0",
+    "@types/hapi__joi": "^17.1.14",
+    "@types/supertest": "^6.0.2",
+    "jest": "^29.7.0",
+    "semantic-release": "^24.1.2",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "yarn@4.5.0"
+}

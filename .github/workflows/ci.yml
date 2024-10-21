@@ -18,10 +18,9 @@ jobs:
       - run: yarn format
       - run: yarn lint
       - run: yarn build
-      - run: yarn test:bin
-      - run: yarn test --coverage
+      - run: yarn test
       - run: yarn check-git
-      - run: chmod -R 777 ./coverage
       - uses: coverallsapp/github-action@master
         with:
+          path-to-lcov: 'packages/dynamock/coverage/lcov.info'
           github-token: ${{ secrets.GITHUB_TOKEN }}

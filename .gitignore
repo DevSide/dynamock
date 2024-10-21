@@ -8,10 +8,10 @@
 !.yarn/versions
 **/node_modules
 **/*.log
-coverage
-dist
+packages/*/coverage
+packages/*/dist
 
 # Other
 **/.idea
 **/.DS_Store
-*.iml
+**/*.iml
