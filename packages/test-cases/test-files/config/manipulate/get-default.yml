@@ -2,7 +2,7 @@
     name: get_config
   expectation:
     status: 200
-    body:
+    bodyJSON:
       cors: null
       headers: {}
       query: {}

@@ -37,20 +37,3 @@ export function waitPortUsed(port: number, reverse = false, retry = 50) {
 export function waitPortFree(port: number, retry?: number) {
   return waitPortUsed(port, true, retry)
 }
-
-export function fetchWithBaseUrl<R>(initialFetch: (url: string, options: object) => Promise<R>, baseUrl: string) {
-  return (url: string, options: object) => {
-    return initialFetch(baseUrl + url, options)
-  }
-}
-
-export async function wrapError(testIndex: number, task: () => unknown) {
-  try {
-    return await task()
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      error.message += `\nTest iteration ${testIndex}`
-    }
-    throw error
-  }
-}

@@ -7,6 +7,7 @@ import {
   deleteServiceConfiguration,
   deleteServiceFixture,
   deleteServiceFixtures,
+  createServiceError,
   type FixtureRequestType,
   type FixtureResponseType,
   type FixtureType,
@@ -97,6 +98,7 @@ async function initializeInterceptor(page: Page) {
         // TODO: need to computer cookies with coreResponse.cookies
         // TODO: body should be string|undefined in CoreResponse, already parsed
         const contentType = coreResponse.headers['content-type'] ?? ''
+
         request.respond({
           status: coreResponse.status,
           headers: coreResponse.headers,
@@ -162,7 +164,15 @@ export async function dynamock(
   }
 
   if (fixtures.length) {
-    const coreFixtures = fixtures.map(mapToFixtureType)
+    let coreFixtures: FixtureType[] = []
+
+    try {
+      coreFixtures = fixtures.map(mapToFixtureType)
+    } catch (error) {
+      const [, { message }] = createServiceError(0, 'Missing or invalid request.url')
+      throw new Error(message)
+    }
+
     const [fixturesStatus, fixturesOrError] = createServiceFixtures(service, coreFixtures)
 
     if (fixturesStatus !== 200 && fixturesOrError && 'message' in fixturesOrError) {

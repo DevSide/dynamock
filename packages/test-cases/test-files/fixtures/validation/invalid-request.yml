@@ -9,6 +9,22 @@
 - action:
     name: post_fixture
     data:
+      request: {}
+      response:
+        status: 200
+  expectation:
+    status: 400
+- action:
+    name: post_fixture
+    data:
+      request: null
+      response:
+        status: 200
+  expectation:
+    status: 400
+- action:
+    name: post_fixture
+    data:
       request:
         no: "no"
       response:

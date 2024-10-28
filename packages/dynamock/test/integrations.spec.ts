@@ -23,70 +23,9 @@ describe('integrations.js', () => {
   })
 
   describe('manipulate configuration', () => {
-    test('default configuration', () =>
-      request.get('/___config').expect(200, {
-        cors: null,
-        headers: {},
-        query: {},
-        cookies: {},
-      }))
-
-    test('update configuration', async () => {
-      await request
-        .put('/___config')
-        .send({
-          headers: {
-            commonHeaders: {
-              'x-header-1': '1',
-              'x-header-2': '2',
-            },
-          },
-        })
-        .expect(200)
-
-      await request
-        .put('/___config')
-        .send({
-          cors: '*',
-          headers: {
-            clientToken: {
-              authorization: 'Bearer client-token',
-            },
-          },
-          cookies: {},
-        })
-        .expect(200)
-
-      return request.get('/___config').expect(200, {
-        cors: '*',
-        headers: {
-          commonHeaders: {
-            'x-header-1': '1',
-            'x-header-2': '2',
-          },
-          clientToken: {
-            authorization: 'Bearer client-token',
-          },
-        },
-        query: {},
-        cookies: {},
-      })
-    })
-
-    test('reset configuration', async () => {
-      await request.delete('/___config').expect(204)
-    })
-
     test.each([
-      // valid
-      [{}, true],
-      [{ cors: '*', headers: {}, cookies: {}, query: {} }, true],
-      [{ cors: null, headers: {}, cookies: {}, query: {} }, true],
-
       // invalid
       [[], false],
-      [{ unknown: 'unknown' }, false],
-      [{ headers: [] }, false],
     ])('validate config="%o" response="%o" options="%o" isValid=%s', (config, isValid) => {
       return request
         .put('/___config')
@@ -98,13 +37,6 @@ describe('integrations.js', () => {
   describe('validation fixture', () => {
     test.each([
       // request path / method
-      [{}, { body: '' }, false],
-      [{ unknown: 'unknown' }, { body: '' }, false],
-      [{ method: 'get' }, { body: '' }, false],
-      [{ path: '/' }, { body: '' }, false],
-      [{ path: '/' }, { body: '' }, false],
-
-      [{ path: '/', method: 'unknown' }, { body: '' }, false],
       [{ path: '/', method: 'head' }, { body: '' }, true],
       [{ path: '/', method: 'HEAD' }, { body: '' }, true],
       [{ path: '/', method: 'delete' }, { body: '' }, true],
@@ -183,134 +115,6 @@ describe('integrations.js', () => {
           },
         })
         .expect(413)
-    })
-
-    test('create and remove simple fixture', async () => {
-      await new Promise((resolve) => server.close(() => resolve(true)))
-      request = supertest.agent(server)
-      await new Promise((resolve) => server.listen(1111, () => resolve(true)))
-
-      const products = [{ id: 1 }, { id: 2 }]
-
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/products',
-            method: 'get',
-          },
-          response: {
-            status: 418,
-            body: products,
-            options: {
-              lifetime: 2,
-            },
-          },
-        })
-        .expect(201, {
-          id: '52c9acef4355fe4844da764e588180318be6afde',
-        })
-
-      await request.get('/products').expect(418, products)
-
-      await request.delete('/___fixtures/52c9acef4355fe4844da764e588180318be6afde').expect(204)
-
-      await request.get('/products').expect(404)
-    })
-
-    test('create and remove multiple fixtures', async () => {
-      await new Promise((resolve) => server.close(() => resolve(true)))
-      request = supertest.agent(server)
-      await new Promise((resolve) => server.listen(2222, () => resolve(true)))
-
-      const products = [{ id: 1 }, { id: 2 }]
-      const categories = [{ id: 1 }, { id: 2 }]
-
-      await request
-        .post('/___fixtures/bulk')
-        .send([
-          {
-            request: {
-              path: '/products',
-              method: 'get',
-            },
-            response: {
-              body: products,
-              options: {
-                lifetime: 2,
-              },
-            },
-          },
-          {
-            request: {
-              path: '/categories',
-              method: 'get',
-            },
-            response: {
-              body: categories,
-              options: {
-                lifetime: 2,
-              },
-            },
-          },
-        ])
-        .expect(201, [
-          { id: 'd1b3524ee44828f7bebafa57d612587f2849be4a' },
-          { id: '2651bafc31c6ffd50a7df42019fb60865b044566' },
-        ])
-
-      await Promise.all([
-        request.get('/products').expect(200, products),
-        request.get('/categories').expect(200, categories),
-      ])
-
-      await Promise.all([
-        request.delete('/___fixtures/d1b3524ee44828f7bebafa57d612587f2849be4a').expect(204),
-        request.delete('/___fixtures/2651bafc31c6ffd50a7df42019fb60865b044566').expect(204),
-      ])
-
-      await Promise.all([request.get('/products').expect(404), request.get('/categories').expect(404)])
-    })
-
-    test('create and remove all fixtures', async () => {
-      await new Promise((resolve) => server.close(() => resolve(true)))
-      request = supertest.agent(server)
-      await new Promise((resolve) => server.listen(3333, () => resolve(true)))
-
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/octopus',
-            method: 'get',
-          },
-          response: {
-            body: [],
-          },
-        })
-        .expect(201, {
-          id: 'dd9658b2bcf756ec362b854d823576fbf4e0e221',
-        })
-      await request
-        .post('/___fixtures')
-        .send({
-          request: {
-            path: '/giraffes',
-            method: 'get',
-          },
-          response: {
-            body: [],
-          },
-        })
-        .expect(201, {
-          id: '8288f08371243d5cfad8522988c0092bed1600c2',
-        })
-
-      await request.delete('/___fixtures').expect(204)
-
-      await request.get('/octopus').expect(404, {})
-
-      await request.get('/giraffes').expect(404, {})
     })
 
     test('create and remove filepath fixture', async () => {
