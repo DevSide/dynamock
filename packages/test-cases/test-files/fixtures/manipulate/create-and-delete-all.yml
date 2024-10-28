@@ -1,0 +1,43 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: "/octopus"
+        method: "GET"
+      response:
+        body: []
+  expectation:
+    status: 201
+    bodyJSON:
+      id: 766f863e8ec1a0c30bd1ee6e10856da29e416611
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: "/giraffes"
+        method: "GET"
+      response:
+        body: []
+  expectation:
+    status: 201
+    bodyJSON:
+      id: e995ff6a68319687e34a14af3babf6d916890681
+- action:
+    name: delete_all_fixtures
+    data:
+  expectation:
+    status: 204
+- action:
+    name: test_fixture
+    data:
+      path: "/octopus"
+      method: "GET"
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: "/giraffes"
+      method: "GET"
+  expectation:
+    status: 404

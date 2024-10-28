@@ -1,0 +1,80 @@
+- action:
+    name: post_fixtures_bulk
+    data:
+      - request:
+          path: "/products"
+          method: "GET"
+        response:
+          headers:
+            content-type: "application/json"
+          body:
+            products:
+              - id: 1
+              - id: 2
+          options:
+            lifetime: 2
+      - request:
+          path: "/categories"
+          method: "GET"
+        response:
+          headers:
+            content-type: "application/json"
+          body:
+            categories:
+              - id: 1
+              - id: 2
+          options:
+            lifetime: 2
+  expectation:
+    status: 201
+    bodyJSON:
+      - id: e94408a374abb23afc3a6b188dfb98aad791e562
+      - id: 02e7486f03fd81badeb74dec75aaf7a88f180137
+- action:
+    name: test_fixture
+    data:
+      path: "/products"
+      method: "GET"
+  expectation:
+    status: 200
+    bodyJSON:
+      products:
+        - id: 1
+        - id: 2
+- action:
+    name: test_fixture
+    data:
+      path: "/categories"
+      method: "GET"
+  expectation:
+    status: 200
+    bodyJSON:
+      categories:
+        - id: 1
+        - id: 2
+- action:
+    name: delete_fixture
+    data:
+      id: e94408a374abb23afc3a6b188dfb98aad791e562
+  expectation:
+    status: 204
+- action:
+    name: delete_fixture
+    data:
+      id: 02e7486f03fd81badeb74dec75aaf7a88f180137
+  expectation:
+    status: 204
+- action:
+    name: test_fixture
+    data:
+      path: "/products"
+      method: "GET"
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: "/categories"
+      method: "GET"
+  expectation:
+    status: 404

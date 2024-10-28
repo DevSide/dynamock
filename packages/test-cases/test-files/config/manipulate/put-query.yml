@@ -6,7 +6,7 @@
         foo: "foo"
   expectation:
     status: 200
-    body:
+    bodyJSON:
       cors: null
       headers: { }
       query:
@@ -21,7 +21,7 @@
         bar2: "bar2"
   expectation:
     status: 200
-    body:
+    bodyJSON:
       cors: null
       headers: { }
       query:

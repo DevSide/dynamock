@@ -1,0 +1,44 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: "/products"
+        method: "GET"
+      response:
+        status: 418
+        headers:
+          content-type: "application/json"
+        body:
+          products:
+            - id: 1
+            - id: 2
+        options:
+          lifetime: 2
+  expectation:
+    status: 201
+    bodyJSON:
+      id: e94408a374abb23afc3a6b188dfb98aad791e562
+- action:
+    name: test_fixture
+    data:
+      path: "/products"
+      method: "GET"
+  expectation:
+    status: 418
+    bodyJSON:
+      products:
+        - id: 1
+        - id: 2
+- action:
+    name: delete_fixture
+    data:
+      id: e94408a374abb23afc3a6b188dfb98aad791e562
+  expectation:
+    status: 204
+- action:
+    name: test_fixture
+    data:
+      path: "/products"
+      method: "GET"
+  expectation:
+    status: 404

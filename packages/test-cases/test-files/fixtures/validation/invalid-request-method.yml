@@ -1,3 +1,4 @@
+# missing method
 - action:
     name: post_fixture
     data:
@@ -7,6 +8,7 @@
         status: 200
   expectation:
     status: 400
+# empty method
 - action:
     name: post_fixture
     data:
@@ -17,11 +19,23 @@
         status: 200
   expectation:
     status: 400
+# null method
 - action:
     name: post_fixture
     data:
       request:
         method: null
+        path: "/pandas/1"
+      response:
+        status: 200
+  expectation:
+    status: 400
+# unknown method
+- action:
+    name: post_fixture
+    data:
+      request:
+        method: "unknown"
         path: "/pandas/1"
       response:
         status: 200

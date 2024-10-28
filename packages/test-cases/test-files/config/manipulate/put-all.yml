@@ -13,7 +13,7 @@
         cbar: "cbar"
   expectation:
     status: 200
-    body:
+    bodyJSON:
       cors: "*"
       headers:
         hfoo: "hfoo"
@@ -28,7 +28,7 @@
     name: get_config
   expectation:
     status: 200
-    body:
+    bodyJSON:
       cors: "*"
       headers:
         hfoo: "hfoo"

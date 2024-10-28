@@ -29,7 +29,7 @@ export function createServer() {
   const service = createService()
 
   app.post('/___fixtures', (req, res) => {
-    if (typeof req.body?.request === 'object') {
+    if (typeof req.body?.request === 'object' && req.body?.request !== null) {
       req.body.request.origin = `${req.protocol}://${req.get('host')}`
     }
     const [status, data] = createServiceFixture(service, req.body)
@@ -39,7 +39,7 @@ export function createServer() {
   app.post('/___fixtures/bulk', (req, res) => {
     if (Array.isArray(req.body)) {
       for (const fixture of req.body) {
-        if (typeof fixture?.request === 'object') {
+        if (typeof fixture?.request === 'object' && fixture?.request !== null) {
           fixture.request.origin = `${req.protocol}://${req.get('host')}`
         }
       }

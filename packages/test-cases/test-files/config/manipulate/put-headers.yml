@@ -7,7 +7,7 @@
           authorization: "Bearer client-token"
   expectation:
     status: 200
-    data:
+    bodyJSON:
       cors: null
       headers:
         clientToken:
@@ -24,7 +24,7 @@
           x-header-2: "2"
   expectation:
     status: 200
-    data:
+    bodyJSON:
       cors: null
       headers:
         clientToken:

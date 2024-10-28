@@ -17,7 +17,7 @@ import { REQUEST_PROPERTIES, requestPropertyMatch } from './properties.js'
 import type { CoreRequest } from './request.js'
 import type { CoreResponse } from './response.js'
 
-function createError(status: number, message: string): [number, { message: string }] {
+export function createServiceError(status: number, message: string): [number, { message: string }] {
   return [status, { message: `[FIXTURE SERVER ERROR ${status}]: ${message}` }]
 }
 
@@ -49,7 +49,7 @@ export function updateServiceConfiguration(
   const error = validateConfiguration(data)
 
   if (error) {
-    return createError(400, error.message)
+    return createServiceError(400, error.message)
   }
 
   const { cors, headers, query, cookies } = data
@@ -71,13 +71,13 @@ export function createServiceFixture(
   const [fixture, validationError] = validateFixture(unsafeFixture, configuration)
 
   if (!fixture) {
-    return createError(400, validationError)
+    return createServiceError(400, validationError)
   }
 
   const { conflictError, fixtureId } = registerFixture(fixtureStorage, fixture, configuration)
 
   if (conflictError) {
-    return createError(409, conflictError)
+    return createServiceError(409, conflictError)
   }
   return [201, { id: fixtureId }]
 }
@@ -100,7 +100,7 @@ export function createServiceFixtures(
     if (!fixture) {
       cleanUpOnError()
 
-      return createError(400, validationError)
+      return createServiceError(400, validationError)
     }
 
     const { conflictError, fixtureId } = registerFixture(fixtureStorage, fixture, configuration)
@@ -108,7 +108,7 @@ export function createServiceFixtures(
     if (conflictError) {
       cleanUpOnError()
 
-      return createError(409, conflictError)
+      return createServiceError(409, conflictError)
     }
 
     fixtureIds.push({ id: fixtureId })

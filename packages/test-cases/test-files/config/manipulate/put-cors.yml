@@ -4,7 +4,17 @@
       cors: null
   expectation:
     status: 200
-    body:
+    bodyJSON:
+      cors: null
+      headers: {}
+      query: {}
+      cookies: {}
+- action:
+    name: put_config
+    data: {}
+  expectation:
+    status: 200
+    bodyJSON:
       cors: null
       headers: {}
       query: {}
@@ -12,12 +22,11 @@
 - action:
     name: put_config
     data:
-      cors: "*"
+      cors: null
   expectation:
     status: 200
-    body:
-      cors: "*"
+    bodyJSON:
+      cors: null
       headers: {}
       query: {}
       cookies: {}
-
