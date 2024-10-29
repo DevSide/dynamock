@@ -1,0 +1,68 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        options:
+          headers:
+            strict: true
+            allowRegex: false
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        options:
+          headers:
+            strict: false
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        options:
+          headers:
+            strict: false
+            allowRegex: false
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        options:
+          headers:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        options:
+          headers:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201

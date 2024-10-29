@@ -1,0 +1,35 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        headers: null
+      response:
+        status: 200
+  expectation:
+    status: 400
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        headers:
+          - 1
+      response:
+        status: 200
+  expectation:
+    status: 400
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: post
+        headers:
+          - not-in-configuration
+      response:
+        status: 200
+  expectation:
+    status: 400

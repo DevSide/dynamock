@@ -34,63 +34,6 @@ describe('integrations.js', () => {
     })
   })
 
-  describe('validation fixture', () => {
-    test.each([
-      // request path / method
-      [{ path: '/', method: 'head' }, { body: '' }, true],
-      [{ path: '/', method: 'HEAD' }, { body: '' }, true],
-      [{ path: '/', method: 'delete' }, { body: '' }, true],
-      [{ path: '/', method: 'put' }, { body: '' }, true],
-      [{ path: '/', method: 'post' }, { body: '' }, true],
-      [{ path: '/', method: 'get' }, { body: '' }, true],
-      [{ path: '/', method: 'options' }, { body: '' }, true],
-      [{ path: '/', method: 'patch' }, { body: '' }, true],
-
-      // request body
-      [{ method: 'get', path: '/', body: '' }, { body: '' }, true],
-      [{ method: 'get', path: '/', body: {} }, { body: '' }, true],
-      [{ method: 'get', path: '/', body: 1 }, { body: '' }, true],
-      [{ method: 'get', path: '/', body: [] }, { body: '' }, true],
-
-      // request headers
-      [{ method: 'get', path: '/', headers: {} }, { body: '' }, true],
-      [{ method: 'get', path: '/', headers: null }, { body: '' }, false],
-      [{ method: 'get', path: '/', headers: { a: 'b' } }, { body: '' }, true],
-      [{ method: 'get', path: '/', headers: [] }, { body: '' }, true],
-      [{ method: 'get', path: '/', headers: [1] }, { body: '' }, false],
-      [{ method: 'get', path: '/', headers: ['not-in-configuration'] }, { body: '' }, false],
-
-      // request options path
-      [{ path: '/', method: 'get', options: { path: { allowRegex: true } } }, { body: '' }, true],
-      [{ path: '/', method: 'get', options: { path: { strict: true } } }, { body: '' }, false],
-
-      // request options method
-      [{ path: '/', method: 'get', options: { method: { allowRegex: true } } }, { body: '' }, true],
-      [{ path: '/', method: 'get', options: { method: { strict: true } } }, { body: '' }, false],
-
-      // request options headers
-      [{ path: '/', method: 'get', options: { headers: { strict: true, allowRegex: true } } }, { body: '' }, false],
-      [{ path: '/', method: 'get', options: { headers: { strict: true, allowRegex: false } } }, { body: '' }, true],
-      [{ path: '/', method: 'get', options: { headers: { strict: false, allowRegex: false } } }, { body: '' }, true],
-      [{ path: '/', method: 'get', options: { headers: { strict: true } } }, { body: '' }, true],
-      [{ path: '/', method: 'get', options: { headers: { strict: false, allowRegex: true } } }, { body: '' }, true],
-      [{ path: '/', method: 'get', options: { headers: { allowRegex: true } } }, { body: '' }, true],
-    ])('validate request="%o" response="%o" isValid=%s', async (req, resp, isValid) => {
-      await request
-        .post('/___fixtures')
-        .send({ request: req, response: resp })
-        .expect(isValid ? 201 : 400)
-
-      // Same error in bulk
-      if (!isValid) {
-        await request
-          .post('/___fixtures/bulk')
-          .send([{ request: { method: 'get', path: '/' } }, { request: req, response: resp }])
-          .expect(400)
-      }
-    })
-  })
-
   describe('create and delete fixtures', () => {
     // Special case:
     // We need the same supertest/server port in order to reproduce the sha1 of a fixture
@@ -153,103 +96,6 @@ describe('integrations.js', () => {
     })
   })
 
-  describe('conflicts fixtures', () => {
-    test.each([
-      // Conflicts
-      [null, { method: 'get', path: '/products' }, { method: 'get', path: '/products' }, true],
-      [
-        null,
-        { method: 'get', path: '/products', headers: {}, cookies: {}, query: {} },
-        { method: 'get', path: '/products' },
-        true,
-      ],
-      [
-        null,
-        { method: 'get', path: '/products', headers: { a: 'a' }, cookies: { a: 'a' } },
-        { method: 'get', path: '/products', cookies: { a: 'a' }, headers: { a: 'a' } },
-        true,
-      ],
-      [
-        null,
-        { method: 'get', path: '/products', headers: [], cookies: [], query: [] },
-        { method: 'get', path: '/products' },
-        true,
-      ],
-      [
-        null,
-        {
-          method: 'get',
-          path: '/products',
-          headers: { a: 'a', b: 'b' },
-          cookies: { a: 'a', b: 'b' },
-          query: { a: 'a', b: 'b' },
-        },
-        {
-          method: 'get',
-          path: '/products',
-          headers: { b: 'b', a: 'a' },
-          cookies: { a: 'a', b: 'b' },
-          query: { a: 'a', b: 'b' },
-        },
-        true,
-      ],
-      // No conflicts
-      [null, { method: 'get', path: '/products' }, { method: 'post', path: '/products' }, false],
-      [null, { method: 'post', path: '/products' }, { method: 'get', path: '/products' }, false],
-      [null, { method: 'get', path: '/products' }, { method: 'get', path: '/categories' }, false],
-      [null, { method: 'get', path: '/categories' }, { method: 'get', path: '/products' }, false],
-    ])(
-      'conflict situation config="%o" requestA="%o" requestB="%o" shouldConflict=%s',
-      async (configuration, requestA, requestB, shouldConflict) => {
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              headers: configuration,
-            })
-            .expect(200)
-        }
-
-        // Check if combining fixtures in a single request also failed
-        await request
-          .post('/___fixtures/bulk')
-          .send(
-            [requestA, requestB].map((request) => ({
-              request: request,
-              response: {
-                body: {},
-              },
-            })),
-          )
-          .expect(shouldConflict ? 409 : 201)
-
-        if (!shouldConflict) {
-          await request.delete('/___fixtures')
-        }
-
-        await request
-          .post('/___fixtures')
-          .send({
-            request: requestA,
-            response: {
-              body: {},
-            },
-          })
-          .expect(201)
-
-        await request
-          .post('/___fixtures')
-          .send({
-            request: requestB,
-            response: {
-              body: {},
-            },
-          })
-          .expect(shouldConflict ? 409 : 201)
-      },
-    )
-  })
-
   describe('CORS', () => {
     test('allow all', async () => {
       await request.put('/___config').send({ cors: '*' }).expect(200)
@@ -287,28 +133,13 @@ describe('integrations.js', () => {
 
   describe('matching path', () => {
     test.each([
-      ['/a', null, '/a', true],
-      ['*', null, '/a', true],
-      ['*', null, '/a/b', true],
       ['/ a', null, '/ a', true],
       ['/ a', null, '/%20a', true],
       ['/%20a', null, '/ a', false],
       ['/%20a', null, '/%20a', false],
-      ['/a', null, '/a/', false],
-      ['/a/', null, '/a', false],
-      ['/a/b', null, '/a/b', true],
-      ['/a/b', null, '/a', false],
-      ['/a/b', null, '/b', false],
-      ['/a/b', null, '/a/', false],
-      ['/a/b', null, '/b/', false],
       ['/%20a', { disableEncodeURI: true }, '/ a', true],
       ['/%20a', { disableEncodeURI: true }, '/%20a', true],
-      ['//a/', { allowRegex: true }, '/a', true],
       ['//%20a/', { allowRegex: true }, '/ a', true],
-      ['//a/', { allowRegex: true }, '/a/b', true],
-      ['/^/a/', { allowRegex: true }, '/a/b', true],
-      ['/^/a$/', { allowRegex: true }, '/a/b', false],
-      ['/^(/(a|b))+$/', { allowRegex: true }, '/a/b', true],
     ])('matching path match="%s" options="%o" test="%s" result=%s', async (matchPath, options, path, shouldMatch) => {
       const method = 'get'
 

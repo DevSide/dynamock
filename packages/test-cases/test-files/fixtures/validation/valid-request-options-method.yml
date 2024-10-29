@@ -1,0 +1,26 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /1
+        method: post
+        options:
+          path:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /2
+        method: post
+        options:
+          path:
+            allowRegex: false
+      response:
+        status: 200
+  expectation:
+    status: 201

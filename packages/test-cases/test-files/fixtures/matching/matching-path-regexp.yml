@@ -1,0 +1,128 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: //a/
+        method: get
+        options:
+          path:
+            allowRegex: true
+      response:
+        status: 200
+        options:
+          lifetime: 3
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /a/b
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /b/a
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /^/a/
+        method: get
+        options:
+          path:
+            allowRegex: true
+      response:
+        status: 200
+        options:
+          lifetime: 2
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /a/b
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /b
+      method: get
+  expectation:
+    status: 404
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /^/a$/
+        method: get
+        options:
+          path:
+            allowRegex: true
+      response:
+        status: 200
+        options:
+          lifetime: 1
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /a/b
+      method: get
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /b/a
+      method: get
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /^(/(a|b))+$/
+        method: get
+        options:
+          path:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /a/b
+      method: get
+  expectation:
+    status: 200
