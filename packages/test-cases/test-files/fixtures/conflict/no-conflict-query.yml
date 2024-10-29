@@ -1,0 +1,37 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /1
+        method: get
+        query:
+          a: "a"
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /2
+        method: get
+        query:
+          a: "a"
+          b: "b"
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /1
+        method: get
+        query:
+          b: "b"
+      response:
+        status: 200
+  expectation:
+    status: 201

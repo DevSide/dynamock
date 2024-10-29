@@ -1,0 +1,26 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /products
+        method: get
+        query:
+          a: "a"
+          b: "b"
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /products
+        method: get
+        query:
+          a: "a"
+          b: "b"
+      response:
+        status: 200
+  expectation:
+    status: 409

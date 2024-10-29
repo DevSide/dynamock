@@ -1,0 +1,77 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /body-undefined
+        method: post
+        body:
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /body-empty-string
+        method: post
+        body: ''
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /body-empty-object
+        method: post
+        body: {}
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /body-number
+        method: post
+        body: 1
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /body-zero
+        method: post
+        body: 0
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /body-array
+        method: post
+        body: []
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /body-null
+        method: post
+        body: null
+      response:
+        status: 200
+  expectation:
+    status: 201

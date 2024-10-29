@@ -4,7 +4,7 @@ import { ActionEnum, getTestFiles, wrapError } from '@dynamock/test-cases'
 import { getPuppeteerTestCases } from './config/getTestCases.js'
 
 describe('puppeteer integration tests', () => {
-  const allTests = getTestFiles() //.filter(([filePath]) => filePath.endsWith('create-and-delete-bulk.yml'))
+  const allTests = getTestFiles().filter(([filePath]) => filePath.endsWith('.yml'))
 
   beforeEach(() => page.goto('http://127.0.0.1:3000/index.html'))
 
@@ -27,7 +27,7 @@ describe('puppeteer integration tests', () => {
         case ActionEnum.post_fixtures_bulk:
         case ActionEnum.delete_fixture:
         case ActionEnum.delete_all_fixtures: {
-          if (expectation.status === 400) {
+          if (expectation.status === 400 || expectation.status === 409) {
             try {
               await dynamock(page, action.data)
             } catch (error: unknown) {

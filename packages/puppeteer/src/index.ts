@@ -61,15 +61,29 @@ function mapToCoreRequest(request: HTTPRequest): CoreRequest {
 }
 
 function mapToFixtureType(fixture: FixturePuppeteerType): FixtureType {
-  const parsedUrl = new URL(fixture.request.url)
-  const { url, ...request } = fixture.request
+  const url = fixture.request.url
+  let origin = ''
+  let path = ''
+
+  try {
+    const parsedUrl = new URL(url)
+    origin = parsedUrl.origin
+    path = parsedUrl.toString().replace(parsedUrl.origin, '')
+  } catch (error) {
+    if (url.endsWith('*')) {
+      const parsedUrl = new URL(url.slice(0, -1))
+      origin = parsedUrl.origin
+      path = '*'
+    }
+  }
+  const { url: remove, ...request } = fixture.request
 
   return {
     ...fixture,
     request: {
       ...request,
-      origin: parsedUrl.origin,
-      path: parsedUrl.toString().replace(parsedUrl.origin, ''),
+      origin,
+      path,
     },
   }
 }
