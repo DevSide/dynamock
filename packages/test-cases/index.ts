@@ -48,6 +48,7 @@ export type ApiTest = {
   path: string
   method: string
   headers?: { [key: string]: string }
+  cookies?: { [key: string]: string }
   query?: { [key: string]: string }
   body?: null | string
   bodyJSON?: unknown
@@ -120,12 +121,4 @@ export async function wrapError(testIndex: number, task: () => unknown) {
     }
     throw error
   }
-}
-
-export function fetchHeadersToObject(headers: HeadersInit) {
-  return Object.entries(headers).reduce<{ [key: string]: string }>((acc, [key, value]) => {
-    acc[key] = value
-
-    return acc
-  }, {})
 }

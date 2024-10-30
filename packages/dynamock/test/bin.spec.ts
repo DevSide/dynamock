@@ -26,7 +26,7 @@ describe('bin integration tests', () => {
 
     for (let i = 0; i < testData.length; i++) {
       const { action, expectation } = testData[i]
-      const { path, method, headers, body, bodyJSON, query } = action
+      const { path, method, headers, cookies, body, bodyJSON, query } = action
       const fetchOptions: {
         method: string
         headers: { [key: string]: string }
@@ -51,6 +51,18 @@ describe('bin integration tests', () => {
 
       for (const queryKey in query) {
         url.searchParams.set(queryKey, query[queryKey])
+      }
+
+      // nodejs fetch method "patch" is working only in upper case
+      // CF: https://github.com/nodejs/node/issues/51336
+      if (fetchOptions.method === 'patch') {
+        fetchOptions.method = 'PATCH'
+      }
+
+      if (cookies) {
+        fetchOptions.headers.cookie = Object.entries(cookies)
+          .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+          .join('; ')
       }
 
       const result = await fetch(url.toString(), fetchOptions)

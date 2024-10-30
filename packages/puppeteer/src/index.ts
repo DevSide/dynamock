@@ -41,13 +41,24 @@ function mapToCoreRequest(request: HTTPRequest): CoreRequest {
 
   const parsedUrl = new URL(request.url())
 
+  const { cookie: cookieHeader, ...headersWithoutCookie } = headers
+
+  const cookies = cookieHeader
+    ? Object.fromEntries(
+        cookieHeader.split('; ').map((cookie) => {
+          const [key, value] = cookie.split('=')
+          return [decodeURIComponent(key), decodeURIComponent(value)]
+        }),
+      )
+    : {}
+
   return {
     origin: parsedUrl.origin,
     path: parsedUrl.pathname,
     method: request.method(),
     body,
-    headers: request.headers(),
-    cookies: {},
+    headers: headersWithoutCookie,
+    cookies,
     query: Object.entries(parsedUrl.searchParams).reduce<{ [key in string]: string }>((acc, [key, value]) => {
       if (value) {
         if (typeof value === 'string') {

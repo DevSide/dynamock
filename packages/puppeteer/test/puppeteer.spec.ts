@@ -4,7 +4,7 @@ import { ActionEnum, getTestFiles, wrapError } from '@dynamock/test-cases'
 import { getPuppeteerTestCases } from './config/getTestCases.js'
 
 describe('puppeteer integration tests', () => {
-  const allTests = getTestFiles().filter(([filePath]) => filePath.endsWith('.yml'))
+  const allTests = getTestFiles() //.filter(([filePath]) => filePath.endsWith('create-and-delete-bulk.yml'))
 
   beforeEach(() => page.goto('http://127.0.0.1:3000/index.html'))
 
@@ -43,9 +43,13 @@ describe('puppeteer integration tests', () => {
           break
         }
         case ActionEnum.test_fixture: {
-          const { path, method, body, bodyJSON, headers, query } = action.data
+          const { path, method, body, bodyJSON, headers, cookies, query } = action.data
           const safeHeaders = headers ?? {}
           const safeQuery = query ?? {}
+
+          if (cookies) {
+            await page.setCookie(...Object.entries(cookies ?? {}).map(([name, value]) => ({ name, value })))
+          }
 
           const result = await page.evaluate(
             async (_path, _method, _body, _bodyJSON, _headers, _query) => {
@@ -75,6 +79,7 @@ describe('puppeteer integration tests', () => {
                 url.searchParams.set(queryKey, _query[queryKey])
               }
 
+              console.log('pup test fetch', url.toString(), fetchOptions)
               const result = await fetch(url.toString(), fetchOptions)
 
               const bodyText = await result.text()

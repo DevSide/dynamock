@@ -1,0 +1,47 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /a
+        method: "*"
+      response:
+        status: 200
+        options:
+          lifetime: 0
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: GET
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: post
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: put
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /a
+      method: PATCH
+  expectation:
+    status: 200
