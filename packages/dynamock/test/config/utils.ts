@@ -4,18 +4,20 @@ const isPortUsed = async (port: number): Promise<boolean> => {
   return new Promise((resolve) => {
     const server = createServer()
     server.once('error', (err: Error) => {
-      server.close()
-      resolve('code' in err && err.code === 'EADDRINUSE')
+      server.close(() => {
+        resolve('code' in err && err.code === 'EADDRINUSE')
+      })
     })
     server.once('listening', () => {
-      server.close()
-      resolve(false)
+      server.close(() => {
+        resolve(false)
+      })
     })
     server.listen(port)
   })
 }
 
-export function waitPortUsed(port: number, reverse = false, retry = 50) {
+export function waitPortUsed(port: number, retry = 50, reverse = false) {
   return new Promise((resolve) => {
     const loop = async () => {
       const isUsed = await isPortUsed(port)
@@ -35,5 +37,5 @@ export function waitPortUsed(port: number, reverse = false, retry = 50) {
 }
 
 export function waitPortFree(port: number, retry?: number) {
-  return waitPortUsed(port, true, retry)
+  return waitPortUsed(port, retry, true)
 }

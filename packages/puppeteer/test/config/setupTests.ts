@@ -33,6 +33,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+  await page.deleteCookie(...(await page.cookies()))
   await page.close()
 })
 

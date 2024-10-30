@@ -1,0 +1,52 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /exact-multiple
+        method: GET
+        headers:
+          a: a
+          b: b
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple
+      method: GET
+      headers:
+        a: a
+  expectation:
+    status: 404
+- action:
+    name: put_config
+    data:
+      headers:
+        custom:
+          a: a
+          b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /exact-multiple-configuration
+        method: GET
+        headers:
+          - custom
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-configuration
+      method: GET
+      headers:
+        a: a
+  expectation:
+    status: 404

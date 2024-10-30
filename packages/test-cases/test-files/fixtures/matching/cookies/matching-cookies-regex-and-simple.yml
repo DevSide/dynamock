@@ -1,0 +1,90 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex
+        method: GET
+        cookies:
+          a: '/A+/ig'
+          b: b
+        options:
+          cookies:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex
+      method: GET
+      cookies:
+        a: aAaA
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: put_config
+    data:
+      cookies:
+        custom:
+          a: '/A+/ig'
+          b: b
+        customA:
+          a: '/A+/ig'
+        customB:
+          b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-configuration
+        method: GET
+        cookies:
+          - custom
+        options:
+          cookies:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-configuration
+      method: GET
+      cookies:
+        a: aAaA
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-configuration-2
+        method: GET
+        cookies:
+          - customA
+          - customB
+        options:
+          cookies:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-configuration-2
+      method: GET
+      cookies:
+        a: aAaA
+        b: b
+  expectation:
+    status: 200

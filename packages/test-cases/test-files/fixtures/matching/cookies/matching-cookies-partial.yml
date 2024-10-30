@@ -1,0 +1,52 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /partial
+        method: GET
+        cookies:
+          a: a
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /partial
+      method: GET
+      cookies:
+        a: a
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: put_config
+    data:
+      cookies:
+        custom:
+          a: a
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /partial-configuration
+        method: GET
+        cookies:
+          - custom
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /partial-configuration
+      method: GET
+      cookies:
+        a: a
+        b: b
+  expectation:
+    status: 200
