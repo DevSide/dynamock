@@ -51,36 +51,35 @@ describe('puppeteer integration tests', () => {
             await page.setCookie(...Object.entries(cookies ?? {}).map(([name, value]) => ({ name, value })))
           }
 
+          const fetchOptions: {
+            method: string
+            headers: { [key: string]: string }
+            body: null | string
+          } = {
+            method: method,
+            headers: safeHeaders,
+            body: null,
+          }
+
+          if (bodyJSON !== undefined) {
+            fetchOptions.body = JSON.stringify(bodyJSON)
+            fetchOptions.headers = {
+              ...fetchOptions.headers,
+              'Content-Type': 'application/json',
+            }
+          } else if (body !== undefined) {
+            fetchOptions.body = String(body)
+          }
+
+          const url = new URL(`http://127.0.0.1:3000${path}`)
+
+          for (const queryKey in safeQuery) {
+            url.searchParams.set(queryKey, safeQuery[queryKey])
+          }
+
           const result = await page.evaluate(
-            async (_path, _method, _body, _bodyJSON, _headers, _query) => {
-              const fetchOptions: {
-                method: string
-                headers: { [key: string]: string }
-                body: null | string
-              } = {
-                method: _method,
-                headers: _headers,
-                body: null,
-              }
-
-              if (_bodyJSON !== undefined) {
-                fetchOptions.body = JSON.stringify(_bodyJSON)
-                fetchOptions.headers = {
-                  ...fetchOptions.headers,
-                  'Content-Type': 'application/json',
-                }
-              } else if (_body !== undefined) {
-                fetchOptions.body = String(_body)
-              }
-
-              const url = new URL(`http://127.0.0.1:3000${_path}`)
-
-              for (const queryKey in _query) {
-                url.searchParams.set(queryKey, _query[queryKey])
-              }
-
-              console.log('pup test fetch', url.toString(), fetchOptions)
-              const result = await fetch(url.toString(), fetchOptions)
+            async (_url, _fetchOptions) => {
+              const result = await fetch(_url, _fetchOptions)
 
               const bodyText = await result.text()
 
@@ -91,21 +90,13 @@ describe('puppeteer integration tests', () => {
 
               return {
                 status: result.status,
-                headers: Object.entries(_headers).reduce<{ [key: string]: string }>((acc, [key, value]) => {
-                  acc[key] = value
-
-                  return acc
-                }, {}),
+                headers: Object.fromEntries(result.headers.entries()),
                 bodyText,
                 bodyJSON,
               }
             },
-            path,
-            method,
-            body,
-            bodyJSON,
-            safeHeaders,
-            safeQuery,
+            url.toString(),
+            fetchOptions,
           )
 
           if (expectation.status) {

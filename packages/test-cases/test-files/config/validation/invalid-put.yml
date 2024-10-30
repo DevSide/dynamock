@@ -22,3 +22,8 @@
       headers: null
   expectation:
     status: 400
+- action:
+    name: put_config
+    data: []
+  expectation:
+    status: 400

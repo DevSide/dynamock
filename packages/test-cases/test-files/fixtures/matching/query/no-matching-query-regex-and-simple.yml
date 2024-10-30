@@ -1,0 +1,60 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex
+        method: GET
+        query:
+          a: '/A+/ig'
+          b: b
+        options:
+          query:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex
+      method: GET
+      query:
+        a: aAaA
+        b: c
+  expectation:
+    status: 404
+- action:
+    name: put_config
+    data:
+      query:
+        custom:
+          a: '/A+/ig'
+          b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-configuration
+        method: GET
+        query:
+          - custom
+        options:
+          query:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-configuration
+      method: GET
+      query:
+        a: aAaA
+        b: c
+  expectation:
+    status: 404

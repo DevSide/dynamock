@@ -1,0 +1,85 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: GET
+        query:
+          a: 1
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+      query:
+        a: "1"
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: GET
+        query:
+          a: []
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+      query:
+        a: "[]"
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: GET
+        query:
+          a:
+            b: b
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+      query:
+        a: '{"b":"b"}'
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: GET
+        query:
+          a: null
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+      query:
+        a: 'null'
+  expectation:
+    status: 200
