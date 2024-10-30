@@ -1,0 +1,93 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /strict-multiple
+        method: GET
+        query:
+          a: a
+          b: b
+        options:
+          query:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple
+      method: GET
+      query:
+        a: a
+        b: b
+        c: c
+  expectation:
+    status: 404
+- action:
+    name: put_config
+    data:
+      query:
+        custom:
+          a: a
+          b: b
+        customA:
+          a: a
+        customB:
+          b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /strict-multiple-configuration
+        method: GET
+        query:
+          - custom
+        options:
+          query:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-configuration
+      method: GET
+      query:
+        a: a
+        b: b
+        c: c
+  expectation:
+    status: 404
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /strict-multiple-configuration-2
+        method: GET
+        query:
+          - customA
+          - customB
+        options:
+          query:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-configuration-2
+      method: GET
+      query:
+        a: a
+        b: b
+        c: c
+  expectation:
+    status: 404

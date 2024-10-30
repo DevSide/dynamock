@@ -59,15 +59,7 @@ function mapToCoreRequest(request: HTTPRequest): CoreRequest {
     body,
     headers: headersWithoutCookie,
     cookies,
-    query: Object.entries(parsedUrl.searchParams).reduce<{ [key in string]: string }>((acc, [key, value]) => {
-      if (value) {
-        if (typeof value === 'string') {
-          acc[key] = value
-        }
-      }
-
-      return acc
-    }, {}),
+    query: Object.fromEntries(parsedUrl.searchParams.entries()),
   }
 }
 

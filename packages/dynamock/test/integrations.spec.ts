@@ -22,18 +22,6 @@ describe('integrations.js', () => {
     server.close(done)
   })
 
-  describe('manipulate configuration', () => {
-    test.each([
-      // invalid
-      [[], false],
-    ])('validate config="%o" response="%o" options="%o" isValid=%s', (config, isValid) => {
-      return request
-        .put('/___config')
-        .send(config)
-        .expect(isValid ? 200 : 400)
-    })
-  })
-
   describe('create and delete fixtures', () => {
     // Special case:
     // We need the same supertest/server port in order to reproduce the sha1 of a fixture
@@ -169,24 +157,6 @@ describe('integrations.js', () => {
 
   describe('matching query', () => {
     test.each([
-      [null, '/test', { x: '1' }, '/test', null, false],
-      [null, '/test', { x: '1' }, '/test', { strict: false }, false],
-      [null, '/test', { x: '1' }, '/test', { allowRegex: true }, false],
-      [null, '/test', { x: '1' }, '/test', { strict: true }, false],
-      [null, '/test', { x: '1' }, '/test?x=1', null, true],
-      [null, '/test', { x: ' 1' }, '/test?x=%201', null, true],
-      [null, '/test', { x: ' 1' }, '/test?x= 1', null, true],
-      [null, '/test', { x: '%201' }, '/test?x=%201', null, false],
-      [null, '/test', { x: 1 }, '/test?x=1', null, true],
-      [null, '/test', { x: [] }, '/test?x=[]', null, true],
-      [null, '/test', { x: { y: 'y' } }, '/test?x={"y":"y"}', null, true],
-      [null, '/test', { x: '1' }, '/test?x=1', { strict: true }, true],
-      [null, '/test', { x: '1' }, '/test?x=1', { allowRegex: true }, true],
-      [null, '/test', { x: '/\\d+/' }, '/test?x=1', { allowRegex: true }, true],
-      [null, '/test', { x: '/\\d+/' }, '/test?x=1', null, false],
-      [null, '/test', { x: '1' }, '/test?x=2', null, false],
-      [null, '/test', { x: '1' }, '/test?x=2', { allowRegex: true }, false],
-      [null, '/test', { x: '1' }, '/test?x=2', { strict: true }, false],
       [null, '/test?x=1', {}, '/test?x=1', null, true],
       [null, '/test?x=1', {}, '/test?x=1', { allowRegex: true }, true],
       [null, '/test?x=1', {}, '/test?x=1', { strict: true }, true],
@@ -201,22 +171,6 @@ describe('integrations.js', () => {
       [null, '/test', { x: '1', y: '2' }, '/test?y=2&x=1', null, true],
       [null, '/test', { x: '1' }, '/test?x=1&y=2', null, true],
       [null, '/test', { x: '1' }, '/test?x=1&y=2', { strict: true }, false],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', null, true],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', { allowRegex: true }, true],
-      [{ xOnly: { x: '/\\d+/' } }, '/test', ['xOnly'], '/test?x=1', { allowRegex: true }, true],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=1', { strict: true }, true],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly'], '/test?x=2', null, false],
-      [{ xAndY: { x: '1', y: '2' } }, '/test', ['xAndY'], '/test?x=1&y=2', null, true],
-      [{ xOnly: { x: '1' }, yOnly: { y: '2' } }, '/test', ['xOnly', 'yOnly'], '/test?x=1&y=2', null, true],
-      [
-        { xOnly: { x: '/\\d+/' }, yOnly: { y: '/\\d+/' } },
-        '/test',
-        ['xOnly', 'yOnly'],
-        '/test?x=1&y=2',
-        { allowRegex: true },
-        true,
-      ],
-      [{ xOnly: { x: '1' } }, '/test', ['xOnly', { y: '2' }], '/test?x=1&y=2', null, true],
     ])(
       'match query config="%o" matchPath="%s" matchValues="%o" path="%s" options="%o" result=%s',
       async (configuration, matchPath, matchValues, path, options, shouldMatch) => {

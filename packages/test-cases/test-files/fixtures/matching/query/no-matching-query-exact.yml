@@ -1,0 +1,50 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /exact
+        method: GET
+        query:
+          a: a
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /exact
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 404
+- action:
+    name: put_config
+    data:
+      query:
+        custom:
+          a: a
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /exact-configuration
+        method: GET
+        query:
+          - custom
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /exact-configuration
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 404
