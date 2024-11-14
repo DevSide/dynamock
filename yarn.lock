@@ -821,18 +821,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dynamock/core@workspace:packages/core"
   dependencies:
-    "@hapi/joi": "npm:17.1.1"
     "@jest/globals": "npm:^29.7.0"
     "@semantic-release/commit-analyzer": "npm:^13.0.0"
     "@semantic-release/git": "npm:^10.0.1"
     "@semantic-release/github": "npm:^11.0.0"
     "@semantic-release/npm": "npm:^12.0.1"
     "@semantic-release/release-notes-generator": "npm:^14.0.1"
-    "@types/hapi__joi": "npm:^17.1.14"
     jest: "npm:^29.7.0"
     semantic-release: "npm:^24.1.2"
     ts-jest: "npm:^29.2.5"
     typescript: "npm:^5.6.3"
+    zod: "npm:3.23.8"
   languageName: unknown
   linkType: soft
 
@@ -879,58 +878,6 @@ __metadata:
     js-yaml: "npm:^4.1.0"
   languageName: unknown
   linkType: soft
-
-"@hapi/address@npm:^4.0.1":
-  version: 4.1.0
-  resolution: "@hapi/address@npm:4.1.0"
-  dependencies:
-    "@hapi/hoek": "npm:^9.0.0"
-  checksum: 10c0/6f111f57d9ff72bab8f0a356cdc95f3a5561a347fedc5c2d398906a3754273db4f83e6f92f5d20759c95077f52d01837175a9128b705aef98101f2d34cabe3ac
-  languageName: node
-  linkType: hard
-
-"@hapi/formula@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@hapi/formula@npm:2.0.0"
-  checksum: 10c0/93fd1768da51043e49e008a1556c68e9bbf19f6be4823a7c04ed982afaea8f7079f1d4a5452620fe6124976ea0867a6f42e69579fc74f9b9f3dac6bdcc1fc969
-  languageName: node
-  linkType: hard
-
-"@hapi/hoek@npm:^9.0.0":
-  version: 9.2.0
-  resolution: "@hapi/hoek@npm:9.2.0"
-  checksum: 10c0/5185e683938a564cd4a7f47222c98e7f8aaa7fa2a6291735f688c1ab6f6aff4186bfc2bb673bdccdd8dfba412bfdaad6567b22c877f6aae1069030a45377799c
-  languageName: node
-  linkType: hard
-
-"@hapi/joi@npm:17.1.1":
-  version: 17.1.1
-  resolution: "@hapi/joi@npm:17.1.1"
-  dependencies:
-    "@hapi/address": "npm:^4.0.1"
-    "@hapi/formula": "npm:^2.0.0"
-    "@hapi/hoek": "npm:^9.0.0"
-    "@hapi/pinpoint": "npm:^2.0.0"
-    "@hapi/topo": "npm:^5.0.0"
-  checksum: 10c0/0c9fc1e8d26909b0bd1458728d10071170c5112980d455b865fca17964f65befe8b4c30a3d362d423ec60be77afd2d811d2e40a028d3b099adaba80b960db297
-  languageName: node
-  linkType: hard
-
-"@hapi/pinpoint@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@hapi/pinpoint@npm:2.0.0"
-  checksum: 10c0/7abd089408304b06b42ac476684d6240265ef4d31a24ad215f86af67a1a71033a3c540b85fcde7d18c994ceef4d15ca20fb9271cd7d19ab826d2a3defe705bb8
-  languageName: node
-  linkType: hard
-
-"@hapi/topo@npm:^5.0.0":
-  version: 5.1.0
-  resolution: "@hapi/topo@npm:5.1.0"
-  dependencies:
-    "@hapi/hoek": "npm:^9.0.0"
-  checksum: 10c0/b16b06d9357947149e032bdf10151eb71aea8057c79c4046bf32393cb89d0d0f7ca501c40c0f7534a5ceca078de0700d2257ac855c15e59fe4e00bba2f25c86f
-  languageName: node
-  linkType: hard
 
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
@@ -2125,13 +2072,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/235d2fc69741448e853333b7c3d1180a966dd2b8972c8cbcd6b2a0c6cd7f8d582ab2b8e58219dbc62cce8f1b40aa317ff78ea2201cdd8249da5025adebed6f0b
-  languageName: node
-  linkType: hard
-
-"@types/hapi__joi@npm:^17.1.14":
-  version: 17.1.14
-  resolution: "@types/hapi__joi@npm:17.1.14"
-  checksum: 10c0/f9324de0c9ac37097b5bddc997402e299b7a9ab098a27c22f808d363c8218f94180023117b0b99fe187bffa1f6e473744b7417054a3737b3360035c20274d792
   languageName: node
   linkType: hard
 
@@ -3621,7 +3561,6 @@ __metadata:
     "@semantic-release/release-notes-generator": "npm:^14.0.1"
     "@types/cookie-parser": "npm:^1.4.7"
     "@types/express": "npm:^5.0.0"
-    "@types/hapi__joi": "npm:^17.1.14"
     "@types/node": "npm:^22.7.7"
     "@types/supertest": "npm:^6.0.2"
     cookie-parser: "npm:1.4.7"

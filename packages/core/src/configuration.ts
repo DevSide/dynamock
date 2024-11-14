@@ -1,27 +1,24 @@
-import Joi from '@hapi/joi'
+import { z } from 'zod'
 
-export type ConfigurationObjectType = {
-  [key: string]: {
-    [key: string]: string
-  }
-}
+const ConfigurationObjectSchema = z.record(z.record(z.string()))
 
-export type ConfigurationType = {
-  cors: null | '*'
-  headers: ConfigurationObjectType
-  query: ConfigurationObjectType
-  cookies: ConfigurationObjectType
-}
+const ConfigurationSchema = z
+  .object({
+    cors: z.union([z.literal('*'), z.literal(null)]),
+    headers: z.record(z.record(z.string())),
+    query: z.record(z.record(z.string())),
+    cookies: z.record(z.record(z.string())),
+  })
+  .strict()
 
-const schema = Joi.object({
-  cors: Joi.alternatives([Joi.string().valid('*'), Joi.object().valid(null)]),
-  headers: Joi.object(),
-  query: Joi.object(),
-  cookies: Joi.object(),
-}).required()
+const ConfigurationPartialSchema = ConfigurationSchema.partial()
+
+export type ConfigurationObjectType = z.infer<typeof ConfigurationObjectSchema>
+export type ConfigurationPartialType = z.infer<typeof ConfigurationPartialSchema>
+export type ConfigurationType = z.infer<typeof ConfigurationSchema>
 
 export function validateConfiguration(unsafeConfiguration: unknown) {
-  return schema.validate(unsafeConfiguration).error
+  return ConfigurationPartialSchema.safeParse(unsafeConfiguration)
 }
 
 export function createConfiguration(): ConfigurationType {

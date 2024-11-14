@@ -3,29 +3,32 @@
     data:
       cors: null
       query:
-        foo: "foo"
+        foo:
+          foo: "foo"
   expectation:
     status: 200
     bodyJSON:
       cors: null
       headers: { }
       query:
-        foo: "foo"
+        foo:
+          foo: "foo"
       cookies: { }
 - action:
     name: put_config
     data:
       cors: null
       query:
-        bar: "bar"
-        bar2: "bar2"
+        bar:
+          bar: "bar"
   expectation:
     status: 200
     bodyJSON:
       cors: null
       headers: { }
       query:
-        foo: "foo"
-        bar: "bar"
-        bar2: "bar2"
+        foo:
+          foo: "foo"
+        bar:
+          bar: "bar"
       cookies: { }

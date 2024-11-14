@@ -8,6 +8,7 @@ import {
   validateFixture,
 } from './fixtures.js'
 import {
+  ConfigurationPartialType,
   type ConfigurationType,
   createConfiguration,
   updateConfiguration,
@@ -16,9 +17,20 @@ import {
 import { REQUEST_PROPERTIES, requestPropertyMatch } from './properties.js'
 import type { CoreRequest } from './request.js'
 import type { CoreResponse } from './response.js'
+import type { ZodError } from 'zod'
 
-export function createServiceError(status: number, message: string): [number, { message: string }] {
-  return [status, { message: `[FIXTURE SERVER ERROR ${status}]: ${message}` }]
+export function createServiceError(
+  status: number,
+  message: string,
+  error: null | ZodError<unknown> = null,
+): [number, { message: string; error: null | ZodError<unknown> }] {
+  return [
+    status,
+    {
+      message: `[FIXTURE SERVER ERROR ${status}]: ${message}`,
+      error,
+    },
+  ]
 }
 
 export type ServiceType = {
@@ -44,15 +56,15 @@ export function getServiceConfiguration({ configuration }: ServiceType): [number
 
 export function updateServiceConfiguration(
   { configuration }: ServiceType,
-  data: Partial<ConfigurationType>,
+  data: unknown,
 ): [number, ConfigurationType | { message: string }] {
-  const error = validateConfiguration(data)
+  const validation = validateConfiguration(data)
 
-  if (error) {
-    return createServiceError(400, error.message)
+  if (!validation.success) {
+    return createServiceError(400, 'Configuration validation failed', validation.error)
   }
 
-  const { cors, headers, query, cookies } = data
+  const { cors, headers, query, cookies } = validation.data
   updateConfiguration(configuration, cors, headers, query, cookies)
 
   return [200, configuration]
@@ -68,13 +80,13 @@ export function createServiceFixture(
   { configuration, fixtureStorage }: ServiceType,
   unsafeFixture: unknown,
 ): [number, object] {
-  const [fixture, validationError] = validateFixture(unsafeFixture, configuration)
+  const validation = validateFixture(unsafeFixture, configuration)
 
-  if (!fixture) {
-    return createServiceError(400, validationError)
+  if (!validation.success) {
+    return createServiceError(400, 'Fixture validation failed', validation.error)
   }
 
-  const { conflictError, fixtureId } = registerFixture(fixtureStorage, fixture, configuration)
+  const { conflictError, fixtureId } = registerFixture(fixtureStorage, validation.data, configuration)
 
   if (conflictError) {
     return createServiceError(409, conflictError)
@@ -95,15 +107,15 @@ export function createServiceFixtures(
   }
 
   for (const unsafeFixture of unsafeFixtures) {
-    const [fixture, validationError] = validateFixture(unsafeFixture, configuration)
+    const validation = validateFixture(unsafeFixture, configuration)
 
-    if (!fixture) {
+    if (!validation.success) {
       cleanUpOnError()
 
-      return createServiceError(400, validationError)
+      return createServiceError(400, 'Fixture validation failed', validation.error)
     }
 
-    const { conflictError, fixtureId } = registerFixture(fixtureStorage, fixture, configuration)
+    const { conflictError, fixtureId } = registerFixture(fixtureStorage, validation.data, configuration)
 
     if (conflictError) {
       cleanUpOnError()
@@ -178,7 +190,7 @@ export function matchServiceRequestAgainstFixtures(
     const options = response.options || {}
 
     const send = () => {
-      const corResponse = {
+      const coreResponse = {
         status: response.status || 200, // TODO not here
         headers: response.headers ?? {},
         cookies: response.cookies ?? {},
@@ -188,10 +200,10 @@ export function matchServiceRequestAgainstFixtures(
       }
 
       if (service.configuration.cors === '*') {
-        Object.assign(corResponse.headers, corsAllowAllHeaders)
+        Object.assign(coreResponse.headers, corsAllowAllHeaders)
       }
 
-      end(corResponse)
+      end(coreResponse)
     }
 
     // The fixture has been or will be consumed
