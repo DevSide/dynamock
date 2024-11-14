@@ -33,6 +33,7 @@ export function createServer() {
       req.body.request.origin = `${req.protocol}://${req.get('host')}`
     }
     const [status, data] = createServiceFixture(service, req.body)
+    console.log(JSON.stringify(data, null, 2))
     res.status(status).send(data)
   })
 

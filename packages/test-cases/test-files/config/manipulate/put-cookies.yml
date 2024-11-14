@@ -2,7 +2,8 @@
     name: put_config
     data:
       cookies:
-        jwt: "jwt"
+        jwt:
+          jwt: "jwt"
   expectation:
     status: 200
     bodyJSON:
@@ -10,13 +11,16 @@
       headers: {}
       query: {}
       cookies:
-        jwt: "jwt"
+        jwt:
+          jwt: "jwt"
 - action:
     name: put_config
     data:
       cookies:
-        jwt2: "jwt2"
-        jwt3: "jwt3"
+        jwt2:
+          jwt2: "jwt2"
+        jwt3:
+          jwt3: "jwt3"
   expectation:
     status: 200
     bodyJSON:
@@ -24,6 +28,9 @@
       headers: {}
       query: {}
       cookies:
-        jwt: "jwt"
-        jwt2: "jwt2"
-        jwt3: "jwt3"
+        jwt:
+          jwt: "jwt"
+        jwt2:
+          jwt2: "jwt2"
+        jwt3:
+          jwt3: "jwt3"

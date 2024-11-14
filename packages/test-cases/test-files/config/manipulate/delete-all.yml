@@ -3,27 +3,39 @@
     data:
       cors: "*"
       headers:
-        hfoo: "hfoo"
-        hbar: "hbar"
+        hfoo:
+          hfoo: "hfoo"
+        hbar:
+          hbar: "hbar"
       query:
-        qfoo: "qfoo"
-        qbar: "qbar"
+        qfoo:
+          qfoo: "qfoo"
+        qbar:
+          qbar: "qbar"
       cookies:
-        cfoo: "cfoo"
-        cbar: "cbar"
+        cfoo:
+          cfoo: "cfoo"
+        cbar:
+         cbar: "cbar"
   expectation:
     status: 200
     bodyJSON:
       cors: "*"
       headers:
-        hfoo: "hfoo"
-        hbar: "hbar"
+        hfoo:
+          hfoo: "hfoo"
+        hbar:
+          hbar: "hbar"
       query:
-        qfoo: "qfoo"
-        qbar: "qbar"
+        qfoo:
+          qfoo: "qfoo"
+        qbar:
+          qbar: "qbar"
       cookies:
-        cfoo: "cfoo"
-        cbar: "cbar"
+        cfoo:
+          cfoo: "cfoo"
+        cbar:
+          cbar: "cbar"
 - action:
     name: delete_config
   expectation:

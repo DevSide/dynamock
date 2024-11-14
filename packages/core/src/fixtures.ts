@@ -1,76 +1,22 @@
 import { URLSearchParams } from 'node:url'
 import { hash, isObjectEmpty, type NonEmptyArray, sortObjectKeysRecurs } from './utils.js'
-// TODO: remove Joi with a lightweight composable validation library
-import Joi from '@hapi/joi'
 import type { ConfigurationType } from './configuration.js'
+import type { z } from 'zod'
+import {
+  type FixtureRequestOptionsSchema,
+  type FixtureRequestSchema,
+  type FixtureResponseSchema,
+  FixtureSchema,
+} from './schema.js'
 
 export type FixtureStorageType = {
   storage: Map<string, NormalizedFixtureType>
 }
 
-export type FixtureRequestOptionsType = null | {
-  // TODO: test and document this
-  origin?: {
-    allowRegex?: boolean
-  }
-  path?: {
-    allowRegex?: boolean
-    disableEncodeURI?: boolean
-  }
-  method?: {
-    allowRegex?: boolean
-  }
-  headers?: {
-    strict?: boolean
-    allowRegex?: boolean
-  }
-  cookies?: {
-    strict?: boolean
-    allowRegex?: boolean
-  }
-  query?: {
-    strict?: boolean
-    allowRegex?: boolean
-  }
-  body?: {
-    strict?: boolean
-    allowRegex?: boolean
-  }
-}
-
-export type FixtureRequestType = {
-  origin: string
-  path: string
-  method: string
-  headers?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  cookies?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  query?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  body?: null | { [key: string]: unknown }
-  options?: FixtureRequestOptionsType
-}
-
-export type FixtureResponseType = {
-  status?: number
-  headers?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  cookies?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  query?: null | { [key: string]: string } | ({ [key: string]: string } | string)[]
-  body?: null | { [key: string]: unknown }
-  filepath?: string
-  options?: null | {
-    delay?: number
-    lifetime?: number
-  }
-}
-
-export type FixtureType =
-  | {
-      request: FixtureRequestType
-      response: FixtureResponseType
-    }
-  | {
-      request: FixtureRequestType
-      responses: NonEmptyArray<FixtureResponseType>
-    }
+export type FixtureRequestOptionsType = null | z.infer<typeof FixtureRequestOptionsSchema>
+export type FixtureRequestType = z.infer<typeof FixtureRequestSchema>
+export type FixtureResponseType = z.infer<typeof FixtureResponseSchema>
+export type FixtureType = z.infer<typeof FixtureSchema>
 
 export type NormalizedFixtureRequestType = {
   origin: string
@@ -107,101 +53,30 @@ export function createFixtureStorage() {
   }
 }
 
-export function validateFixture(
-  unsafeFixture: unknown,
-  configuration: ConfigurationType,
-): [null, string] | [FixtureType, string] {
-  const schemaProperty = Joi.alternatives([
-    Joi.array().items(
-      Joi.custom((value, helpers) => {
-        const path = helpers.state.path
-        const property = path?.[path.length - 2]
+export function validateFixture(unsafeFixture: unknown, configuration: ConfigurationType) {
+  const refineArrayWithConfiguration = (
+    property: 'headers' | 'query' | 'cookies',
+  ): [(data: FixtureType) => boolean | true, { message: string }] => [
+    (data: FixtureType) => {
+      const propertyValue = data.request[property]
 
-        if (property === 'headers' || property === 'query' || property === 'cookies') {
-          if (!configuration[property]?.[value]) {
-            throw new Error(`${value} not found in configuration`)
-          }
-        }
+      if (Array.isArray(propertyValue)) {
+        return propertyValue.every((value) =>
+          typeof value === 'string' ? configuration[property][value] !== undefined : true,
+        )
+      }
 
-        return value
-      }),
-      Joi.object(),
-    ),
-    Joi.object(),
-  ])
+      return true
+    },
+    {
+      message: `request.${property} contains a value not in the configuration`,
+    },
+  ]
 
-  const optionsStrictOrAllowRegex = Joi.object({
-    strict: Joi.bool(),
-    allowRegex: Joi.bool(),
-  }).invalid({ strict: true, allowRegex: true })
-
-  const requestSchema = Joi.object({
-    body: Joi.any(),
-    origin: Joi.string().required(),
-    path: Joi.string().required(),
-    method: Joi.alternatives([
-      Joi.string().regex(/^(head|delete|put|post|get|options|patch|\*)$/i),
-      Joi.custom((value, helpers) => {
-        const options = helpers.state.ancestors[0].options || {}
-        const allowMethodRegex = options.method?.allowRegex
-
-        if (!allowMethodRegex) {
-          throw new Error(`Method ${value} is not a valid method`)
-        }
-
-        if (typeof value !== 'string') {
-          return helpers.error('string.invalid')
-        }
-
-        return value
-      }),
-    ]).required(),
-    headers: schemaProperty,
-    cookies: schemaProperty,
-    query: schemaProperty,
-    options: Joi.object({
-      path: Joi.object({
-        allowRegex: Joi.bool(),
-        disableEncodeURI: Joi.bool(),
-      }).invalid({ allowRegex: true, disableEncodeURI: true }),
-      method: Joi.object({
-        allowRegex: Joi.bool(),
-      }),
-      headers: optionsStrictOrAllowRegex,
-      cookies: optionsStrictOrAllowRegex,
-      query: optionsStrictOrAllowRegex,
-      body: optionsStrictOrAllowRegex,
-    }),
-  })
-
-  const responseSchema = Joi.object({
-    status: Joi.number().integer().min(200).max(600),
-    body: Joi.any(),
-    filepath: Joi.string(),
-    headers: schemaProperty,
-    cookies: schemaProperty,
-    options: Joi.object({
-      delay: Joi.number().integer().min(0),
-      lifetime: Joi.number().integer().min(0),
-    }),
-  }).oxor('body', 'filepath')
-
-  const schema = Joi.object({
-    request: requestSchema.required(),
-    response: responseSchema,
-    responses: Joi.array().items(responseSchema),
-  })
-    .or('response', 'responses')
-    .required()
-
-  const error = schema.validate(unsafeFixture).error
-
-  if (error) {
-    return [null, error.message]
-  }
-
-  // Use "as" temporarily until new validation lib like Zod
-  return [unsafeFixture as FixtureType, '']
+  return FixtureSchema.refine(...refineArrayWithConfiguration('headers'))
+    .refine(...refineArrayWithConfiguration('query'))
+    .refine(...refineArrayWithConfiguration('cookies'))
+    .safeParse(unsafeFixture)
 }
 
 function normalizeArrayMatcher(
@@ -329,7 +204,7 @@ function normalizeFixture(fixture: FixtureType, configuration: ConfigurationType
   }
 }
 
-function createFixtureId(fixture: FixtureType) {
+function createFixtureId(fixture: NormalizedFixtureType) {
   return hash(JSON.stringify(fixture.request))
 }
 

@@ -16,7 +16,7 @@ import {
   updateServiceConfiguration,
 } from '@dynamock/core'
 import { URLSearchParams } from 'node:url'
-import type { ConfigurationType } from '@dynamock/core/dist/configuration.js'
+import type { ConfigurationType } from '@dynamock/core'
 import { URL } from 'node:url'
 
 function mapToCoreRequest(request: HTTPRequest): CoreRequest {
