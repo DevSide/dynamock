@@ -155,62 +155,6 @@ describe('integrations.js', () => {
     })
   })
 
-  describe('matching query', () => {
-    test.each([
-      [null, '/test?x=1', {}, '/test?x=1', null, true],
-      [null, '/test?x=1', {}, '/test?x=1', { allowRegex: true }, true],
-      [null, '/test?x=1', {}, '/test?x=1', { strict: true }, true],
-      [null, '/test?x=1&y=2', {}, '/test?x=1&y=2', null, true],
-      [null, '/test?y=2&&x=1', {}, '/test?x=1&y=2', null, true],
-      [null, '/test', { x: '1', y: '2' }, '/test?x=1', null, false],
-      [null, '/test', { x: '/\\d+/', y: '2' }, '/test?x=1', { allowRegex: true }, false],
-      [null, '/test', { x: '1', y: '2' }, '/test?x=1', { strict: true }, false],
-      [null, '/test', { x: '1', y: '2' }, '/test?x=1&y=2', null, true],
-      [null, '/test?y=2', { x: '1' }, '/test?x=1', null, false],
-      [null, '/test?y=2', { x: '1' }, '/test?x=1&y=2', null, true],
-      [null, '/test', { x: '1', y: '2' }, '/test?y=2&x=1', null, true],
-      [null, '/test', { x: '1' }, '/test?x=1&y=2', null, true],
-      [null, '/test', { x: '1' }, '/test?x=1&y=2', { strict: true }, false],
-    ])(
-      'match query config="%o" matchPath="%s" matchValues="%o" path="%s" options="%o" result=%s',
-      async (configuration, matchPath, matchValues, path, options, shouldMatch) => {
-        const method = 'get'
-
-        if (configuration) {
-          await request
-            .put('/___config')
-            .send({
-              query: configuration,
-            })
-            .expect(200)
-        }
-
-        await request
-          .post('/___fixtures')
-          .send({
-            request: {
-              path: matchPath,
-              method,
-              query: matchValues,
-              ...(options
-                ? {
-                    options: {
-                      query: options,
-                    },
-                  }
-                : {}),
-            },
-            response: {
-              body: {},
-            },
-          })
-          .expect(201)
-
-        await request[method](path).expect(shouldMatch ? 200 : 404)
-      },
-    )
-  })
-
   describe('matching body', () => {
     test.each([
       [null, {}, {}, null, true],

@@ -2,10 +2,9 @@
     name: post_fixture
     data:
       request:
-        path: /strict-multiple
+        path: /strict-multiple-mix?a=a
         method: GET
         query:
-          a: a
           b: b
         options:
           query:
@@ -13,13 +12,13 @@
       response:
         status: 200
         options:
-          lifetime: 2
+          lifetime: 4
   expectation:
     status: 201
 - action:
     name: test_fixture
     data:
-      path: /strict-multiple
+      path: /strict-multiple-mix
       method: GET
       query:
         a: a
@@ -29,8 +28,26 @@
 - action:
     name: test_fixture
     data:
-      path: /strict-multiple?a=a&b=b
+      path: /strict-multiple-mix?a=a&b=b
       method: GET
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-mix?a=a
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-mix?b=b
+      method: GET
+      query:
+        a: a
   expectation:
     status: 200
 - action:
@@ -50,7 +67,7 @@
     name: post_fixture
     data:
       request:
-        path: /strict-multiple-configuration
+        path: /strict-multiple-mix-configuration
         method: GET
         query:
           - custom
@@ -60,13 +77,13 @@
       response:
         status: 200
         options:
-          lifetime: 2
+          lifetime: 4
   expectation:
     status: 201
 - action:
     name: test_fixture
     data:
-      path: /strict-multiple-configuration
+      path: /strict-multiple-mix-configuration
       method: GET
       query:
         a: a
@@ -76,15 +93,33 @@
 - action:
     name: test_fixture
     data:
-      path: /strict-multiple-configuration?a=a&b=b
+      path: /strict-multiple-mix-configuration?a=a&b=b
       method: GET
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-mix-configuration?a=a
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-mix-configuration?&b=b
+      method: GET
+      query:
+        a: a
   expectation:
     status: 200
 - action:
     name: post_fixture
     data:
       request:
-        path: /strict-multiple-configuration-2
+        path: /strict-multiple-mix-configuration-2
         method: GET
         query:
           - customA
@@ -95,13 +130,13 @@
       response:
         status: 200
         options:
-          lifetime: 2
+          lifetime: 4
   expectation:
     status: 201
 - action:
     name: test_fixture
     data:
-      path: /strict-multiple-configuration-2
+      path: /strict-multiple-mix-configuration-2
       method: GET
       query:
         a: a
@@ -111,7 +146,25 @@
 - action:
     name: test_fixture
     data:
-      path: /strict-multiple-configuration-2?a=a&b=b
+      path: /strict-multiple-mix-configuration-2?a=a&b=b
       method: GET
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-mix-configuration-2?a=a
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /strict-multiple-mix-configuration-2?b=b
+      method: GET
+      query:
+        a: a
   expectation:
     status: 200

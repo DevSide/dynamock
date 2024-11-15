@@ -5,7 +5,7 @@ import { waitPortFree, waitPortUsed } from './config/utils.js'
 import { getServerTestCases } from './config/getTestCases.js'
 
 describe('bin integration tests', () => {
-  const allTests = getTestFiles() //.filter(([filePath]) => filePath.endsWith('create-and-delete-bulk.yml'))
+  const allTests = getTestFiles() //.filter(([filePath]) => filePath.includes('create-and-delete-bulk.yml'))
   const port = 3000
   let process: ChildProcess
 

@@ -2,51 +2,71 @@
     name: post_fixture
     data:
       request:
-        path: /exact-multiple
+        path: /partial-mix
         method: GET
         query:
           a: a
-          b: b
       response:
         status: 200
+        options:
+          lifetime: 2
   expectation:
     status: 201
 - action:
     name: test_fixture
     data:
-      path: /exact-multiple
+      path: /partial-mix?a=a
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /partial-mix?b=b
       method: GET
       query:
         a: a
   expectation:
-    status: 404
+    status: 200
 - action:
     name: put_config
     data:
       query:
         custom:
           a: a
-          b: b
   expectation:
     status: 200
 - action:
     name: post_fixture
     data:
       request:
-        path: /exact-multiple-configuration
+        path: /partial-configuration
         method: GET
         query:
           - custom
       response:
         status: 200
+        options:
+          lifetime: 2
   expectation:
     status: 201
 - action:
     name: test_fixture
     data:
-      path: /exact-multiple-configuration
+      path: /partial-configuration?a=a
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /partial-configuration?b=b
       method: GET
       query:
         a: a
   expectation:
-    status: 404
+    status: 200

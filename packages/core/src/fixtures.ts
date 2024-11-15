@@ -109,7 +109,9 @@ function normalizePath(request: FixtureRequestType) {
 
     request.path = path
 
-    if (request.query) {
+    if (Array.isArray(request.query)) {
+      request.query.push(query)
+    } else if (request.query) {
       Object.assign(request.query, query)
     } else {
       request.query = query

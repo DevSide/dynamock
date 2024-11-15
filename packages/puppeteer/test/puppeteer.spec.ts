@@ -4,7 +4,7 @@ import { ActionEnum, getTestFiles, wrapError } from '@dynamock/test-cases'
 import { getPuppeteerTestCases } from './config/getTestCases.js'
 
 describe('puppeteer integration tests', () => {
-  const allTests = getTestFiles() //.filter(([filePath]) => filePath.endsWith('create-and-delete-bulk.yml'))
+  const allTests = getTestFiles() //.filter(([filePath]) => filePath.includes('create-and-delete-bulk.yml'))
 
   beforeEach(() => page.goto('http://127.0.0.1:3000/index.html'))
 
