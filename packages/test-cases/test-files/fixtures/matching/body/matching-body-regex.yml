@@ -1,0 +1,164 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-array
+        method: POST
+        body:
+          - a
+          - b
+        options:
+          body:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-array
+      method: POST
+      bodyJSON:
+        - a
+        - b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-object
+        method: POST
+        body: {}
+        options:
+          body:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-object
+      method: POST
+      bodyJSON:
+        - a
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-object
+        method: POST
+        body:
+          a: a
+        options:
+          body:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-object
+      method: POST
+      bodyJSON:
+        a: a
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-object-value
+        method: POST
+        body:
+          x: '/A+/ig'
+        options:
+          body:
+            allowRegex: true
+      response:
+        status: 200
+        options:
+          lifetime: 2
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-object-value
+      method: POST
+      bodyJSON:
+        x: aAaA
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /regex-object-value
+      method: POST
+      bodyJSON:
+        x: aAaA
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-object-array
+        method: POST
+        body:
+          a:
+            b: b
+            c: []
+        options:
+          body:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-object-array
+      method: POST
+      bodyJSON:
+        a:
+          b: b
+          c: []
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /regex-object-regex-array
+        method: POST
+        body:
+          x: '/A+/ig'
+          arr: []
+        options:
+          body:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /regex-object-regex-array
+      method: POST
+      bodyJSON:
+        x: aAaA
+        arr: []
+  expectation:
+    status: 200

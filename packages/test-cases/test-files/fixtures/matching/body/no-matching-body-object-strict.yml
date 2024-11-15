@@ -1,0 +1,34 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-strict-two-keys
+        method: POST
+        body:
+          a: a
+          b: b
+        options:
+          body:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-strict-two-keys
+      method: POST
+      bodyJSON:
+        a: a
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /object-strict-two-keys
+      method: POST
+      bodyJSON:
+        b: b
+  expectation:
+    status: 404

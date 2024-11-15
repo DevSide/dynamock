@@ -1,0 +1,38 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /empty-string
+        method: POST
+        body: ""
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /empty-string
+      method: POST
+      body: ""
+  expectation:
+    status: 200
+#- action:
+#    name: post_fixture
+#    data:
+#      request:
+#        path: /string
+#        method: POST
+#        body: a
+#      response:
+#        status: 200
+#  expectation:
+#    status: 201
+#- action:
+#    name: test_fixture
+#    data:
+#      path: /string
+#      method: POST
+#      body: a
+#  expectation:
+#    status: 200

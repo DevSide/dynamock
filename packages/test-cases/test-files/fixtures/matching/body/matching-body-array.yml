@@ -1,0 +1,57 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /empty-array
+        method: POST
+        body: []
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /empty-array
+      method: POST
+      bodyJSON: []
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /empty-array-empty-object
+        method: POST
+        body: []
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /empty-array-empty-object
+      method: POST
+      bodyJSON: {}
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /array
+        method: POST
+        body: ["a", "b"]
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /array
+      method: POST
+      bodyJSON: ["a", "b"]
+  expectation:
+    status: 200
