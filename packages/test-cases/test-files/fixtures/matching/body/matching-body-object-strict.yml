@@ -1,0 +1,86 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-two-keys
+        method: POST
+        body:
+          a: a
+          b: b
+        options:
+          body:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-two-keys
+      method: POST
+      bodyJSON:
+        a: a
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-null
+        method: POST
+        body:
+          a: null
+        options:
+          body:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-null
+      method: POST
+      bodyJSON:
+        a: null
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-strict-deep
+        method: POST
+        body:
+          a:
+            aa: ['a', 'a']
+            ab: []
+            ac: 42
+          b:
+            ba: ['b', 'a']
+          c: c
+        options:
+          body:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-strict-deep
+      method: POST
+      bodyJSON:
+        a:
+          aa: [ 'a', 'a' ]
+          ab: []
+          ac: 42
+        b:
+          ba: [ 'b', 'a' ]
+        c: c
+  expectation:
+    status: 200

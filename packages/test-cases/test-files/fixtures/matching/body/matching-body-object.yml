@@ -1,0 +1,185 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /empty-object
+        method: POST
+        body: {}
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /empty-object
+      method: POST
+      body: {}
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /empty-object-empty-array
+        method: POST
+        body: {}
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /empty-object-empty-array
+      method: POST
+      bodyJSON: []
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-one-key
+        method: POST
+        body:
+          a: a
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-one-key
+      method: POST
+      bodyJSON:
+        a: a
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-two-keys
+        method: POST
+        body:
+          a: a
+          b: b
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-two-keys
+      method: POST
+      bodyJSON:
+        a: a
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-null
+        method: POST
+        body:
+          a: null
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-null
+      method: POST
+      bodyJSON:
+        a: null
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-partial
+        method: POST
+        body:
+          a: a
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-partial
+      method: POST
+      bodyJSON:
+        a: a
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-partial-deep
+        method: POST
+        body:
+          a:
+            aa: aa
+          b: b
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-partial-deep
+      method: POST
+      bodyJSON:
+        a:
+          aa: aa
+          ax: ax
+        b: b
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /object-partial-deep-array
+        method: POST
+        body:
+          a:
+            aa: ['a', 'a']
+            ab: []
+            ac: 42
+          b:
+            ba: ['b', 'a']
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /object-partial-deep-array
+      method: POST
+      bodyJSON:
+        a:
+          aa: [ 'a', 'a' ]
+          ab: []
+          ac: 42
+          ax: ax
+        b:
+          ba: [ 'b', 'a' ]
+          bx: bx
+        c: c
+  expectation:
+    status: 200

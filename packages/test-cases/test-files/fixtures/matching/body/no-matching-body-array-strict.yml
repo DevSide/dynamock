@@ -1,0 +1,22 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /array-strict
+        method: POST
+        body: ["a", "b"]
+        options:
+          body:
+            strict: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /array-strict
+      method: POST
+      bodyJSON: ["a", "b"]
+  expectation:
+    status: 200
