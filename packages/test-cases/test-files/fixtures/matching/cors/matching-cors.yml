@@ -1,0 +1,69 @@
+- action:
+    name: put_config
+    data:
+      cors: "*"
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: options
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: options
+  expectation:
+    status: 200
+    headers:
+      access-control-allow-origin: "*"
+      access-control-allow-methods: "*"
+      access-control-allow-headers: "*"
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: get
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: get
+  expectation:
+    status: 200
+    headers:
+      access-control-allow-origin: "*"
+      access-control-allow-methods: "*"
+      access-control-allow-headers: "*"
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /hello
+        method: post
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /hello
+      method: post
+  expectation:
+    status: 200
+    headers:
+      access-control-allow-origin: "*"
+      access-control-allow-methods: "*"
+      access-control-allow-headers: "*"

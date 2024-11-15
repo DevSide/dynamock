@@ -18,6 +18,7 @@ import {
 import { URLSearchParams } from 'node:url'
 import type { ConfigurationType } from '@dynamock/core'
 import { URL } from 'node:url'
+import { readFileSync } from 'node:fs'
 
 function mapToCoreRequest(request: HTTPRequest): CoreRequest {
   const headers = request.headers()
@@ -115,15 +116,28 @@ async function initializeInterceptor(page: Page) {
         // TODO: need to computer cookies with coreResponse.cookies
         // TODO: body should be string|undefined in CoreResponse, already parsed
         const contentType = coreResponse.headers['content-type'] ?? ''
+        let body = undefined
+        let status = coreResponse.status
 
-        request.respond({
-          status: coreResponse.status,
-          headers: coreResponse.headers,
-          body:
+        if (coreResponse.filepath) {
+          try {
+            body = readFileSync(coreResponse.filepath)
+          } catch {
+            status = 404
+            body = 'File not found'
+          }
+        } else {
+          body =
             contentType === 'application/json'
               ? JSON.stringify(coreResponse.body)
-              : (coreResponse.body as undefined | string),
-          contentType: contentType,
+              : (coreResponse.body as undefined | string)
+        }
+
+        request.respond({
+          status,
+          headers: coreResponse.headers,
+          body,
+          contentType,
         })
         resolve(true)
       })

@@ -3,6 +3,7 @@ import { spawn, type ChildProcess } from 'node:child_process'
 import { getTestFiles, wrapError } from '@dynamock/test-cases'
 import { waitPortFree, waitPortUsed } from './config/utils.js'
 import { getServerTestCases } from './config/getTestCases.js'
+import { writeFileSync } from 'node:fs'
 
 describe('bin integration tests', () => {
   const allTests = getTestFiles() //.filter(([filePath]) => filePath.includes('create-and-delete-bulk.yml'))
@@ -38,6 +39,13 @@ describe('bin integration tests', () => {
       }
 
       if (bodyJSON !== undefined) {
+        // @ts-ignore
+        const filepath = String(bodyJSON?.response?.filepath)
+
+        if (filepath?.startsWith('/')) {
+          writeFileSync(filepath, 'world')
+        }
+
         fetchOptions.body = JSON.stringify(bodyJSON)
         fetchOptions.headers = {
           ...fetchOptions.headers,
@@ -65,17 +73,22 @@ describe('bin integration tests', () => {
           .join('; ')
       }
 
+      const time = Date.now()
       const result = await fetch(url.toString(), fetchOptions)
 
       if (expectation) {
-        const { status, headers, body, bodyJSON } = expectation
+        const { status, headers, body, bodyJSON, minElapsedTime } = expectation
+
+        if (minElapsedTime) {
+          expect(Date.now() - time).toBeGreaterThan(minElapsedTime)
+        }
 
         if (status) {
           await wrapError(i, () => expect(result.status).toBe(status))
         }
 
         if (headers) {
-          await wrapError(i, () => expect(result.headers).toMatchObject(headers))
+          await wrapError(i, () => expect(Object.fromEntries(result.headers)).toMatchObject(headers))
         }
 
         if (bodyJSON !== undefined) {

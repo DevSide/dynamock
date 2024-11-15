@@ -1,0 +1,81 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: GET
+      response:
+        status: 200
+        cookies:
+          a: a
+          b: b
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+  expectation:
+    status: 200
+    cookies:
+      a: a
+      b: b
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /array
+        method: GET
+      response:
+        status: 200
+        cookies:
+          - a: a
+          - b: b
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /array
+      method: GET
+  expectation:
+    status: 200
+    cookies:
+      a: a
+      b: b
+- action:
+    name: put_config
+    data:
+      cookies:
+        a:
+          a: a
+        b:
+          b: b
+          ba: ba
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /array-config
+        method: GET
+      response:
+        status: 200
+        cookies:
+          - a
+          - b
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /array-config
+      method: GET
+  expectation:
+    status: 200
+    cookies:
+      a: a
+      b: b
+      ba: ba

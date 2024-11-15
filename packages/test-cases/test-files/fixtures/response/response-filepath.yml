@@ -1,0 +1,19 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /hello.txt
+        method: GET
+      response:
+        status: 200
+        filepath: /tmp/panda.txt
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /hello.txt
+      method: GET
+  expectation:
+    status: 200
+    body: world

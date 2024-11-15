@@ -1,0 +1,20 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: GET
+      response:
+        status: 200
+        options:
+          delay: 2000
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+  expectation:
+    status: 200
+    minElapsedTime: 2000
