@@ -2,6 +2,7 @@ import { jest, afterEach, beforeEach, describe, expect, test } from '@jest/globa
 import { page } from './config/setupTests.js'
 import { ActionEnum, getTestFiles, wrapError } from '@dynamock/test-cases'
 import { getPuppeteerTestCases } from './config/getTestCases.js'
+import { writeFileSync } from 'node:fs'
 
 describe('puppeteer integration tests', () => {
   const allTests = getTestFiles() //.filter(([filePath]) => filePath.includes('create-and-delete-bulk.yml'))
@@ -27,6 +28,13 @@ describe('puppeteer integration tests', () => {
         case ActionEnum.post_fixtures_bulk:
         case ActionEnum.delete_fixture:
         case ActionEnum.delete_all_fixtures: {
+          // @ts-ignore
+          for (const { response } of action.data?.fixtures ?? []) {
+            if (response?.filepath?.startsWith('/')) {
+              writeFileSync(response.filepath, 'world')
+            }
+          }
+
           if (expectation.status === 400 || expectation.status === 409) {
             try {
               await dynamock(page, action.data)
@@ -79,6 +87,7 @@ describe('puppeteer integration tests', () => {
 
           const result = await page.evaluate(
             async (_url, _fetchOptions) => {
+              const startTime = Date.now()
               const result = await fetch(_url, _fetchOptions)
 
               const bodyText = await result.text()
@@ -93,11 +102,16 @@ describe('puppeteer integration tests', () => {
                 headers: Object.fromEntries(result.headers.entries()),
                 bodyText,
                 bodyJSON,
+                elapsedTime: Date.now() - startTime,
               }
             },
             url.toString(),
             fetchOptions,
           )
+
+          if (expectation.minElapsedTime) {
+            expect(result.elapsedTime).toBeGreaterThan(expectation.minElapsedTime)
+          }
 
           if (expectation.status) {
             await wrapError(i, () => expect(result.status).toBe(expectation.status))

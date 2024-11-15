@@ -1,0 +1,26 @@
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: /
+        method: GET
+      response:
+        status: 200
+        options:
+          lifetime: 1
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /
+      method: GET
+  expectation:
+    status: 404

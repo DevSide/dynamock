@@ -33,6 +33,7 @@ export type YMLTestCaseExpectation = {
   headers?: { [key: string]: string }
   body?: null | string
   bodyJSON?: unknown
+  minElapsedTime?: number
 }
 
 type YMLTestCase<A extends string> = {
