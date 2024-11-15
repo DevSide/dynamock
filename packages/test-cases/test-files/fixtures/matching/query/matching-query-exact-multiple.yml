@@ -9,6 +9,8 @@
           b: b
       response:
         status: 200
+        options:
+          lifetime: 3
   expectation:
     status: 201
 - action:
@@ -19,6 +21,20 @@
       query:
         a: a
         b: b
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple?a=a&b=b
+      method: GET
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple?b=b&a=a
+      method: GET
   expectation:
     status: 200
 - action:
@@ -44,6 +60,8 @@
           - custom
       response:
         status: 200
+        options:
+          lifetime: 2
   expectation:
     status: 201
 - action:
@@ -57,6 +75,13 @@
   expectation:
     status: 200
 - action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-configuration?a=a&b=b
+      method: GET
+  expectation:
+    status: 200
+- action:
     name: post_fixture
     data:
       request:
@@ -67,6 +92,8 @@
           - customB
       response:
         status: 200
+        options:
+          lifetime: 3
   expectation:
     status: 201
 - action:
@@ -77,5 +104,19 @@
       query:
         a: a
         b: b
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-configuration-2?a=a&b=b
+      method: GET
+  expectation:
+    status: 200
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-configuration-2?b=b&a=a
+      method: GET
   expectation:
     status: 200

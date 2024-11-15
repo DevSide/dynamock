@@ -2,60 +2,46 @@
     name: post_fixture
     data:
       request:
-        path: /exact
+        path: /exact-multiple-mix?a=a
         method: GET
         query:
-          a: a
+          b: b
       response:
         status: 200
-        options:
-          lifetime: 2
   expectation:
     status: 201
 - action:
     name: test_fixture
     data:
-      path: /exact
+      path: /exact-multiple-mix?a=a
+      method: GET
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-mix?b=b
+      method: GET
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-mix
       method: GET
       query:
         a: a
   expectation:
-    status: 200
+    status: 404
 - action:
     name: test_fixture
     data:
-      path: /exact?a=a
-      method: GET
-  expectation:
-    status: 200
-- action:
-    name: post_fixture
-    data:
-      request:
-        path: /exact-path?a=a
-        method: GET
-      response:
-        status: 200
-        options:
-          lifetime: 2
-  expectation:
-    status: 201
-- action:
-    name: test_fixture
-    data:
-      path: /exact-path?a=a
-      method: GET
-  expectation:
-    status: 200
-- action:
-    name: test_fixture
-    data:
-      path: /exact-path
+      path: /exact-multiple-mix
       method: GET
       query:
-        a: a
+        b: b
   expectation:
-    status: 200
+    status: 404
 - action:
     name: put_config
     data:
@@ -68,29 +54,43 @@
     name: post_fixture
     data:
       request:
-        path: /exact-configuration
+        path: /exact-multiple-mix-configuration?b=b
         method: GET
         query:
           - custom
       response:
         status: 200
-        options:
-          lifetime: 2
   expectation:
     status: 201
 - action:
     name: test_fixture
     data:
-      path: /exact-configuration
+      path: /exact-multiple-mix-configuration?a=a
+      method: GET
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-mix-configuration
       method: GET
       query:
         a: a
   expectation:
-    status: 200
+    status: 404
 - action:
     name: test_fixture
     data:
-      path: /exact-configuration?a=a
+      path: /exact-multiple-mix-configuration?b=b
       method: GET
   expectation:
-    status: 200
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple-mix-configuration
+      method: GET
+      query:
+        b: b
+  expectation:
+    status: 404

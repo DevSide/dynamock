@@ -20,6 +20,13 @@
   expectation:
     status: 404
 - action:
+    name: test_fixture
+    data:
+      path: /exact
+      method: GET
+  expectation:
+    status: 404
+- action:
     name: put_config
     data:
       headers:

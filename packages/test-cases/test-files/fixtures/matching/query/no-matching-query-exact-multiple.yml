@@ -2,10 +2,11 @@
     name: post_fixture
     data:
       request:
-        path: /
+        path: /exact-multiple
         method: GET
         query:
-          a: 1
+          a: a
+          b: b
       response:
         status: 200
   expectation:
@@ -13,20 +14,36 @@
 - action:
     name: test_fixture
     data:
-      path: /
+      path: /exact-multiple
       method: GET
       query:
-        a: "1"
+        a: a
+  expectation:
+    status: 404
+- action:
+    name: test_fixture
+    data:
+      path: /exact-multiple?a=a
+      method: GET
+  expectation:
+    status: 404
+- action:
+    name: put_config
+    data:
+      query:
+        custom:
+          a: a
+          b: b
   expectation:
     status: 200
 - action:
     name: post_fixture
     data:
       request:
-        path: /
+        path: /exact-multiple-configuration
         method: GET
         query:
-          a: []
+          - custom
       response:
         status: 200
   expectation:
@@ -34,52 +51,16 @@
 - action:
     name: test_fixture
     data:
-      path: /
+      path: /exact-multiple-configuration
       method: GET
       query:
-        a: "[]"
+        a: a
   expectation:
-    status: 200
-- action:
-    name: post_fixture
-    data:
-      request:
-        path: /
-        method: GET
-        query:
-          a:
-            b: b
-      response:
-        status: 200
-  expectation:
-    status: 201
+    status: 404
 - action:
     name: test_fixture
     data:
-      path: /
+      path: /exact-multiple-configuration?a=a
       method: GET
-      query:
-        a: '{"b":"b"}'
   expectation:
-    status: 200
-- action:
-    name: post_fixture
-    data:
-      request:
-        path: /
-        method: GET
-        query:
-          a: null
-      response:
-        status: 200
-  expectation:
-    status: 201
-- action:
-    name: test_fixture
-    data:
-      path: /
-      method: GET
-      query:
-        a: 'null'
-  expectation:
-    status: 200
+    status: 404
