@@ -1,19 +1,15 @@
 import puppeteer, { type Browser, type Page } from 'puppeteer'
 import { afterAll, afterEach, beforeAll, beforeEach } from '@jest/globals'
-import {
-  createServer as createHTTPServer,
-  request,
-  type IncomingMessage,
-  type ServerResponse,
-  type Server,
-} from 'node:http'
+import { createServer as createHTTPServer, type IncomingMessage, type ServerResponse, type Server } from 'node:http'
 
 let browser: Browser
 let page: Page
 let server: Server
 
 beforeAll(async () => {
-  browser = await puppeteer.launch()
+  browser = await puppeteer.launch({
+    args: ['--no-sandbox'],
+  })
   server = createHTTPServer((req: IncomingMessage, res: ServerResponse) => {
     if (req.method === 'GET' && req.url === '/index.html') {
       res.writeHead(200, { 'Content-Type': 'text/html' })
@@ -33,7 +29,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await page.deleteCookie(...(await page.cookies()))
+  await browser.deleteCookie(...(await browser.cookies()))
   await page.close()
 })
 

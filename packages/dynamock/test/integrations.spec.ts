@@ -46,7 +46,7 @@ describe('integrations.js', () => {
   })
 
   describe('matching path', () => {
-    test.only.each([
+    test.each([
       ['/ a', null, '/ a', true],
       ['/ a', null, '/%20a', true],
       ['/%20a', null, '/ a', false],
