@@ -21,7 +21,7 @@
     "release": "semantic-release",
     "test": "yarn test:ts",
     "test:common": "NODE_OPTIONS='--enable-source-maps --experimental-vm-modules' jest",
-    "test:ts": "yarn test:common --config=./test/config/jest.config.js --coverage",
+    "test:ts": "yarn test:common --config=./test/config/jest.config.js --coverage --runInBand",
     "coverage:permissions": "chmod -R 777 ./coverage"
   },
   "engines": {
@@ -49,6 +49,5 @@
     "supertest": "^7.1.0",
     "ts-jest": "^29.3.1",
     "typescript": "^5.8.3"
-  },
-  "packageManager": "yarn@4.5.0"
+  }
 }

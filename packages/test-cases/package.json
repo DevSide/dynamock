@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "main": "./index.ts",
-  "packageManager": "yarn@4.5.0",
   "dependencies": {
     "js-yaml": "^4.1.0"
   },

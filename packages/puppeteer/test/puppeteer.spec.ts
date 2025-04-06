@@ -1,5 +1,5 @@
 import { jest, afterEach, beforeEach, describe, expect, test } from '@jest/globals'
-import { page } from './config/setupTests.js'
+import { browser, page } from './config/setupTests.js'
 import { ActionEnum, getTestFiles, wrapError } from '@dynamock/test-cases'
 import { getPuppeteerTestCases } from './config/getTestCases.js'
 import { writeFileSync } from 'node:fs'
@@ -56,7 +56,9 @@ describe('puppeteer integration tests', () => {
           const safeQuery = query ?? {}
 
           if (cookies) {
-            await page.setCookie(...Object.entries(cookies ?? {}).map(([name, value]) => ({ name, value })))
+            await browser.setCookie(
+              ...Object.entries(cookies ?? {}).map(([name, value]) => ({ name, value, domain: '127.0.0.1' })),
+            )
           }
 
           const fetchOptions: {
