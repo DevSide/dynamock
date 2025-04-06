@@ -126,3 +126,43 @@
       method: get
   expectation:
     status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: / c/
+        method: get
+        options:
+          path:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: / c
+      method: get
+  expectation:
+    status: 200
+- action:
+    name: post_fixture
+    data:
+      request:
+        path: / d/
+        method: get
+        options:
+          path:
+            allowRegex: true
+      response:
+        status: 200
+  expectation:
+    status: 201
+- action:
+    name: test_fixture
+    data:
+      path: /%20d
+      method: get
+  expectation:
+    status: 200

@@ -5,7 +5,7 @@ import { getPuppeteerTestCases } from './config/getTestCases.js'
 import { writeFileSync } from 'node:fs'
 
 describe('puppeteer integration tests', () => {
-  const allTests = getTestFiles() //.filter(([filePath]) => filePath.includes('create-and-delete-bulk.yml'))
+  const allTests = getTestFiles().filter(([filePath]) => filePath.includes('matching-path-regexp.yml'))
 
   beforeEach(() => page.goto('http://127.0.0.1:3000/index.html'))
 

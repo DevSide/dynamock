@@ -14,9 +14,9 @@ import {
   matchServiceRequestAgainstFixtures,
   resetService,
   updateServiceConfiguration,
+  ConfigurationType,
 } from '@dynamock/core'
 import { URLSearchParams } from 'node:url'
-import type { ConfigurationType } from '@dynamock/core'
 import { URL } from 'node:url'
 import { readFileSync } from 'node:fs'
 

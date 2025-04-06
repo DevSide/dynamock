@@ -120,8 +120,8 @@ function normalizePath(request: FixtureRequestType) {
 
   const pathOptions = request.options?.path
 
-  if (!pathOptions || (!pathOptions.allowRegex && !pathOptions.disableEncodeURI)) {
-    request.path = encodeURI(request.path)
+  if (!pathOptions || !pathOptions.allowRegex) {
+    request.path = encodeURI(decodeURI(request.path))
   }
 }
 

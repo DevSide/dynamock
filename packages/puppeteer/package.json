@@ -25,7 +25,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "dynamock": "workspace:*"
+    "@dynamock/core": "workspace:*"
   },
   "devDependencies": {
     "@dynamock/test-cases": "workspace:*",
