@@ -156,7 +156,7 @@ export function matchServiceRequestAgainstFixtures(
   coreRequest: CoreRequest,
   end: (coreResponse: CoreResponse) => void,
 ): boolean {
-  if (coreRequest.method === 'OPTIONS' && service.configuration.cors === '*') {
+  if (coreRequest.method === 'OPTIONS' && hasServiceCors(service)) {
     end({
       status: 200,
       headers: corsAllowAllHeaders,
@@ -199,7 +199,7 @@ export function matchServiceRequestAgainstFixtures(
         filepath: response.filepath ?? '',
       }
 
-      if (service.configuration.cors === '*') {
+      if (hasServiceCors(service)) {
         Object.assign(coreResponse.headers, corsAllowAllHeaders)
       }
 

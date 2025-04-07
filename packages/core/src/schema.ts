@@ -11,13 +11,9 @@ export const FixtureRequestOptionsSchema = z
     path: z
       .object({
         allowRegex: z.boolean(),
-        disableEncodeURI: z.boolean(),
       })
       .strict()
-      .partial()
-      .refine((value) => !(value.allowRegex === true && value.disableEncodeURI === true), {
-        message: 'Cannot use options.path.allowRegex and options.path.disableEncodeURI together',
-      }),
+      .partial(),
     method: z
       .object({
         allowRegex: z.boolean(),

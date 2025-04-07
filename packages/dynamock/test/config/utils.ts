@@ -1,41 +1,43 @@
-import { createServer } from 'node:net'
+import { spawn } from 'node:child_process'
 
 const isPortUsed = async (port: number): Promise<boolean> => {
   return new Promise((resolve) => {
-    const server = createServer()
-    server.once('error', (err: Error) => {
-      server.close(() => {
-        resolve('code' in err && err.code === 'EADDRINUSE')
-      })
+    const lsof = spawn('lsof', ['-i', `:${port}`])
+
+    let output = ''
+    lsof.stdout.on('data', (data) => {
+      output += data.toString()
     })
-    server.once('listening', () => {
-      server.close(() => {
-        resolve(false)
-      })
+
+    lsof.stderr.on('data', (data) => {
+      console.error(`isPortUsed error: ${data}`)
     })
-    server.listen(port)
+
+    lsof.on('close', () => {
+      const inUse = output.trim().length > 0
+      resolve(inUse)
+    })
   })
 }
 
-export function waitPortUsed(port: number, retry = 50, reverse = false) {
-  return new Promise((resolve) => {
-    const loop = async () => {
-      const isUsed = await isPortUsed(port)
+export async function waitPortUsed(port: number, retry = 10, timeout = 2000, waitUsed = true) {
+  const startTime = Date.now()
 
-      // @ts-ignore
-      if (!(isUsed ^ !reverse)) {
-        return
-      }
+  while (true) {
+    const isUsed = await isPortUsed(port)
 
-      // @ts-ignore
-      await new Promise((resolve) => setTimeout(resolve, retry))
-      return loop()
+    if (isUsed === waitUsed) {
+      return
     }
 
-    loop().then(resolve)
-  })
+    if (Date.now() - startTime > timeout) {
+      throw new Error(`Timeout waiting for port ${port} to be ${waitUsed ? 'used' : 'free'}`)
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, retry))
+  }
 }
 
-export function waitPortFree(port: number, retry?: number) {
-  return waitPortUsed(port, retry, true)
+export function waitPortFree(port: number, retry?: number, timeout?: number) {
+  return waitPortUsed(port, retry, timeout, false)
 }

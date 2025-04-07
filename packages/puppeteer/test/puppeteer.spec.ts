@@ -1,11 +1,11 @@
 import { jest, afterEach, beforeEach, describe, expect, test } from '@jest/globals'
-import { page } from './config/setupTests.js'
+import { browser, page } from './config/setupTests.js'
 import { ActionEnum, getTestFiles, wrapError } from '@dynamock/test-cases'
 import { getPuppeteerTestCases } from './config/getTestCases.js'
 import { writeFileSync } from 'node:fs'
 
 describe('puppeteer integration tests', () => {
-  const allTests = getTestFiles() //.filter(([filePath]) => filePath.includes('create-and-delete-bulk.yml'))
+  const allTests = getTestFiles() /* .filter(([filePath]) => filePath.includes('matching-path-regexp.yml')) */
 
   beforeEach(() => page.goto('http://127.0.0.1:3000/index.html'))
 
@@ -19,8 +19,7 @@ describe('puppeteer integration tests', () => {
 
     for (let i = 0; i < testData.length; i++) {
       const { action, expectation } = testData[i]
-      // @ts-ignore
-      // console.log(action.name, action.data, expectation)
+
       switch (action.name) {
         case ActionEnum.put_config:
         case ActionEnum.delete_config:
@@ -56,7 +55,9 @@ describe('puppeteer integration tests', () => {
           const safeQuery = query ?? {}
 
           if (cookies) {
-            await page.setCookie(...Object.entries(cookies ?? {}).map(([name, value]) => ({ name, value })))
+            await browser.setCookie(
+              ...Object.entries(cookies ?? {}).map(([name, value]) => ({ name, value, domain: '127.0.0.1' })),
+            )
           }
 
           const fetchOptions: {

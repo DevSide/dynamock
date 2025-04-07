@@ -38,4 +38,4 @@ afterAll(async () => {
   await browser.close()
 })
 
-export { page }
+export { browser, page }
