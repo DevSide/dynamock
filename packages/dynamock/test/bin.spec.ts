@@ -15,7 +15,7 @@ describe('bin integration tests', () => {
   })
 
   beforeEach(async () => {
-    process = spawn('dynamock', [String(port)] /*, {stdio: 'inherit'}*/)
+    process = spawn('nyc', [`--silent`, `--no-clean`, `--all`, `dynamock`, String(port)] /*, {stdio: 'inherit'}*/)
     await waitPortUsed(port)
   })
 

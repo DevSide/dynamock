@@ -10,6 +10,7 @@
 **/*.log
 packages/*/coverage
 packages/*/dist
+packages/*/.nyc_output
 
 # Other
 **/.idea
