@@ -171,7 +171,6 @@ export function matchServiceRequestAgainstFixtures(
 
   fixtureLoop: for (const [fixtureId, fixture] of getFixtureIterator(service.fixtureStorage)) {
     const { request: fixtureRequest, responses } = fixture
-    console.log(fixtureRequest, coreRequest)
 
     if (
       !requestPropertyMatch(coreRequest, fixtureRequest, 'origin') ||

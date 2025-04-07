@@ -11,11 +11,11 @@ if (!port) {
 const server = createServer()
 
 server.listen(Number(port), host, () => {
-  console.log(`dynamock is running on port ${port}...`)
+  console.info(`dynamock is running on port ${port}...`)
 })
 
 function shutDown() {
-  console.log('dynamock is shutting down gracefully')
+  console.info('dynamock is shutting down gracefully')
   server.close(() => {
     process.exit(0)
   })

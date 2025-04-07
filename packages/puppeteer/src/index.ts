@@ -14,7 +14,7 @@ import {
   matchServiceRequestAgainstFixtures,
   resetService,
   updateServiceConfiguration,
-  ConfigurationType,
+  type ConfigurationType,
 } from '@dynamock/core'
 import { URLSearchParams } from 'node:url'
 import { URL } from 'node:url'
