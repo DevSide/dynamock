@@ -99,6 +99,10 @@ function normalizeArrayMatcher(
 }
 
 function normalizePath(request: FixtureRequestType) {
+  if (!request.options?.path?.allowRegex) {
+    request.path = decodeURI(request.path)
+  }
+
   // extract query from path is needed and move it in query property
   const indexQueryString = request.path.indexOf('?')
 
@@ -116,12 +120,6 @@ function normalizePath(request: FixtureRequestType) {
     } else {
       request.query = query
     }
-  }
-
-  const pathOptions = request.options?.path
-
-  if (!pathOptions || !pathOptions.allowRegex) {
-    request.path = encodeURI(decodeURI(request.path))
   }
 }
 

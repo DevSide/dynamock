@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from '@jest/globals'
+import { afterEach, beforeAll, beforeEach, describe, expect, test } from '@jest/globals'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { getTestFiles, wrapError } from '@dynamock/test-cases'
 import { waitPortFree, waitPortUsed } from './config/utils.js'
@@ -9,6 +9,10 @@ describe('bin integration tests', () => {
   const allTests = getTestFiles() //.filter(([filePath]) => filePath.includes('create-and-delete-bulk.yml'))
   const port = 3000
   let process: ChildProcess
+
+  beforeAll(async () => {
+    await waitPortFree(port)
+  })
 
   beforeEach(async () => {
     process = spawn('dynamock', [String(port)] /*, {stdio: 'inherit'}*/)

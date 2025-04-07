@@ -5,7 +5,7 @@ import { getPuppeteerTestCases } from './config/getTestCases.js'
 import { writeFileSync } from 'node:fs'
 
 describe('puppeteer integration tests', () => {
-  const allTests = getTestFiles().filter(([filePath]) => filePath.includes('matching-path-regexp.yml'))
+  const allTests = getTestFiles() /* .filter(([filePath]) => filePath.includes('matching-path-regexp.yml')) */
 
   beforeEach(() => page.goto('http://127.0.0.1:3000/index.html'))
 
@@ -19,8 +19,7 @@ describe('puppeteer integration tests', () => {
 
     for (let i = 0; i < testData.length; i++) {
       const { action, expectation } = testData[i]
-      // @ts-ignore
-      // console.log(action.name, action.data, expectation)
+
       switch (action.name) {
         case ActionEnum.put_config:
         case ActionEnum.delete_config:

@@ -55,7 +55,7 @@ function mapToCoreRequest(request: HTTPRequest): CoreRequest {
 
   return {
     origin: parsedUrl.origin,
-    path: parsedUrl.pathname,
+    path: decodeURI(parsedUrl.pathname),
     method: request.method(),
     body,
     headers: headersWithoutCookie,
@@ -72,7 +72,7 @@ function mapToFixtureType(fixture: FixturePuppeteerType): FixtureType {
   try {
     const parsedUrl = new URL(url)
     origin = parsedUrl.origin
-    path = parsedUrl.toString().replace(parsedUrl.origin, '')
+    path = decodeURI(parsedUrl.toString()).replace(parsedUrl.origin, '')
   } catch (error) {
     if (url.endsWith('*')) {
       const parsedUrl = new URL(url.slice(0, -1))

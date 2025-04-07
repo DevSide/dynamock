@@ -4,7 +4,7 @@ import type { Request } from 'express'
 export function mapToCoreRequest(req: Request) {
   const coreRequest: CoreRequest = {
     origin: `${req.protocol}://${req.get('host')}`,
-    path: req.path,
+    path: decodeURI(req.path),
     method: req.method,
     headers: Object.entries(req.headers).reduce<{ [key in string]: string }>((acc, [headerKey, headerValue]) => {
       if (headerValue) {
