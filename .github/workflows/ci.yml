@@ -21,7 +21,7 @@ jobs:
       - run: yarn test
       - run: yarn coverage:permissions
       - run: yarn check-git
-      - uses: coverallsapp/github-action@master
+      - uses: coverallsapp/github-action@v2
         with:
-          path-to-lcov: 'packages/dynamock/coverage/lcov.info'
+          file: 'packages/dynamock/coverage/lcov.info'
           github-token: ${{ secrets.GITHUB_TOKEN }}
