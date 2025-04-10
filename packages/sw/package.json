@@ -1,7 +1,7 @@
 {
-  "name": "@dynamock/puppeteer",
+  "name": "@dynamock/sw",
   "version": "2.1.1",
-  "description": "Dynamock fixtures to intercept and mock Puppeteer's requests on a page",
+  "description": "Dynamock fixtures over a service worker",
   "repository": "https://github.com/DevSide/dynamock",
   "keywords": [
     "fixture",
@@ -14,9 +14,21 @@
   "author": "DevSide",
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
+  "exports": {
+    "sw.js": "./dist/sw.js",
+    "client.js": "./dist/client.js"
+  },
+  "targets": {
+    "sw": {
+      "source": "src/sw.ts",
+      "distDir": "dist",
+      "context": "service-worker"
+    }
+  },
   "scripts": {
-    "build": "rm -rf dist/ && tsc",
+    "build": "rm -rf dist/ && yarn build:ts && yarn build:bundle",
+    "build:ts": "tsc",
+    "build:bundle": "parcel build --target=sw",
     "release": "semantic-release",
     "test": "yarn test:common --config=./test/config/jest.config.js --runInBand",
     "test:common": "NODE_OPTIONS='--enable-source-maps --experimental-vm-modules' jest"
@@ -26,6 +38,7 @@
   },
   "dependencies": {
     "@dynamock/core": "workspace:*",
+    "dynamock": "workspace:*",
     "zod": "3.24.2"
   },
   "devDependencies": {
@@ -36,10 +49,13 @@
     "@semantic-release/github": "^11.0.1",
     "@semantic-release/npm": "^12.0.1",
     "@semantic-release/release-notes-generator": "^14.0.3",
+    "@types/serviceworker": "^0.0.127",
     "jest": "^29.7.0",
+    "parcel": "^2.14.4",
     "puppeteer": "^24.6.0",
     "semantic-release": "^24.2.3",
     "ts-jest": "^29.3.1",
     "typescript": "^5.8.3"
-  }
+  },
+  "packageManager": "yarn@4.5.0"
 }

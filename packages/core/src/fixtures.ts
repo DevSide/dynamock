@@ -1,4 +1,3 @@
-import { URLSearchParams } from 'node:url'
 import { hash, isObjectEmpty, type NonEmptyArray, sortObjectKeysRecurs } from './utils.js'
 import type { ConfigurationType } from './configuration.js'
 import type { z } from 'zod'

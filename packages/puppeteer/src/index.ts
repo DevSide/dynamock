@@ -7,17 +7,13 @@ import {
   deleteServiceConfiguration,
   deleteServiceFixture,
   deleteServiceFixtures,
-  createServiceError,
   type FixtureRequestType,
   type FixtureResponseType,
-  type FixtureType,
   matchServiceRequestAgainstFixtures,
   resetService,
   updateServiceConfiguration,
-  type ConfigurationType,
 } from '@dynamock/core'
-import { URLSearchParams } from 'node:url'
-import { URL } from 'node:url'
+import { z } from 'zod'
 import { readFileSync } from 'node:fs'
 
 function mapToCoreRequest(request: HTTPRequest): CoreRequest {
@@ -64,7 +60,23 @@ function mapToCoreRequest(request: HTTPRequest): CoreRequest {
   }
 }
 
-function mapToFixtureType(fixture: FixturePuppeteerType): FixtureType {
+const rawFixtureSchema = z
+  .object({
+    request: z
+      .object({
+        url: z.string(),
+      })
+      .passthrough(),
+  })
+  .passthrough()
+
+function mapToFixtureType(rawFixture: unknown): unknown {
+  const { success, data: fixture } = rawFixtureSchema.safeParse(rawFixture)
+
+  if (!success) {
+    return rawFixture
+  }
+
   const url = fixture.request.url
   let origin = ''
   let path = ''
@@ -156,24 +168,25 @@ async function initializeInterceptor(page: Page) {
   })
 }
 
-export type DynamockOptions = {
-  configuration?: Partial<ConfigurationType> | null
-  resetConfiguration?: boolean
-  fixtures?: FixturePuppeteerType[]
-  deleteFixtures?: string[]
-  resetFixtures?: boolean
-}
+const dynamockOptionsSchema = z.object({
+  configuration: z.unknown().optional(),
+  resetConfiguration: z.boolean().optional(),
+  fixtures: z.array(z.unknown()).optional(),
+  deleteFixtures: z.array(z.unknown()).optional(),
+  resetFixtures: z.boolean().optional(),
+})
 
-export async function dynamock(
-  page: Page,
-  {
+export type DynamockOptions = z.infer<typeof dynamockOptionsSchema>
+
+export async function dynamock(page: Page, options: DynamockOptions) {
+  const {
     configuration = null,
     resetConfiguration = false,
     fixtures = [],
     deleteFixtures = [],
     resetFixtures = false,
-  }: DynamockOptions,
-) {
+  } = dynamockOptionsSchema.parse(options)
+
   if (resetConfiguration) {
     deleteServiceConfiguration(service)
   }
@@ -195,15 +208,7 @@ export async function dynamock(
   }
 
   if (fixtures.length) {
-    let coreFixtures: FixtureType[] = []
-
-    try {
-      coreFixtures = fixtures.map(mapToFixtureType)
-    } catch (error) {
-      const [, { message }] = createServiceError(0, 'Missing or invalid request.url')
-      throw new Error(message)
-    }
-
+    const coreFixtures = fixtures.map(mapToFixtureType)
     const [fixturesStatus, fixturesOrError] = createServiceFixtures(service, coreFixtures)
 
     if (fixturesStatus !== 200 && fixturesOrError && 'message' in fixturesOrError) {
