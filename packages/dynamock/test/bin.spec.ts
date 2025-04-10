@@ -30,6 +30,7 @@ describe('bin integration tests', () => {
     const testData = getServerTestCases(absoluteFilePath)
 
     for (let i = 0; i < testData.length; i++) {
+      const wrap = wrapError(absoluteFilePath, i)
       const { action, expectation } = testData[i]
       const { path, method, headers, cookies, body, bodyJSON, query } = action
       const fetchOptions: {
@@ -88,17 +89,17 @@ describe('bin integration tests', () => {
         }
 
         if (status) {
-          await wrapError(i, () => expect(result.status).toBe(status))
+          await wrap(() => expect(result.status).toBe(status))
         }
 
         if (headers) {
-          await wrapError(i, () => expect(Object.fromEntries(result.headers)).toMatchObject(headers))
+          await wrap(() => expect(Object.fromEntries(result.headers)).toMatchObject(headers))
         }
 
         if (bodyJSON !== undefined) {
-          await wrapError(i, async () => expect(await result.json()).toEqual(bodyJSON))
+          await wrap(async () => expect(await result.json()).toEqual(bodyJSON))
         } else if (body !== undefined) {
-          await wrapError(i, async () => expect(await result.text()).toEqual(body))
+          await wrap(async () => expect(await result.text()).toEqual(body))
         }
       }
     }

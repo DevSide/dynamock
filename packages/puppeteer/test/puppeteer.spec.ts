@@ -5,7 +5,8 @@ import { getPuppeteerTestCases } from './config/getTestCases.js'
 import { writeFileSync } from 'node:fs'
 
 describe('puppeteer integration tests', () => {
-  const allTests = getTestFiles() /* .filter(([filePath]) => filePath.includes('matching-path-regexp.yml')) */
+  const allTests = getTestFiles()
+  // .filter(([filePath]) => filePath.includes('create-and-delete-all'))
 
   beforeEach(() => page.goto('http://127.0.0.1:3000/index.html'))
 
@@ -18,6 +19,7 @@ describe('puppeteer integration tests', () => {
     const testData = getPuppeteerTestCases(absoluteFilePath, 'http://127.0.0.1:3000')
 
     for (let i = 0; i < testData.length; i++) {
+      const wrap = wrapError(absoluteFilePath, i)
       const { action, expectation } = testData[i]
 
       switch (action.name) {
@@ -39,9 +41,9 @@ describe('puppeteer integration tests', () => {
               await dynamock(page, action.data)
             } catch (error: unknown) {
               if (error instanceof Error) {
-                await wrapError(i, () => expect(error.message.substring(0, 21)).toBe('[FIXTURE SERVER ERROR'))
+                await wrap(() => expect(error.message.substring(0, 21)).toBe('[FIXTURE SERVER ERROR'))
               } else {
-                await wrapError(i, () => expect('error is not an instanceof Error').toBe(false))
+                await wrap(() => expect('error is not an instanceof Error').toBe(false))
               }
             }
           } else {
@@ -115,18 +117,18 @@ describe('puppeteer integration tests', () => {
           }
 
           if (expectation.status) {
-            await wrapError(i, () => expect(result.status).toBe(expectation.status))
+            await wrap(() => expect(result.status).toBe(expectation.status))
           }
 
           if (expectation.headers) {
             // @ts-ignore
-            await wrapError(i, () => expect(result.headers).toMatchObject(expectation.headers))
+            await wrap(() => expect(result.headers).toMatchObject(expectation.headers))
           }
 
           if (expectation.bodyJSON !== undefined) {
-            await wrapError(i, async () => expect(result.bodyJSON).toEqual(expectation.bodyJSON))
+            await wrap(async () => expect(result.bodyJSON).toEqual(expectation.bodyJSON))
           } else if (expectation.body !== undefined) {
-            await wrapError(i, async () => expect(result.bodyText).toEqual(expectation.body))
+            await wrap(async () => expect(result.bodyText).toEqual(expectation.body))
           }
         }
       }

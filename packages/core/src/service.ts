@@ -50,7 +50,7 @@ export function resetService(service: ServiceType) {
   service.fixtureStorage = createFixtureStorage()
 }
 
-export function getServiceConfiguration({ configuration }: ServiceType): [number, object] {
+export function getServiceConfiguration({ configuration }: ServiceType): [number, ConfigurationType] {
   return [200, configuration]
 }
 
@@ -96,9 +96,13 @@ export function createServiceFixture(
 
 export function createServiceFixtures(
   { configuration, fixtureStorage }: ServiceType,
-  unsafeFixtures: unknown[],
+  unsafeFixtures: unknown,
 ): [number, object] {
   const fixtureIds: { id: string }[] = []
+
+  if (!Array.isArray(unsafeFixtures)) {
+    return createServiceError(400, 'Fixtures should be an array')
+  }
 
   const cleanUpOnError = () => {
     for (const { id } of fixtureIds) {
@@ -129,10 +133,14 @@ export function createServiceFixtures(
   return [201, fixtureIds]
 }
 
-export function deleteServiceFixture({ fixtureStorage }: ServiceType, id: string): [number] {
+export function deleteServiceFixture({ fixtureStorage }: ServiceType, id: unknown): [number, object] {
+  if (typeof id !== 'string') {
+    return createServiceError(400, 'fixture id should be a string')
+  }
+
   removeFixture(fixtureStorage, id)
 
-  return [204]
+  return [204, {}]
 }
 
 export function deleteServiceFixtures({ fixtureStorage }: ServiceType): [number, object] {

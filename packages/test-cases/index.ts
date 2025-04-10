@@ -113,13 +113,15 @@ export function getYMLTestCases(absolutePath: string): AnyYMLTestCase[] {
   return data
 }
 
-export async function wrapError(testIndex: number, task: () => unknown) {
-  try {
-    return await task()
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      error.message += `\nTest iteration ${testIndex}`
+export function wrapError(testName: string, testIndex: number) {
+  return async (task: () => unknown) => {
+    try {
+      return await task()
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        error.message += `\nTest iteration ${testName}:${testIndex}`
+      }
+      throw error
     }
-    throw error
   }
 }
