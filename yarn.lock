@@ -880,6 +880,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dynamock/server@workspace:packages/server":
+  version: 0.0.0-use.local
+  resolution: "@dynamock/server@workspace:packages/server"
+  dependencies:
+    "@dynamock/core": "workspace:*"
+    "@dynamock/test-cases": "workspace:*"
+    "@jest/globals": "npm:^29.7.0"
+    "@semantic-release/commit-analyzer": "npm:^13.0.1"
+    "@semantic-release/git": "npm:^10.0.1"
+    "@semantic-release/github": "npm:^11.0.1"
+    "@semantic-release/npm": "npm:^12.0.1"
+    "@semantic-release/release-notes-generator": "npm:^14.0.3"
+    "@types/cookie-parser": "npm:^1.4.8"
+    "@types/express": "npm:^5.0.1"
+    "@types/node": "npm:^22.14.0"
+    "@types/supertest": "npm:^6.0.3"
+    cookie-parser: "npm:1.4.7"
+    express: "npm:5.1.0"
+    jest: "npm:^29.7.0"
+    semantic-release: "npm:^24.2.3"
+    ts-jest: "npm:^29.3.1"
+    typescript: "npm:^5.8.3"
+    zod: "npm:3.24.2"
+  bin:
+    server: ./dist/bin/dynamock.js
+  languageName: unknown
+  linkType: soft
+
 "@dynamock/sw@workspace:packages/sw":
   version: 0.0.0-use.local
   resolution: "@dynamock/sw@workspace:packages/sw"
@@ -893,7 +921,6 @@ __metadata:
     "@semantic-release/npm": "npm:^12.0.1"
     "@semantic-release/release-notes-generator": "npm:^14.0.3"
     "@types/serviceworker": "npm:^0.0.127"
-    dynamock: "workspace:*"
     jest: "npm:^29.7.0"
     parcel: "npm:^2.14.4"
     puppeteer: "npm:^24.6.0"
@@ -5159,34 +5186,6 @@ __metadata:
   checksum: 10c0/0765a4cc6fe6d9615d43cc6dbccff6f8412811d89a6f6aa44828ca9422a0a469625ce023bf81cee68f52930dbedf9c5716056ff264ac886612702d134b5e39b4
   languageName: node
   linkType: hard
-
-"dynamock@workspace:*, dynamock@workspace:packages/dynamock":
-  version: 0.0.0-use.local
-  resolution: "dynamock@workspace:packages/dynamock"
-  dependencies:
-    "@dynamock/core": "workspace:*"
-    "@dynamock/test-cases": "workspace:*"
-    "@jest/globals": "npm:^29.7.0"
-    "@semantic-release/commit-analyzer": "npm:^13.0.1"
-    "@semantic-release/git": "npm:^10.0.1"
-    "@semantic-release/github": "npm:^11.0.1"
-    "@semantic-release/npm": "npm:^12.0.1"
-    "@semantic-release/release-notes-generator": "npm:^14.0.3"
-    "@types/cookie-parser": "npm:^1.4.8"
-    "@types/express": "npm:^5.0.1"
-    "@types/node": "npm:^22.14.0"
-    "@types/supertest": "npm:^6.0.3"
-    cookie-parser: "npm:1.4.7"
-    express: "npm:5.1.0"
-    jest: "npm:^29.7.0"
-    semantic-release: "npm:^24.2.3"
-    ts-jest: "npm:^29.3.1"
-    typescript: "npm:^5.8.3"
-    zod: "npm:3.24.2"
-  bin:
-    dynamock: ./dist/bin/dynamock.js
-  languageName: unknown
-  linkType: soft
 
 "eastasianwidth@npm:^0.2.0":
   version: 0.2.0
